@@ -1,3 +1,5 @@
+// infra\compute.tf
+
 locals {
   ssh_public_key  = file(var.ssh_public_key_path)
   ssh_private_key = file(var.ssh_private_key_path)
@@ -17,6 +19,7 @@ resource "oci_core_instance" "k3s_control_plane" {
   create_vnic_details {
     subnet_id        = oci_core_subnet.k3s_subnet.id
     assign_public_ip = true
+    nsg_ids             = [oci_core_network_security_group.lb_to_instances_kubeapi.id]
   }
 
   source_details {
@@ -46,6 +49,7 @@ resource "oci_core_instance" "k3s_worker_arm" {
   create_vnic_details {
     subnet_id        = oci_core_subnet.k3s_subnet.id
     assign_public_ip = true
+    nsg_ids             = [oci_core_network_security_group.lb_to_instances_http.id]
   }
 
   source_details {
@@ -75,6 +79,7 @@ resource "oci_core_instance" "k3s_worker_x86" {
   create_vnic_details {
     subnet_id        = oci_core_subnet.k3s_subnet.id
     assign_public_ip = true
+    nsg_ids             = [oci_core_network_security_group.lb_to_instances_http.id]
   }
 
   source_details {

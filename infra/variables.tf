@@ -13,3 +13,28 @@ variable "arm_instance_count" {}
 variable "ubuntu_x86_image_ocid" {}
 variable "x86_instance_count" {}
 variable "my_public_ip_cidr" {}
+
+variable "kube_api_port" {
+  type    = number
+  default = 6443
+}
+
+variable "http_lb_port" {
+  type    = number
+  default = 80
+}
+
+variable "https_lb_port" {
+  type    = number
+  default = 443
+}
+
+variable "expose_kubeapi" {
+  type    = bool
+  default = false
+}
+
+variable "public_lb_shape" {
+  type    = string
+  default = "flexible"
+}

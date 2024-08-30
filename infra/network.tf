@@ -1,3 +1,5 @@
+// infra\network.tf
+
 resource "oci_core_vcn" "k3s_vcn" {
   cidr_block     = var.vcn_cidr
   compartment_id = var.compartment_ocid
