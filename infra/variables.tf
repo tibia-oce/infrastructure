@@ -12,4 +12,4 @@ variable "ubuntu_arm_image_ocid" {}
 variable "arm_instance_count" {}
 variable "ubuntu_x86_image_ocid" {}
 variable "x86_instance_count" {}
-
+variable "my_public_ip_cidr" {}
