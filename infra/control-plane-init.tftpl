@@ -4,7 +4,8 @@ package_upgrade: true
 packages:
 - iptables-persistent
 runcmd:
-- curl -sfL https://get.k3s.io | sh -
+- load_balancer_ip=$(echo ${load_balancer_public_ip} | tr -d '[]')
+- curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--tls-san $load_balancer_ip" sh -
 - until sudo k3s kubectl get node | grep Ready; do sleep 5; done
 - iptables -I INPUT -p tcp --dport 6443 -j ACCEPT
 - iptables -I INPUT -p tcp --dport 10250 -j ACCEPT
@@ -15,3 +16,4 @@ runcmd:
 - chmod 644 /home/ubuntu/k3s_token
 - sudo cp /etc/rancher/k3s/k3s.yaml /home/ubuntu/kubeconfig
 - sudo chown ubuntu:ubuntu /home/ubuntu/kubeconfig
+- sudo sed -i "s/127.0.0.1/$load_balancer_ip/g" /home/ubuntu/kubeconfig

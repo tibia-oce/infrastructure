@@ -31,10 +31,16 @@ variable "https_lb_port" {
 
 variable "expose_kubeapi" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "public_lb_shape" {
   type    = string
   default = "flexible"
+}
+
+variable "lb_display_name" {
+  type        = string
+  default = "reserved-826139"
+  description = "The display name of the load balancer."
 }

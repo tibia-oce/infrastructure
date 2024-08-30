@@ -1,4 +1,8 @@
-// infra\lb.tf
+resource "oci_core_public_ip" "reserved_ip" {
+  compartment_id = var.compartment_ocid
+  lifetime       = "RESERVED"
+  display_name   = "${var.lb_display_name}-public-ip"
+}
 
 resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
   compartment_id     = var.compartment_ocid
@@ -7,6 +11,10 @@ resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
   network_security_group_ids = [oci_core_network_security_group.public_lb_nsg.id]
   is_private         = false
   display_name       = "kubeapi-lb"
+
+  reserved_ips {
+      id = oci_core_public_ip.reserved_ip.id
+  }
 
   shape_details {
     maximum_bandwidth_in_mbps = 10
@@ -43,4 +51,8 @@ resource "oci_load_balancer_backend" "kubeapi_backend" {
   ip_address       = element(oci_core_instance.k3s_control_plane.*.private_ip, count.index) # IP of the control plane nodes
   load_balancer_id = oci_load_balancer_load_balancer.kubeapi_lb.id
   port             = var.kube_api_port
+}
+
+output "load_balancer_id" {
+  value = oci_load_balancer_load_balancer.kubeapi_lb.id
 }
