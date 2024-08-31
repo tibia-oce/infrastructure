@@ -1,10 +1,3 @@
-// infra\compute.tf
-
-locals {
-  ssh_public_key  = file(var.ssh_public_key_path)
-  ssh_private_key = file(var.ssh_private_key_path)
-}
-
 resource "oci_core_instance" "k3s_control_plane" {
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   compartment_id      = var.compartment_ocid
@@ -19,16 +12,16 @@ resource "oci_core_instance" "k3s_control_plane" {
   create_vnic_details {
     subnet_id        = oci_core_subnet.k3s_subnet.id
     assign_public_ip = true
-    nsg_ids             = [oci_core_network_security_group.lb_to_instances_kubeapi.id]
+    nsg_ids          = [oci_core_network_security_group.lb_to_instances_kubeapi.id]
   }
 
   source_details {
-    source_type  = "image"
-    source_id    = var.ubuntu_arm_image_ocid[var.region]
+    source_type = "image"
+    source_id   = var.ubuntu_arm_image_ocid[var.region]
   }
 
   metadata = {
-    ssh_authorized_keys = local.ssh_public_key
+    ssh_authorized_keys = data.hcp_vault_secrets_secret.ssh_public_key.secret_value
     user_data = base64encode(templatefile("${path.module}/control-plane-init.tftpl", {
       load_balancer_public_ip = oci_core_public_ip.reserved_ip.ip_address
     }))
@@ -51,7 +44,7 @@ resource "oci_core_instance" "k3s_worker_arm" {
   create_vnic_details {
     subnet_id        = oci_core_subnet.k3s_subnet.id
     assign_public_ip = true
-    nsg_ids             = [oci_core_network_security_group.lb_to_instances_http.id]
+    nsg_ids          = [oci_core_network_security_group.lb_to_instances_http.id]
   }
 
   source_details {
@@ -60,9 +53,9 @@ resource "oci_core_instance" "k3s_worker_arm" {
   }
 
   metadata = {
-    ssh_authorized_keys = local.ssh_public_key
+    ssh_authorized_keys = data.hcp_vault_secrets_secret.ssh_public_key.secret_value
     user_data = base64encode(templatefile("${path.module}/worker-init.tftpl", {
-      ssh_private_key  = local.ssh_private_key
+      ssh_private_key  = data.hcp_vault_secrets_secret.ssh_private_key.secret_value,
       control_plane_ip = oci_core_instance.k3s_control_plane.private_ip
     }))
   }
@@ -72,7 +65,7 @@ resource "oci_core_instance" "k3s_worker_arm" {
 
 resource "oci_core_instance" "k3s_worker_x86" {
   for_each = { for idx in range(var.x86_instance_count) : idx => idx }
-  
+
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   compartment_id      = var.compartment_ocid
   display_name        = format("k3s-worker-x86-%d", each.key)
@@ -81,7 +74,7 @@ resource "oci_core_instance" "k3s_worker_x86" {
   create_vnic_details {
     subnet_id        = oci_core_subnet.k3s_subnet.id
     assign_public_ip = true
-    nsg_ids             = [oci_core_network_security_group.lb_to_instances_http.id]
+    nsg_ids          = [oci_core_network_security_group.lb_to_instances_http.id]
   }
 
   source_details {
@@ -90,9 +83,9 @@ resource "oci_core_instance" "k3s_worker_x86" {
   }
 
   metadata = {
-    ssh_authorized_keys = local.ssh_public_key
+    ssh_authorized_keys = data.hcp_vault_secrets_secret.ssh_public_key.secret_value
     user_data = base64encode(templatefile("${path.module}/worker-init.tftpl", {
-      ssh_private_key   = local.ssh_private_key
+      ssh_private_key  = data.hcp_vault_secrets_secret.ssh_private_key.secret_value,
       control_plane_ip = oci_core_instance.k3s_control_plane.private_ip
     }))
   }

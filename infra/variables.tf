@@ -1,46 +1,161 @@
-variable "tenancy_ocid" {}
-variable "user_ocid" {}
-variable "fingerprint" {}
-variable "private_key_path" {}
-variable "region" {}
-variable "compartment_ocid" {}
-variable "ssh_public_key_path" {}
-variable "ssh_private_key_path" {}
-variable "vcn_cidr" {}
-variable "subnet_cidr"{}
-variable "ubuntu_arm_image_ocid" {}
-variable "arm_instance_count" {}
-variable "ubuntu_x86_image_ocid" {}
-variable "x86_instance_count" {}
-variable "my_public_ip_cidr" {}
+# ====================================================================
+# HCP Provider Variables
+# These variables are used to authenticate with HashiCorp Cloud Platform
+# and retrieve secrets from the HCP Vault app.
+# ====================================================================
+
+variable "hcp_client_id" {
+  description = "The client ID for HCP authentication. This should be obtained from your HCP service principal credentials."
+  type        = string
+  sensitive   = true
+}
+
+variable "hcp_client_secret" {
+  description = "The client secret for HCP authentication. This should be obtained from your HCP service principal credentials."
+  type        = string
+  sensitive   = true
+}
+
+variable "vault_app_name" {
+  description = "The name of the Vault Secrets application."
+  type        = string
+  default     = "tibia-oce"
+}
+
+variable "oci_private_key_secret_name" {
+  description = "The name of the OCI private key secret in Vault."
+  type        = string
+  default     = "oci_private_key"
+}
+
+variable "ssh_private_key_secret_name" {
+  description = "The name of the SSH private key secret in Vault."
+  type        = string
+  default     = "ssh_private_key"
+}
+
+variable "ssh_public_key_secret_name" {
+  description = "The name of the SSH public key secret in Vault."
+  type        = string
+  default     = "ssh_public_key"
+}
+
+# ====================================================================
+# OCI (Oracle Cloud Infrastructure) Configuration
+# These variables define the essential identifiers and configuration
+# parameters needed to interact with your OCI tenancy and resources.
+# ====================================================================
+
+variable "tenancy_ocid" {
+  description = "The OCID of the tenancy in Oracle Cloud Infrastructure."
+  type        = string
+  sensitive   = true
+}
+
+variable "user_ocid" {
+  description = "The OCID of the user in Oracle Cloud Infrastructure."
+  type        = string
+  sensitive   = true
+}
+
+variable "fingerprint" {
+  description = "The fingerprint of the public key used for API signing in OCI."
+  type        = string
+  sensitive   = true
+}
+
+variable "region" {
+  description = "The OCI region where resources will be created (e.g., ap-sydney-1)."
+  type        = string
+}
+
+variable "compartment_ocid" {
+  description = "The OCID of the compartment in which resources will be managed."
+  type        = string
+}
+
+# ====================================================================
+# Networking Configuration
+# These variables define CIDR blocks and public IPs for networking.
+# ====================================================================
+
+variable "vcn_cidr" {
+  description = "CIDR block for the Virtual Cloud Network (VCN) in OCI."
+  type        = string
+}
+
+variable "subnet_cidr" {
+  description = "CIDR block for the subnet within the VCN."
+  type        = string
+}
+
+variable "my_public_ip_cidr" {
+  description = "CIDR block for your public IP (e.g., 203.0.113.1/32) to allow traffic."
+  type        = string
+}
+
+# ====================================================================
+# Compute Instance Configuration
+# These variables define the images and instance counts for ARM and x86 architectures.
+# ====================================================================
+
+variable "ubuntu_arm_image_ocid" {
+  description = "Map of OCI ARM image OCIDs keyed by region."
+  type        = map(string)
+}
+
+variable "ubuntu_x86_image_ocid" {
+  description = "Map of OCI x86 image OCIDs keyed by region."
+  type        = map(string)
+}
+
+variable "arm_instance_count" {
+  description = "The number of ARM-based compute instances to provision."
+  type        = number
+}
+
+variable "x86_instance_count" {
+  description = "The number of x86-based compute instances to provision."
+  type        = number
+}
+
+# ====================================================================
+# Kubernetes Configuration
+# These variables define ports and settings for Kubernetes and load balancers.
+# ====================================================================
 
 variable "kube_api_port" {
-  type    = number
-  default = 6443
+  description = "The port on which the Kubernetes API will be exposed."
+  type        = number
+  default     = 6443
 }
 
 variable "http_lb_port" {
-  type    = number
-  default = 80
+  description = "The port for HTTP traffic on the public load balancer."
+  type        = number
+  default     = 80
 }
 
 variable "https_lb_port" {
-  type    = number
-  default = 443
+  description = "The port for HTTPS traffic on the public load balancer."
+  type        = number
+  default     = 443
 }
 
 variable "expose_kubeapi" {
-  type    = bool
-  default = true
+  description = "Boolean to control whether the Kubernetes API should be publicly exposed."
+  type        = bool
+  default     = true
 }
 
 variable "public_lb_shape" {
-  type    = string
-  default = "flexible"
+  description = "The shape of the public load balancer (e.g., flexible)."
+  type        = string
+  default     = "flexible"
 }
 
 variable "lb_display_name" {
+  description = "The display name of the load balancer in OCI."
   type        = string
-  default = "reserved-826139"
-  description = "The display name of the load balancer."
+  default     = "lb"
 }

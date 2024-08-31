@@ -5,15 +5,15 @@ resource "oci_core_public_ip" "reserved_ip" {
 }
 
 resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
-  compartment_id     = var.compartment_ocid
-  shape              = var.public_lb_shape
-  subnet_ids         = [oci_core_subnet.k3s_subnet.id]
+  compartment_id             = var.compartment_ocid
+  shape                      = var.public_lb_shape
+  subnet_ids                 = [oci_core_subnet.k3s_subnet.id]
   network_security_group_ids = [oci_core_network_security_group.public_lb_nsg.id]
-  is_private         = false
-  display_name       = "kubeapi-lb"
+  is_private                 = false
+  display_name               = "kubeapi-lb"
 
   reserved_ips {
-      id = oci_core_public_ip.reserved_ip.id
+    id = oci_core_public_ip.reserved_ip.id
   }
 
   shape_details {
@@ -36,12 +36,12 @@ resource "oci_load_balancer_backend_set" "kubeapi_backend_set" {
 
 # KubeAPI Listener
 resource "oci_load_balancer_listener" "kubeapi_listener" {
-  load_balancer_id = oci_load_balancer_load_balancer.kubeapi_lb.id
-  name             = "kubeapi-listener"
-  protocol         = "TCP"
-  port             = var.kube_api_port
+  load_balancer_id         = oci_load_balancer_load_balancer.kubeapi_lb.id
+  name                     = "kubeapi-listener"
+  protocol                 = "TCP"
+  port                     = var.kube_api_port
   default_backend_set_name = oci_load_balancer_backend_set.kubeapi_backend_set.name
-  depends_on = [oci_load_balancer_backend_set.kubeapi_backend_set]
+  depends_on               = [oci_load_balancer_backend_set.kubeapi_backend_set]
 }
 
 # Backends for KubeAPI (control plane nodes)
@@ -51,8 +51,4 @@ resource "oci_load_balancer_backend" "kubeapi_backend" {
   ip_address       = element(oci_core_instance.k3s_control_plane.*.private_ip, count.index) # IP of the control plane nodes
   load_balancer_id = oci_load_balancer_load_balancer.kubeapi_lb.id
   port             = var.kube_api_port
-}
-
-output "load_balancer_id" {
-  value = oci_load_balancer_load_balancer.kubeapi_lb.id
 }

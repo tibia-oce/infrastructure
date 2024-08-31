@@ -1,5 +1,3 @@
-// infra\nsg.tf
-
 resource "oci_core_network_security_group" "public_lb_nsg" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_vcn.k3s_vcn.id

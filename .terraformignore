@@ -1,0 +1,34 @@
+# Ignore local Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Ignore backup files created by the editor
+*.bak
+*.backup
+*.swp
+*.tmp
+*.temp
+
+# Ignore core Terraform configuration files
+.terraform/
+.terraform.lock.hcl
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.iml
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore shell scripts and other local scripts (optional, if not needed in Terraform Cloud)
+scripts/
+
+# Ignore Terraform variables file (if storing sensitive information locally)
+terraform.tfvars
+terraform.tfvars.json
+
+# Ignore local environment files
+.env
+.env.*
