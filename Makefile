@@ -5,12 +5,6 @@ YELLOW=\033[33m
 BLUE=\033[34m
 NC=\033[0m
 
-# Load environment variables from .env file, if it exists
-ifneq (,$(wildcard ./.env))
-    include .env
-    export
-endif
-
 # Define environment variables for directories
 export TF_BACKEND_DIR="infra"
 export K3S_ENV_DIR="infra"
@@ -31,11 +25,6 @@ provider:
 	@printf "$(GREEN)Generating provider configuration...$(NC)\n"
 	cd $(SCRIPTS_DIR) && ./provider.sh
 
-# SSH into the control plane node
-control-node:
-	@printf "$(YELLOW)Connecting to the control plane node at $(CONTROL_PLANE_IP)...$(NC)\n"
-	ssh -i "~/.ssh/id_rsa" ubuntu@$(CONTROL_PLANE_IP)
-
 # Retrieve the Kubeconfig from the control plane node and set up kubectl
 kube-config:
 	@printf "$(BLUE)Retrieving Kubeconfig from control plane node...$(NC)\n"
@@ -43,15 +32,9 @@ kube-config:
 	scp -i "~/.ssh/id_rsa" ubuntu@$(CONTROL_PLANE_IP):/home/ubuntu/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Setting up KUBECONFIG and verifying cluster nodes...$(NC)\n"
 	export KUBECONFIG=~/.kube/config
-	kubectl get nodes
-
-# Test connectivity to the Kubernetes API via the load balancer
-curl-lb:
-	@printf "$(YELLOW)Curling the Kubernetes API at https://$(LOAD_BALANCER_IP):6443...$(NC)\n"
-	curl -k https://$(LOAD_BALANCER_IP):6443
 
 # Get the list of nodes in the Kubernetes cluster
-get-nodes:
+get-nodes: kube-config
 	@printf "$(BLUE)Getting the list of nodes in the Kubernetes cluster...$(NC)\n"
 	kubectl get nodes
 
@@ -130,4 +113,3 @@ ansible-workers: generate-inventory
 # Sequentially run all necessary steps to bootstrap the K3s cluster
 bootstrap-cluster: terraform-output generate-inventory ansible-control-plane ansible-workers
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
-
