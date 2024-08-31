@@ -1,16 +1,18 @@
+# Load environment variables from .env file, if it exists
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 # Define environment variables for directories and IP addresses
 export TF_BACKEND_DIR="infra"       # Directory containing Terraform backend files
 export K3S_ENV_DIR="infra"          # Directory containing K3S environment configuration
 export SCRIPTS_DIR="scripts"        # Directory containing utility scripts
-export CONTROL_PLANE_IP=152.67.97.100            # Control plane node IP address (to be set)
-export LOAD_BALANCER_IP=168.138.109.226            # Load balancer IP address (to be set)
-
-# ANSI color codes
 RED=\033[31m
 GREEN=\033[32m
 YELLOW=\033[33m
 BLUE=\033[34m
-NC=\033[0m # No Color
+NC=\033[0m
 
 # Generate a hidden tfvars file with OCI credentials from the Terraform agent
 tfvars:
