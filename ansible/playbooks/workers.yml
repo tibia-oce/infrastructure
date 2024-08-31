@@ -1,0 +1,19 @@
+- name: Verify connection to worker nodes
+  hosts: workers
+  gather_facts: false
+  tasks:
+  - name: Remove old host key from known_hosts
+    shell: ssh-keygen -R "{{ inventory_hostname }}"
+    delegate_to: localhost
+    ignore_errors: true
+
+  - name: Ping the worker nodes
+    ping:
+
+  - name: Check uptime of the worker nodes
+    command: uptime
+    register: uptime_result
+
+  - name: Display uptime
+    debug:
+      var: uptime_result.stdout

@@ -50,3 +50,9 @@ Terraform Cloud handles the locking and consistency of state files, which helps 
 - update docs with a new set of private keys (named specifically for terraform/oci)
 - need fine-grained permissions on oci api/ssh keys
 - `oci_core_public_ip` should be idempotent
+- SSH private key is needed by Ansible... can we use a collection for vault to handle this better?
+    - temp file isn't practical
+- Logging to track of all access attempts and successful connections via SSH?
+    - restrict the gateway/nsg ssh access to a whitelist
+    - cloudflare tunnel? 
+

@@ -1,7 +1,29 @@
+data "oci_core_public_ips" "existing_ip" {
+  compartment_id = var.compartment_ocid
+  scope          = "REGION"
+}
+
+locals {
+  existing_ip = [
+    for ip in data.oci_core_public_ips.existing_ip.public_ips :
+    ip if ip.display_name == "${var.lb_display_name}-public-ip"
+  ]
+
+  reserved_ip_id = length(local.existing_ip) > 0 ? local.existing_ip[0].id : null
+  reserved_ip_address = length(local.existing_ip) > 0 ? local.existing_ip[0].ip_address : null
+}
+
 resource "oci_core_public_ip" "reserved_ip" {
   compartment_id = var.compartment_ocid
   lifetime       = "RESERVED"
   display_name   = "${var.lb_display_name}-public-ip"
+
+  # Public IP is managed by the load balancer and should not be modified independently
+  provisioner "local-exec" {
+    when    = destroy
+    command = "echo 'Cannot destroy public IP managed by load balancer'"
+    on_failure = continue
+  }
 }
 
 resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
@@ -13,7 +35,7 @@ resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
   display_name               = "kubeapi-lb"
 
   reserved_ips {
-    id = oci_core_public_ip.reserved_ip.id
+    id = local.reserved_ip_id
   }
 
   shape_details {

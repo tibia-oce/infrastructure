@@ -38,3 +38,7 @@ terraform.rc
 
 # local env variables
 .env
+infra/terraform_output.json
+
+# Python
+.venv/

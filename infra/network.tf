@@ -49,7 +49,7 @@ resource "oci_core_security_list" "k3s_security_list" {
   # Rule for external SSH access
   ingress_security_rules {
     protocol = "6"
-    source   = "0.0.0.0/0"
+    source   = var.my_public_ip_cidr
 
     tcp_options {
       min = 22

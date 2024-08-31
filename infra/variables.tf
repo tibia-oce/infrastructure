@@ -19,7 +19,6 @@ variable "hcp_client_secret" {
 variable "vault_app_name" {
   description = "The name of the Vault Secrets application."
   type        = string
-  default     = "tibia-oce"
 }
 
 variable "oci_private_key_secret_name" {

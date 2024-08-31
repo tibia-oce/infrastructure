@@ -167,3 +167,22 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_to_lb" {
     }
   }
 }
+
+resource "oci_core_network_security_group_security_rule" "allow_ssh_from_my_ip" {
+  network_security_group_id = oci_core_network_security_group.lb_to_instances_kubeapi.id
+  direction                 = "INGRESS"
+  protocol                  = 6 # tcp
+
+  description = "Allow SSH access from whitelisted ips"
+
+  source      = var.my_public_ip_cidr
+  source_type = "CIDR_BLOCK"
+  stateless   = false
+
+  tcp_options {
+    destination_port_range {
+      min = 22
+      max = 22
+    }
+  }
+}

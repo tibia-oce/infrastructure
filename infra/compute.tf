@@ -23,7 +23,7 @@ resource "oci_core_instance" "k3s_control_plane" {
   metadata = {
     ssh_authorized_keys = data.hcp_vault_secrets_secret.ssh_public_key.secret_value
     user_data = base64encode(templatefile("${path.module}/control-plane-init.tftpl", {
-      load_balancer_public_ip = oci_core_public_ip.reserved_ip.ip_address
+      load_balancer_public_ip = local.reserved_ip_address
     }))
   }
 }

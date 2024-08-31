@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: Remove in favour of var.sh script to .tfvars
+
 print_red() {
   echo -e "\033[31m$1\033[0m"
 }
@@ -59,6 +61,10 @@ if [ -z "$hcp_client_secret" ] || [ "$hcp_client_secret" == "null" ]; then
   exit 1
 fi
 
+# Export the SSH private key for use in Ansible
+export SSH_PRIVATE_KEY=$(hcp vault-secrets secrets open ssh_private_key --format=json | jq -r '.static_version.value')
+echo "SSH private key has been set for the session."
+
 # Creating terraform.tfvars file
 cat <<EOL > ../infra/terraform.tfvars
 hcp_client_id           = "$hcp_client_id"
@@ -85,3 +91,5 @@ x86_instance_count      = 0
 
 EOL
 echo "infra/oracle/terraform.tfvars has been generated."
+
+echo "$SSH_PRIVATE_KEY"
