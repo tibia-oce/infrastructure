@@ -1,0 +1,2 @@
+!.gitignore
+ansible/inventory/group_vars/all.yml

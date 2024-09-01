@@ -33,14 +33,6 @@ Terraform Cloud handles the locking and consistency of state files, which helps 
 
 <br>
 
-## References
-
-- https://medium.com/@Phoenixforge/a-weekend-project-with-k3s-and-oracle-cloud-free-tier-99eda1aa49a0
-- https://github.com/solamarpreet/kubernetes-on-oci
-- https://github.com/garutilorenzo/k3s-oci-cluster
-
-<br>
-
 ## Todo
 
 - write guide on dedicated terraform user creation to limit scope from root compartment
@@ -56,3 +48,52 @@ Terraform Cloud handles the locking and consistency of state files, which helps 
     - restrict the gateway/nsg ssh access to a whitelist
     - cloudflare tunnel? 
 
+<br>
+
+## Acknowledgements & References
+
+- https://medium.com/@Phoenixforge/a-weekend-project-with-k3s-and-oracle-cloud-free-tier-99eda1aa49a0
+- https://github.com/solamarpreet/kubernetes-on-oci
+- https://github.com/garutilorenzo/k3s-oci-cluster
+- https://github.com/techno-tim/k3s-ansible
+
+```
+oci
+├─ ansible
+│  ├─ ansible.cfg
+│  ├─ inventory
+│  │  ├─ .gitignore
+│  │  └─ hosts.ini
+│  ├─ playbooks
+│  │  ├─ control_plane.yml
+│  │  └─ workers.yml
+│  ├─ requirements.txt
+│  ├─ requirements.yml
+│  └─ roles
+│     ├─ common
+│     │  └─ tasks
+│     │     └─ main.yml
+│     ├─ k3s_control_plane
+│     │  └─ tasks
+│     │     └─ main.yml
+│     └─ k3s_worker
+│        └─ tasks
+│           └─ main.yml
+├─ docs
+│  └─ ...
+├─ infra
+│  ├─ .terraform.lock.hcl
+│  ├─ compute.tf
+│  ├─ control-plane-init.tftpl
+│  ├─ lb.tf
+│  ├─ main.tf
+│  ├─ network.tf
+│  ├─ nsg.tf
+│  ├─ outputs.tf
+│  ├─ provider.tf
+│  ├─ variables.tf
+│  └─ worker-init.tftpl
+├─ Makefile
+└─ scripts
+   └─ ...
+```

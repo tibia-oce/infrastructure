@@ -39,6 +39,9 @@ terraform.rc
 # local env variables
 .env
 infra/terraform_output.json
+ansible/inventory/group_vars/all.yml
+hosts.ini
 
 # Python
 .venv/
+k3s-ansible/

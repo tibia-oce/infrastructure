@@ -1,5 +1,5 @@
 output "load_balancer_public_ip" {
-  value = local.reserved_ip_address
+  value       = local.reserved_ip_address
   description = "The public IP address of the load balancer."
 }
 
@@ -10,13 +10,13 @@ output "control_plane_ips" {
 
 output "worker_ips" {
   description = "A list of public IP addresses for all worker nodes (ARM and x86)."
-  value       = concat(
+  value = concat(
     [for instance in oci_core_instance.k3s_worker_arm : instance.public_ip],
     [for instance in oci_core_instance.k3s_worker_x86 : instance.public_ip]
   )
 }
 
-# # Only neccessary when using Bastion (or VPN) for Ansible inside the private net.
+# # Only neccessary when using Bastion (or private subnet comms).
 # output "worker_private_ips" {
 #   description = "A list of private IP addresses for all worker nodes (ARM and x86)."
 #   value       = concat(

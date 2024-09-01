@@ -78,18 +78,22 @@ setup-env:
 	ansible-galaxy install -r $(ANSIBLE_DIR)/requirements.yml"
 
 # Generate Ansible inventory from Terraform outputs
-# TODO: @echo "ansible_ssh_private_key_file=$$(jq -r '.ssh_private_key_file.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 generate-inventory: terraform-output
 	@printf "$(GREEN)Generating Ansible inventory in $(ANSIBLE_INVENTORY_FILE)...$(NC)\n"
-	@echo "[control_plane]" > $(ANSIBLE_INVENTORY_FILE)
+	@echo "[master]" > $(ANSIBLE_INVENTORY_FILE)
 	@jq -r '.control_plane_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "[workers]" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "[node]" >> $(ANSIBLE_INVENTORY_FILE)
 	@jq -r '.worker_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "[k3s_cluster:children]" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "master" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "node" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "[all:vars]" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "ansible_user=ubuntu" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "ansible_ssh_private_key_file=/tmp/tmp.waqBLea2kZ" >> $(ANSIBLE_INVENTORY_FILE)
 
 ansible-control-plane: generate-inventory
 	@printf "$(BLUE)Running Ansible playbook for the control plane...$(NC)\n"
