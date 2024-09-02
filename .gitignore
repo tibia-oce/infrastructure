@@ -38,7 +38,7 @@ terraform.rc
 
 # local env variables
 .env
-infra/terraform_output.json
+terraform/terraform_output.json
 ansible/inventory/group_vars/all.yml
 hosts.ini
 

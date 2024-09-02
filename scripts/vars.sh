@@ -66,7 +66,7 @@ export SSH_PRIVATE_KEY=$(hcp vault-secrets secrets open ssh_private_key --format
 echo "SSH private key has been set for the session."
 
 # Creating terraform.tfvars file
-cat <<EOL > ../infra/terraform.tfvars
+cat <<EOL > ../terraform/terraform.tfvars
 hcp_client_id           = "$hcp_client_id"
 hcp_client_secret       = "$hcp_client_secret"
 
@@ -90,6 +90,6 @@ x86_instance_count      = 0
 # ssh_private_key_path    = "~/.ssh/id_rsa"
 
 EOL
-echo "infra/oracle/terraform.tfvars has been generated."
+echo "terraform/terraform.tfvars has been generated."
 
 echo "$SSH_PRIVATE_KEY"

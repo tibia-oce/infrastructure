@@ -213,22 +213,86 @@ resource "oci_core_network_security_group_security_rule" "allow_ssh_from_my_ip" 
 #   - Configure nodes to communicate over private ips in future?
 # ====================================================================
 
+# Egress rule allowing worker nodes to communicate with the load balancer on port 6443
+resource "oci_core_network_security_group_security_rule" "allow_kubeapi_egress_from_workers" {
+  network_security_group_id = oci_core_network_security_group.lb_to_instances_http.id
+  description               = "Allow KubeAPI egress traffic from worker nodes to Load Balancer on port 6443"
+  direction                 = "EGRESS"
+  protocol                  = 6 # TCP
+  stateless                 = false
+
+  destination = "${oci_core_public_ip.reserved_ip.ip_address}/32" # Load Balancer's public IP
+
+  tcp_options {
+    destination_port_range {
+      max = var.kube_api_port
+      min = var.kube_api_port
+    }
+  }
+}
+
+# Data source to fetch VNIC attachments for the control plane instance
+data "oci_core_vnic_attachments" "k3s_control_plane_vnic_attachment" {
+  compartment_id = var.compartment_ocid
+  instance_id    = oci_core_instance.k3s_control_plane.id
+}
+
+# Fetch the VNIC details using the VNIC ID obtained from the attachment
+data "oci_core_vnic" "k3s_control_plane_vnic" {
+  vnic_id = data.oci_core_vnic_attachments.k3s_control_plane_vnic_attachment.vnic_attachments[0].vnic_id
+}
+
+# Data source to fetch VNIC attachments for each k3s_worker_x86 instance
+data "oci_core_vnic_attachments" "k3s_worker_x86_vnic_attachments" {
+  for_each       = oci_core_instance.k3s_worker_x86
+  compartment_id = var.compartment_ocid
+  instance_id    = each.value.id
+}
+
+# Fetch the VNIC details for each x86 worker
+data "oci_core_vnic" "k3s_worker_x86_vnics" {
+  for_each = data.oci_core_vnic_attachments.k3s_worker_x86_vnic_attachments
+  vnic_id  = each.value.vnic_attachments[0].vnic_id
+}
+
+# Data source to fetch VNIC attachments for each k3s_worker_arm instance
+data "oci_core_vnic_attachments" "k3s_worker_arm_vnic_attachments" {
+  for_each       = oci_core_instance.k3s_worker_arm
+  compartment_id = var.compartment_ocid
+  instance_id    = each.value.id
+}
+
+# Fetch the VNIC details for each ARM worker
+data "oci_core_vnic" "k3s_worker_arm_vnics" {
+  for_each = data.oci_core_vnic_attachments.k3s_worker_arm_vnic_attachments
+  vnic_id  = each.value.vnic_attachments[0].vnic_id
+}
+
+# Create a map of IP addresses
+locals {
+  k3s_control_plane_ips = [data.oci_core_vnic.k3s_control_plane_vnic.public_ip_address]
+
+  k3s_worker_arm_ips = [for vnic in data.oci_core_vnic.k3s_worker_arm_vnics : vnic.public_ip_address]
+  k3s_worker_x86_ips = [for vnic in data.oci_core_vnic.k3s_worker_x86_vnics : vnic.public_ip_address]
+
+  all_instance_ips_map = merge(
+    { "control_plane" = data.oci_core_vnic.k3s_control_plane_vnic.public_ip_address },
+    { for idx, ip in local.k3s_worker_arm_ips : format("worker_arm-%d", idx) => ip },
+    { for idx, ip in local.k3s_worker_x86_ips : format("worker_x86-%d", idx) => ip }
+  )
+}
+
+# Security group rules
 resource "oci_core_network_security_group_security_rule" "allow_kubeapi_from_workers" {
-  # for_each = { for ip in concat(
-  #   [for instance in oci_core_instance.k3s_worker_arm : instance.public_ip],
-  #   [for instance in oci_core_instance.k3s_worker_x86 : instance.public_ip],
-  #   [for instance in oci_core_instance.k3s_control_plane[*].public_ip : instance]
-  # ) : ip => ip }
+  for_each = local.all_instance_ips_map
 
-  # source = "${each.value}/32"
-
+  source                    = "${each.value}/32"
   network_security_group_id = oci_core_network_security_group.lb_to_instances_kubeapi.id
   description               = "Allow KubeAPI ingress traffic from worker and control plane nodes on port 6443"
   source_type               = "CIDR_BLOCK"
   stateless                 = false
   direction                 = "INGRESS"
   protocol                  = 6 # TCP
-
 
   tcp_options {
     destination_port_range {
@@ -239,14 +303,9 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_from_wor
 }
 
 resource "oci_core_network_security_group_security_rule" "allow_kubeapi_to_workers" {
-  # for_each = { for ip in concat(
-  #   [for instance in oci_core_instance.k3s_worker_arm : instance.public_ip],
-  #   [for instance in oci_core_instance.k3s_worker_x86 : instance.public_ip],
-  #   [for instance in oci_core_instance.k3s_control_plane[*].public_ip : instance]
-  # ) : ip => ip }
+  for_each = local.all_instance_ips_map
 
-  # destination = "${each.value}/32"
-
+  destination               = "${each.value}/32"
   network_security_group_id = oci_core_network_security_group.lb_to_instances_kubeapi.id
   description               = "Allow KubeAPI egress traffic to worker and control plane nodes on port 6443"
   destination_type          = "CIDR_BLOCK"
@@ -254,7 +313,6 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_to_worke
   direction                 = "EGRESS"
   protocol                  = 6 # TCP
 
-
   tcp_options {
     destination_port_range {
       max = var.kube_api_port
@@ -263,41 +321,15 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_to_worke
   }
 }
 
-# Egress rule allowing worker nodes to communicate with the load balancer on port 6443
-resource "oci_core_network_security_group_security_rule" "allow_kubeapi_egress_from_workers" {
-  network_security_group_id = oci_core_network_security_group.lb_to_instances_http.id
-  description               = "Allow KubeAPI egress traffic from worker nodes to Load Balancer on port 6443"
-  direction                 = "EGRESS"
-  protocol                  = 6 # TCP
-  stateless                 = false
-
-  destination = "${local.reserved_ip_address}/32" # Load Balancer's public IP
-
-  tcp_options {
-    destination_port_range {
-      max = var.kube_api_port
-      min = var.kube_api_port
-    }
-  }
-}
-
-# Ingress rule on the load balancer to allow traffic from worker nodes
 resource "oci_core_network_security_group_security_rule" "allow_kubeapi_ingress_to_lb" {
-  # for_each = { for ip in concat(
-  #   [for instance in oci_core_instance.k3s_worker_arm : instance.public_ip],
-  #   [for instance in oci_core_instance.k3s_worker_x86 : instance.public_ip],
-  #   [for instance in oci_core_instance.k3s_control_plane[*].public_ip : instance]
-  # ) : ip => ip }
+  for_each = local.all_instance_ips_map
 
-  # source = "${each.value}/32"
-
+  source                    = "${each.value}/32"
   network_security_group_id = oci_core_network_security_group.public_lb_nsg.id
   description               = "Allow KubeAPI ingress traffic from worker nodes to Load Balancer on port 6443"
   direction                 = "INGRESS"
   protocol                  = 6 # TCP
   stateless                 = false
-
-  
 
   tcp_options {
     destination_port_range {

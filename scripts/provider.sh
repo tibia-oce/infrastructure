@@ -32,7 +32,7 @@ if [ -z "$hashicorp_workspace" ] || [ "$hashicorp_workspace" == "null" ]; then
 fi
 
 # Creating provider.tf file
-cat <<EOL > ../infra/provider.tf
+cat <<EOL > ../terraform/provider.tf
 terraform {
   cloud {
     organization = "$hashicorp_org_name"
@@ -69,4 +69,4 @@ provider "oci" {
   region           = var.region
 }
 EOL
-echo "infra/provider.tf has been generated."
+echo "terraform/provider.tf has been generated."

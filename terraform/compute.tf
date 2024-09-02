@@ -22,9 +22,6 @@ resource "oci_core_instance" "k3s_control_plane" {
 
   metadata = {
     ssh_authorized_keys = data.hcp_vault_secrets_secret.ssh_public_key.secret_value
-    user_data = base64encode(templatefile("${path.module}/control-plane-init.tftpl", {
-      load_balancer_public_ip = local.reserved_ip_address
-    }))
   }
 }
 
@@ -54,10 +51,6 @@ resource "oci_core_instance" "k3s_worker_arm" {
 
   metadata = {
     ssh_authorized_keys = data.hcp_vault_secrets_secret.ssh_public_key.secret_value
-    user_data = base64encode(templatefile("${path.module}/worker-init.tftpl", {
-      ssh_private_key  = data.hcp_vault_secrets_secret.ssh_private_key.secret_value,
-      control_plane_ip = oci_core_instance.k3s_control_plane.private_ip
-    }))
   }
 
   depends_on = [oci_core_instance.k3s_control_plane]
@@ -84,10 +77,6 @@ resource "oci_core_instance" "k3s_worker_x86" {
 
   metadata = {
     ssh_authorized_keys = data.hcp_vault_secrets_secret.ssh_public_key.secret_value
-    user_data = base64encode(templatefile("${path.module}/worker-init.tftpl", {
-      ssh_private_key  = data.hcp_vault_secrets_secret.ssh_private_key.secret_value,
-      control_plane_ip = oci_core_instance.k3s_control_plane.private_ip
-    }))
   }
 
   depends_on = [oci_core_instance.k3s_control_plane]

@@ -1,8 +1,14 @@
 # ====================================================================
 # Resource: Reserved Public IP
 # This resource reserves a public IP for the load balancer if one 
-# does not already exist. The public IP is associated with the load 
-# balancer and should not be destroyed independently.
+# does not already exist. Once created, the public IP is associated 
+# with the load balancer and should not be modified or destroyed 
+# independently by Terraform. 
+#
+# The lifecycle and provisioner blocks are configured to prevent
+# Terraform from making changes to this resource after its initial
+# creation, ensuring that the public IP remains stable once it is 
+# associated with the load balancer.
 # ====================================================================
 
 resource "oci_core_public_ip" "reserved_ip" {
@@ -10,11 +16,18 @@ resource "oci_core_public_ip" "reserved_ip" {
   lifetime       = "RESERVED"
   display_name   = "${var.lb_display_name}-public-ip"
 
-  # Public IP is managed by the load balancer and should not be modified independently
+  lifecycle {
+    ignore_changes = [
+      private_ip_id,
+      display_name,
+      lifetime,
+    ]
+  }
+
   provisioner "local-exec" {
     when       = destroy
-    command    = "echo 'Cannot destroy public IP managed by load balancer'"
     on_failure = continue
+    command    = ""
   }
 }
 
@@ -33,13 +46,18 @@ resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
   display_name               = "kubeapi-lb"
 
   reserved_ips {
-    id = local.reserved_ip_id
+    id = oci_core_public_ip.reserved_ip.id
   }
 
   shape_details {
     maximum_bandwidth_in_mbps = 10
     minimum_bandwidth_in_mbps = 10
   }
+}
+
+output "load_balancer_public_ip" {
+  value       = oci_core_public_ip.reserved_ip.ip_address
+  description = "The public IP address of the load balancer."
 }
 
 # ====================================================================
