@@ -6,7 +6,7 @@
 
 resource "oci_core_vcn" "k3s_vcn" {
   cidr_block     = var.vcn_cidr
-  compartment_id = var.compartment_ocid
+  compartment_id = var.compartment_id
   display_name   = "k3s_vcn"
 }
 
@@ -18,7 +18,7 @@ resource "oci_core_vcn" "k3s_vcn" {
 
 resource "oci_core_subnet" "k3s_subnet" {
   cidr_block        = var.subnet_cidr
-  compartment_id    = var.compartment_ocid
+  compartment_id    = var.compartment_id
   vcn_id            = oci_core_vcn.k3s_vcn.id
   display_name      = "k3s_subnet"
   route_table_id    = oci_core_route_table.k3s_route_table.id
@@ -32,7 +32,7 @@ resource "oci_core_subnet" "k3s_subnet" {
 # ====================================================================
 
 resource "oci_core_security_list" "k3s_security_list" {
-  compartment_id = var.compartment_ocid
+  compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.k3s_vcn.id
   display_name   = "k3s_security_list"
 
@@ -106,7 +106,7 @@ resource "oci_core_security_list" "k3s_security_list" {
 # ====================================================================
 
 resource "oci_core_internet_gateway" "k3s_internet_gateway" {
-  compartment_id = var.compartment_ocid
+  compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.k3s_vcn.id
   display_name   = "k3s_internet_gateway"
 }
@@ -118,7 +118,7 @@ resource "oci_core_internet_gateway" "k3s_internet_gateway" {
 # ====================================================================
 
 resource "oci_core_route_table" "k3s_route_table" {
-  compartment_id = var.compartment_ocid
+  compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.k3s_vcn.id
   display_name   = "k3s_route_table"
 

@@ -1,3 +1,5 @@
+// ./variables.tf
+
 # ====================================================================
 # HCP Provider Variables
 # These variables are used to authenticate with HashiCorp Cloud Platform

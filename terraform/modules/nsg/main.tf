@@ -6,19 +6,19 @@
 
 resource "oci_core_network_security_group" "public_lb_nsg" {
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.k3s_vcn.id
+  vcn_id         = var.vcn_id
   display_name   = "Public Load Balancer NSG"
 }
 
 resource "oci_core_network_security_group" "lb_to_instances_http" {
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.k3s_vcn.id
+  vcn_id         = var.vcn_id
   display_name   = "Public LB to K3s Workers Compute Instances NSG"
 }
 
 resource "oci_core_network_security_group" "lb_to_instances_kubeapi" {
   compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.k3s_vcn.id
+  vcn_id         = var.vcn_id
   display_name   = "Public LB to K3s Master Compute Instances NSG (kubeapi)"
 }
 
@@ -67,7 +67,7 @@ resource "oci_core_network_security_group_security_rule" "allow_https_from_all" 
 }
 
 resource "oci_core_network_security_group_security_rule" "allow_kubeapi_from_nodes" {
-  for_each = local.all_private_instance_ips_map
+  for_each = var.all_private_instance_ips_map
 
   source                    = "${each.value}/32"
   network_security_group_id = oci_core_network_security_group.lb_to_instances_kubeapi.id
@@ -240,7 +240,7 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_egress_f
   protocol                  = 6 # TCP
   stateless                 = false
 
-  destination = "${oci_core_public_ip.reserved_ip.ip_address}/32" # Load Balancer's public IP
+  destination = "${var.lb_public_ip_address}/32" # Load Balancer's public IP
 
   tcp_options {
     destination_port_range {
@@ -250,73 +250,9 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_egress_f
   }
 }
 
-# Data source to fetch VNIC attachments for the control plane instance
-data "oci_core_vnic_attachments" "k3s_control_plane_vnic_attachment" {
-  compartment_id = var.compartment_ocid
-  instance_id    = oci_core_instance.k3s_control_plane.id
-}
-
-# Fetch the VNIC details using the VNIC ID obtained from the attachment
-data "oci_core_vnic" "k3s_control_plane_vnic" {
-  vnic_id = data.oci_core_vnic_attachments.k3s_control_plane_vnic_attachment.vnic_attachments[0].vnic_id
-}
-
-# Data source to fetch VNIC attachments for each k3s_worker_x86 instance
-data "oci_core_vnic_attachments" "k3s_worker_x86_vnic_attachments" {
-  for_each       = oci_core_instance.k3s_worker_x86
-  compartment_id = var.compartment_ocid
-  instance_id    = each.value.id
-}
-
-# Fetch the VNIC details for each x86 worker
-data "oci_core_vnic" "k3s_worker_x86_vnics" {
-  for_each = data.oci_core_vnic_attachments.k3s_worker_x86_vnic_attachments
-  vnic_id  = each.value.vnic_attachments[0].vnic_id
-}
-
-# Data source to fetch VNIC attachments for each k3s_worker_arm instance
-data "oci_core_vnic_attachments" "k3s_worker_arm_vnic_attachments" {
-  for_each       = oci_core_instance.k3s_worker_arm
-  compartment_id = var.compartment_ocid
-  instance_id    = each.value.id
-}
-
-# Fetch the VNIC details for each ARM worker
-data "oci_core_vnic" "k3s_worker_arm_vnics" {
-  for_each = data.oci_core_vnic_attachments.k3s_worker_arm_vnic_attachments
-  vnic_id  = each.value.vnic_attachments[0].vnic_id
-}
-
-# Create a map of IP addresses
-locals {
-  # Public IPs (existing)
-  k3s_control_plane_ips = [data.oci_core_vnic.k3s_control_plane_vnic.public_ip_address]
-  k3s_worker_arm_ips = [for vnic in data.oci_core_vnic.k3s_worker_arm_vnics : vnic.public_ip_address]
-  k3s_worker_x86_ips = [for vnic in data.oci_core_vnic.k3s_worker_x86_vnics : vnic.public_ip_address]
-
-  # Private IPs (using existing data sources)
-  k3s_control_plane_private_ips = [data.oci_core_vnic.k3s_control_plane_vnic.private_ip_address]
-  k3s_worker_arm_private_ips = [for vnic in data.oci_core_vnic.k3s_worker_arm_vnics : vnic.private_ip_address]
-  k3s_worker_x86_private_ips = [for vnic in data.oci_core_vnic.k3s_worker_x86_vnics : vnic.private_ip_address]
-
-  # All public instance IPs (existing)
-  all_instance_ips_map = merge(
-    { "control_plane" = data.oci_core_vnic.k3s_control_plane_vnic.public_ip_address },
-    { for idx, ip in local.k3s_worker_arm_ips : format("worker_arm-%d", idx) => ip },
-    { for idx, ip in local.k3s_worker_x86_ips : format("worker_x86-%d", idx) => ip }
-  )
-
-  # All private instance IPs (new, using existing data sources)
-  all_private_instance_ips_map = merge(
-    { "control_plane" = data.oci_core_vnic.k3s_control_plane_vnic.private_ip_address },
-    { for idx, ip in local.k3s_worker_arm_private_ips : format("worker_arm-%d", idx) => ip },
-    { for idx, ip in local.k3s_worker_x86_private_ips : format("worker_x86-%d", idx) => ip }
-  )
-}
-
 # Security group rules
 resource "oci_core_network_security_group_security_rule" "allow_kubeapi_from_workers" {
-  for_each = local.all_instance_ips_map
+  for_each = var.all_instance_ips_map
 
   source                    = "${each.value}/32"
   network_security_group_id = oci_core_network_security_group.lb_to_instances_kubeapi.id
@@ -335,7 +271,7 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_from_wor
 }
 
 resource "oci_core_network_security_group_security_rule" "allow_kubeapi_to_workers" {
-  for_each = local.all_instance_ips_map
+  for_each = var.all_instance_ips_map
 
   destination               = "${each.value}/32"
   network_security_group_id = oci_core_network_security_group.lb_to_instances_kubeapi.id
@@ -354,7 +290,7 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_to_worke
 }
 
 resource "oci_core_network_security_group_security_rule" "allow_kubeapi_ingress_to_lb" {
-  for_each = local.all_instance_ips_map
+  for_each = var.all_instance_ips_map
 
   source                    = "${each.value}/32"
   network_security_group_id = oci_core_network_security_group.public_lb_nsg.id
