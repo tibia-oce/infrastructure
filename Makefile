@@ -11,7 +11,7 @@ export SCRIPTS_DIR="scripts"
 export ANSIBLE_DIR="ansible"
 export VENV_DIR=".venv"
 export TF_OUTPUT_FILE="$(TF_DIR)/terraform_output.json"
-export ANSIBLE_INVENTORY_DIR="ansible/inventory/my-cluster"
+export ANSIBLE_INVENTORY_DIR="ansible/inventory"
 export ANSIBLE_INVENTORY_FILE="$(ANSIBLE_INVENTORY_DIR)/hosts.ini"
 
 # Generate a hidden tfvars file with OCI credentials from the Terraform agent
@@ -83,7 +83,7 @@ generate-inventory: terraform-output
 	@echo "ansible_ssh_private_key_file=~/.ssh/id_rsa" >> $(ANSIBLE_INVENTORY_FILE)
 	
 	@load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
-	sed -i "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/my-cluster/group_vars/all.yml
+	sed -i "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
 	@printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
 
 # Set up Python virtual environment and install Ansible
@@ -96,7 +96,7 @@ setup-env:
 # Sequentially run all necessary steps to bootstrap the K3s cluster
 bootstrap-cluster: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Bootstrapping the K3s cluster...$(NC)\n"
-	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/my-cluster/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
+	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
 
 # Retrieve the Kubeconfig from the control plane node and set up kubectl
