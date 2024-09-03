@@ -66,6 +66,25 @@ resource "oci_core_network_security_group_security_rule" "allow_https_from_all" 
   }
 }
 
+resource "oci_core_network_security_group_security_rule" "allow_kubeapi_from_nodes" {
+  for_each = local.all_private_instance_ips_map
+
+  source                    = "${each.value}/32"
+  network_security_group_id = oci_core_network_security_group.lb_to_instances_kubeapi.id
+  description               = "Allow KubeAPI ingress traffic from nodes on port 6443"
+  source_type               = "CIDR_BLOCK"
+  stateless                 = false
+  direction                 = "INGRESS"
+  protocol                  = 6 # TCP
+
+  tcp_options {
+    destination_port_range {
+      max = var.kube_api_port
+      min = var.kube_api_port
+    }
+  }
+}
+
 resource "oci_core_network_security_group_security_rule" "allow_kubeapi_from_my_ip" {
   count                     = var.expose_kubeapi ? 1 : 0
   network_security_group_id = oci_core_network_security_group.public_lb_nsg.id
@@ -270,15 +289,28 @@ data "oci_core_vnic" "k3s_worker_arm_vnics" {
 
 # Create a map of IP addresses
 locals {
+  # Public IPs (existing)
   k3s_control_plane_ips = [data.oci_core_vnic.k3s_control_plane_vnic.public_ip_address]
-
   k3s_worker_arm_ips = [for vnic in data.oci_core_vnic.k3s_worker_arm_vnics : vnic.public_ip_address]
   k3s_worker_x86_ips = [for vnic in data.oci_core_vnic.k3s_worker_x86_vnics : vnic.public_ip_address]
 
+  # Private IPs (using existing data sources)
+  k3s_control_plane_private_ips = [data.oci_core_vnic.k3s_control_plane_vnic.private_ip_address]
+  k3s_worker_arm_private_ips = [for vnic in data.oci_core_vnic.k3s_worker_arm_vnics : vnic.private_ip_address]
+  k3s_worker_x86_private_ips = [for vnic in data.oci_core_vnic.k3s_worker_x86_vnics : vnic.private_ip_address]
+
+  # All public instance IPs (existing)
   all_instance_ips_map = merge(
     { "control_plane" = data.oci_core_vnic.k3s_control_plane_vnic.public_ip_address },
     { for idx, ip in local.k3s_worker_arm_ips : format("worker_arm-%d", idx) => ip },
     { for idx, ip in local.k3s_worker_x86_ips : format("worker_x86-%d", idx) => ip }
+  )
+
+  # All private instance IPs (new, using existing data sources)
+  all_private_instance_ips_map = merge(
+    { "control_plane" = data.oci_core_vnic.k3s_control_plane_vnic.private_ip_address },
+    { for idx, ip in local.k3s_worker_arm_private_ips : format("worker_arm-%d", idx) => ip },
+    { for idx, ip in local.k3s_worker_x86_private_ips : format("worker_x86-%d", idx) => ip }
   )
 }
 

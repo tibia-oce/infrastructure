@@ -26,6 +26,80 @@ resource "oci_core_subnet" "k3s_subnet" {
 }
 
 # ====================================================================
+# Security List Configuration
+# This resource defines the security list associated with the subnet, 
+# including ingress and egress rules to control traffic.
+# ====================================================================
+
+resource "oci_core_security_list" "k3s_security_list" {
+  compartment_id = var.compartment_ocid
+  vcn_id         = oci_core_vcn.k3s_vcn.id
+  display_name   = "k3s_security_list"
+
+  egress_security_rules {
+    description = "Allow outbound traffic"
+    destination = "0.0.0.0/0"
+    protocol    = "all" # TCP
+  }
+
+  ingress_security_rules {
+    description = "Allow inbound traffic from subnet"
+    protocol    = "all"
+    source      = "10.0.0.0/24"
+  }
+
+  ingress_security_rules {
+    description = "Allow ssh traffic"
+    source   = var.my_public_ip_cidr
+    protocol = "6" # TCP
+
+    tcp_options {
+      min = 22
+      max = 22
+    }
+  }
+
+  ingress_security_rules {
+    protocol = "all"
+    source   = var.subnet_cidr
+  }
+  
+  ingress_security_rules {
+    description = "Allow k3s api traffic"
+    source   = "0.0.0.0/0"
+    protocol = "6" # TCP
+
+    tcp_options {
+      min = var.kube_api_port
+      max = var.kube_api_port
+    }
+  }
+
+  ingress_security_rules {
+    description = "Allow http traffic"
+    source = "0.0.0.0/0"
+    protocol    = "6"
+
+    tcp_options {
+      min = 80
+      max = 80
+    }
+  }
+
+  ingress_security_rules {
+    description = "Allow https traffic"
+    source = "0.0.0.0/0"
+    protocol    = "6"
+
+    tcp_options {
+      min = 443
+      max = 443
+    }
+  }
+
+}
+
+# ====================================================================
 # Internet Gateway Configuration
 # This resource defines the internet gateway to allow external traffic 
 # to and from the VCN.
@@ -51,40 +125,5 @@ resource "oci_core_route_table" "k3s_route_table" {
   route_rules {
     destination       = "0.0.0.0/0"
     network_entity_id = oci_core_internet_gateway.k3s_internet_gateway.id
-  }
-}
-
-# ====================================================================
-# Security List Configuration
-# This resource defines the security list associated with the subnet, 
-# including ingress and egress rules to control traffic.
-# ====================================================================
-
-resource "oci_core_security_list" "k3s_security_list" {
-  compartment_id = var.compartment_ocid
-  vcn_id         = oci_core_vcn.k3s_vcn.id
-  display_name   = "k3s_security_list"
-
-  # Allow all outbound traffic
-  egress_security_rules {
-    protocol    = "all"
-    destination = "0.0.0.0/0"
-  }
-
-  # Rule for allowing all traffic within the cluster node subnet
-  ingress_security_rules {
-    protocol = "all"
-    source   = var.subnet_cidr
-  }
-
-  # Rule for external SSH access
-  ingress_security_rules {
-    protocol = "6" # TCP protocol
-    source   = var.my_public_ip_cidr
-
-    tcp_options {
-      min = 22
-      max = 22
-    }
   }
 }
