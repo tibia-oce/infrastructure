@@ -35,7 +35,7 @@ oci-plan:
 	cd $(TF_DIR) && terraform plan
 
 # Sync state with HCP remote backend
-oci-apply:
+oci-refresh:
 	@printf "$(GREEN)Refreshing Terraform state from remote HCP Terraform Cloud...$(NC)\n"
 	cd $(TF_DIR) && terraform refresh
 
