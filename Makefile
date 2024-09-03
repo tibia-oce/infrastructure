@@ -90,7 +90,7 @@ generate-inventory: terraform-output
 setup-env:
 	@printf "$(GREEN)Setting up Python virtual environment and installing Ansible...$(NC)\n"
 	cd ansible/ && python3 -m venv $(VENV_DIR)
-	. ansible/$(VENV_DIR)/bin/activate && pip install ansible ansible-core passlib
+	. ansible/$(VENV_DIR)/bin/activate && pip install -q -r ansible/requirements.txt
 	ansible-galaxy install -r ansible/collections/requirements.yml
 
 # Sequentially run all necessary steps to bootstrap the K3s cluster
