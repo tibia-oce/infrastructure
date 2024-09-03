@@ -23,3 +23,8 @@ variable "kube_api_port" {
   type        = number
   default     = 6443
 }
+
+variable "security_lists" {
+  description = "The list of NSG IDs for traffic."
+  type        = list(string)
+}

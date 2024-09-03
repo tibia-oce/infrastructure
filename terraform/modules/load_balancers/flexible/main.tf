@@ -8,7 +8,7 @@ resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
   compartment_id             = var.compartment_ocid
   shape                      = var.public_lb_shape
   subnet_ids                 = [var.subnet_id]
-  network_security_group_ids = [var.public_lb_nsg_id]
+  network_security_group_ids = var.network_groups
   is_private                 = false
   display_name               = "kubeapi-lb"
 

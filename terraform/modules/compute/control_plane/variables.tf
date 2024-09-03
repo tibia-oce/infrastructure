@@ -37,9 +37,9 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "lb_to_instances_kubeapi_nsg_id" {
-  description = "The NSG ID for KubeAPI traffic."
-  type        = string
+variable "network_groups" {
+  description = "The list of NSG IDs for traffic."
+  type        = list(string)
 }
 
 variable "ubuntu_arm_image_ocid" {

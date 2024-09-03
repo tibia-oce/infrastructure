@@ -84,16 +84,24 @@ terraform-output:
 generate-inventory: terraform-output
 	@printf "$(GREEN)Generating Ansible inventory in $(ANSIBLE_INVENTORY_FILE)...$(NC)\n"
 	@mkdir -p $(ANSIBLE_INVENTORY_DIR)  # Ensure the directory exists
+	
+	# Master nodes
 	@echo "[master]" > $(ANSIBLE_INVENTORY_FILE)
-	@jq -r '.control_plane_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
+	@jq -r '.control_plane_public_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
+	
+	# Worker nodes
 	@echo "[node]" >> $(ANSIBLE_INVENTORY_FILE)
-	@jq -r '.worker_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
+	@jq -r '.worker_public_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
+	
+	# Grouping master and nodes under k3s_cluster
 	@echo "[k3s_cluster:children]" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "master" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "node" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
+	
+	# Variables
 	@echo "[all:vars]" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "ansible_user=ubuntu" >> $(ANSIBLE_INVENTORY_FILE)

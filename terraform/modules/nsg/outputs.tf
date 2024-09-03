@@ -1,14 +1,24 @@
-output "public_lb_nsg_id" {
-  value       = oci_core_network_security_group.public_lb_nsg.id
-  description = "The ID of the Public Load Balancer NSG."
+output "kubeapi_nsg_id" {
+  value       = module.kubeapi_nsg.nsg_kubeapi_id
+  description = "The ID of the KubeAPI NSG."
 }
 
-output "lb_to_instances_http_nsg_id" {
-  value       = oci_core_network_security_group.lb_to_instances_http.id
-  description = "The ID of the NSG for HTTP traffic between LB and instances."
+output "ssh_nsg_id" {
+  value       = module.ssh_nsg.nsg_ssh_id
+  description = "The ID of the SSH NSG."
 }
 
-output "lb_to_instances_kubeapi_nsg_id" {
-  value       = oci_core_network_security_group.lb_to_instances_kubeapi.id
-  description = "The ID of the NSG for KubeAPI traffic between LB and instances."
+output "public_web_nsg_id" {
+  value       = module.public_web_nsg.nsg_public_web_id
+  description = "The ID of the Public Web NSG."
+}
+
+output "game_service_nsg_id" {
+  value       = module.game_service_nsg.nsg_game_service_id
+  description = "The ID of the Game Service NSG."
+}
+
+output "admin_nsg_id" {
+  value       = module.admin_nsg.nsg_admin_id
+  description = "The ID of the Admin NSG."
 }

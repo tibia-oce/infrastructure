@@ -13,9 +13,9 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "public_lb_nsg_id" {
-  description = "The ID of the NSG to associate with the public load balancer."
-  type        = string
+variable "network_groups" {
+  description = "The list of NSG IDs for traffic."
+  type        = list(string)
 }
 
 variable "reserved_ip_id" {

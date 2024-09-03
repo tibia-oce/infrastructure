@@ -161,3 +161,9 @@ variable "lb_display_name" {
   type        = string
   default     = "lb"
 }
+
+variable "additional_trusted_sources" {
+  description = "Additional CIDR blocks of trusted sources."
+  type        = list(string)
+  default     = ["10.0.0.0/24"]
+}

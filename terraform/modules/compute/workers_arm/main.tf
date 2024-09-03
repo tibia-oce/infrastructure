@@ -14,7 +14,7 @@ resource "oci_core_instance" "k3s_worker_arm" {
   create_vnic_details {
     subnet_id        = var.subnet_id
     assign_public_ip = true
-    nsg_ids          = [var.lb_to_instances_http_nsg_id]
+    nsg_ids          = var.network_groups
   }
 
   source_details {

@@ -8,27 +8,6 @@ variable "vcn_id" {
   type        = string
 }
 
-variable "http_lb_port" {
-  description = "Port number for HTTP traffic."
-  type        = number
-}
-
-variable "https_lb_port" {
-  description = "Port number for HTTPS traffic."
-  type        = number
-}
-
-variable "kube_api_port" {
-  description = "Port number for the Kubernetes API."
-  type        = number
-  default     = 6443
-}
-
-variable "expose_kubeapi" {
-  description = "Flag to determine if KubeAPI should be exposed."
-  type        = bool
-}
-
 variable "my_public_ip_cidr" {
   description = "The CIDR block of your public IP address for SSH access."
   type        = string
@@ -47,4 +26,34 @@ variable "all_instance_ips_map" {
 variable "all_private_instance_ips_map" {
   description = "Map of all private instance IPs."
   type        = map(string)
+}
+
+variable "additional_trusted_sources" {
+  description = "Additional CIDR blocks of trusted sources for KubeAPI access."
+  type        = list(string)
+  default     = ["10.0.0.0/24"]
+}
+
+variable "http_lb_port" {
+  description = "The port for HTTP traffic on the public load balancer."
+  type        = number
+  default     = 80
+}
+
+variable "https_lb_port" {
+  description = "The port for HTTPS traffic on the public load balancer."
+  type        = number
+  default     = 443
+}
+
+variable "expose_kubeapi" {
+  description = "Boolean to control whether the Kubernetes API should be publicly exposed."
+  type        = bool
+  default     = true
+}
+
+variable "kube_api_port" {
+  description = "The port on which the Kubernetes API will be exposed."
+  type        = number
+  default     = 6443
 }
