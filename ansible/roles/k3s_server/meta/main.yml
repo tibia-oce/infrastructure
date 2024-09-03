@@ -1,0 +1,60 @@
+argument_specs:
+  main:
+    short_description: Setup k3s servers
+    options:
+      apiserver_endpoint:
+        description: Virtual ip-address configured on each master
+        required: true
+
+      cilium_bgp:
+        description:
+        - Enable cilium BGP control plane for LB services and pod cidrs.
+        - Disables the use of MetalLB.
+        type: bool
+        default: ~
+
+      cilium_iface:
+        description: The network interface used for when Cilium is enabled
+        default: ~
+
+      extra_server_args:
+        description: Extra arguments for server nodes
+        default: ""
+
+      group_name_master:
+        description: Name of the master group
+        default: master
+
+      k3s_create_kubectl_symlink:
+        description: Create the kubectl -> k3s symlink
+        default: false
+        type: bool
+
+      k3s_create_crictl_symlink:
+        description: Create the crictl -> k3s symlink
+        default: false
+        type: bool
+
+      proxy_env:
+        type: dict
+        description: Internet proxy configurations
+        default: ~
+        options:
+          HTTP_PROXY:
+            required: true
+          HTTPS_PROXY:
+            required: true
+          NO_PROXY:
+            required: true
+
+      retry_count:
+        description: Amount of retries when verifying that nodes joined
+        type: int
+        default: 20
+
+      server_init_args:
+        description: Arguments for server nodes
+
+      systemd_dir:
+        description: Path to systemd services
+        default: /etc/systemd/system

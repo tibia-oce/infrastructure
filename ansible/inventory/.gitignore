@@ -1,2 +1,3 @@
+/*
 !.gitignore
-ansible/inventory/hosts.ini
+!sample/
