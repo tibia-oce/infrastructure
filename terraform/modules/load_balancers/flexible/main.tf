@@ -32,6 +32,14 @@ resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
 # NodePort services running on the Kubernetes worker nodes.
 # ====================================================================
 
+module "kubeapi" {
+  source                      = "./kubeapi"
+  worker_node_private_ip_map   = var.worker_node_private_ip_map
+  load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
+  control_plane_private_ips = var.control_plane_private_ips
+  kube_api_port = var.kube_api_port
+}
+
 module "http" {
   source                      = "./http"
   worker_node_private_ip_map   = var.worker_node_private_ip_map
