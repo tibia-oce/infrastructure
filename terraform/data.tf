@@ -62,7 +62,12 @@ locals {
   k3s_control_plane_private_ips = [for vnic in data.oci_core_vnic.k3s_control_plane_vnic : vnic.private_ip_address]
   k3s_worker_arm_private_ips    = [for vnic in data.oci_core_vnic.k3s_worker_arm_vnics : vnic.private_ip_address]
   k3s_worker_x86_private_ips    = [for vnic in data.oci_core_vnic.k3s_worker_x86_vnics : vnic.private_ip_address]
-
+  
+  worker_node_private_ip_map = merge(
+    { for idx, ip in local.k3s_worker_arm_private_ips : format("worker_arm-%d", idx) => ip },
+    { for idx, ip in local.k3s_worker_x86_private_ips : format("worker_x86-%d", idx) => ip }
+  )
+  
   # All public instance IPs as a flat map (key-value pairs where value is a string)
   all_instance_ips_map = merge(
     { for idx, ip in local.k3s_control_plane_ips : format("control_plane-%d", idx) => ip },

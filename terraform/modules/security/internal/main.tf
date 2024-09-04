@@ -20,4 +20,15 @@ resource "oci_core_security_list" "internal_security_list" {
     destination = "0.0.0.0/0"
     protocol    = "all"
   }
+
+  ingress_security_rules {
+    description = "Allow NodePort traffic on ports 30000-32767"
+    source      = "0.0.0.0/0"
+    protocol    = "6"
+
+    tcp_options {
+      min = 30000 
+      max = 32767
+    }
+  }
 }

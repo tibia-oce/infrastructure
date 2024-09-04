@@ -1,12 +1,22 @@
+# traefik-service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx
+  name: traefik
 spec:
-  ipFamilyPolicy: PreferDualStack
   selector:
-    app: nginx
+    app: traefik
   ports:
-  - port: 80
+  - name: http
+    port: 80
     targetPort: 80
-  type: LoadBalancer
+    nodePort: 30080 # NodePort for HTTP
+  - name: https
+    port: 443
+    targetPort: 443
+    nodePort: 30443 # NodePort for HTTPS
+  - name: dashboard
+    port: 8080 # Expose the Traefik dashboard on NodePort
+    targetPort: 8080
+    nodePort: 32080 # Fixed NodePort for Traefik dashboard (choose an available port)
+  type: NodePort

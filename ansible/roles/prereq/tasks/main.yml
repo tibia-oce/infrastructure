@@ -34,3 +34,11 @@
   tags:
   - firewall
   - iptables
+
+- name: Allow incoming nodeport TCP traffic on port 30000:32767
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 30000:32767 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables

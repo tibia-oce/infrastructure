@@ -86,6 +86,12 @@ module "flexible_lb" {
   reserved_ip_id            = module.reserved_ip.reserved_ip_id
   kube_api_port             = var.kube_api_port
   control_plane_private_ips = local.k3s_control_plane_private_ips
+  worker_node_private_ip_map = local.worker_node_private_ip_map
+  security_lists = [
+    module.security.admin_security_list_id,
+    module.security.internal_security_list_id,
+    module.security.public_security_list_id,
+  ]
   network_groups = [
     module.nsg.kubeapi_nsg_id,
     module.nsg.game_service_nsg_id,

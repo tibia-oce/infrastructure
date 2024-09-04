@@ -1,7 +1,9 @@
 # ====================================================================
-# Resource: Load Balancer
-# This resource defines the load balancer for the Kubernetes API 
-# server, including its shape, associated subnet, and reserved public IP.
+# Load Balancer Configuration
+# This resource defines an OCI Flexible Load Balancer used to manage 
+# external traffic for the Kubernetes API server and Traefik services. 
+# The load balancer is configured with a public IP, associated network 
+# security groups, and bandwidth limits.
 # ====================================================================
 
 resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
@@ -23,49 +25,27 @@ resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
 }
 
 # ====================================================================
-# Resource: Backend Set for KubeAPI
-# This resource defines the backend set for the KubeAPI server, 
-# using a round-robin load balancing policy and a TCP health check.
+# Module Configurations
+# The following modules define the HTTP, HTTPS, and Traefik dashboard 
+# services, which integrate with the Flexible Load Balancer. Each module 
+# handles a specific type of traffic and routes it to the appropriate 
+# NodePort services running on the Kubernetes worker nodes.
 # ====================================================================
 
-resource "oci_load_balancer_backend_set" "kubeapi_backend_set" {
-  load_balancer_id = oci_load_balancer_load_balancer.kubeapi_lb.id
-  name             = "kubeapi-backend"
-  policy           = "ROUND_ROBIN"
-
-  health_checker {
-    protocol = "TCP"
-    port     = var.kube_api_port
-  }
+module "http" {
+  source                      = "./http"
+  worker_node_private_ip_map   = var.worker_node_private_ip_map
+  load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
 }
 
-# ====================================================================
-# Resource: KubeAPI Listener
-# This resource defines the listener for the KubeAPI server, 
-# associating it with the backend set and configuring it to listen 
-# on the specified port using the TCP protocol.
-# ====================================================================
-
-resource "oci_load_balancer_listener" "kubeapi_listener" {
-  load_balancer_id         = oci_load_balancer_load_balancer.kubeapi_lb.id
-  name                     = "kubeapi-listener"
-  protocol                 = "TCP"
-  port                     = var.kube_api_port
-  default_backend_set_name = oci_load_balancer_backend_set.kubeapi_backend_set.name
-  depends_on               = [oci_load_balancer_backend_set.kubeapi_backend_set]
+module "https" {
+  source                      = "./https"
+  worker_node_private_ip_map   = var.worker_node_private_ip_map
+  load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
 }
 
-# ====================================================================
-# Resource: Backends for KubeAPI (Control Plane Nodes)
-# This resource defines the backends for the KubeAPI server, associating 
-# each control plane node with the backend set and configuring it to 
-# communicate on the specified port.
-# ====================================================================
-
-resource "oci_load_balancer_backend" "kubeapi_backend" {
-  count            = length(var.control_plane_private_ips)
-  backendset_name  = oci_load_balancer_backend_set.kubeapi_backend_set.name
-  ip_address       = element(var.control_plane_private_ips, count.index)
-  load_balancer_id = oci_load_balancer_load_balancer.kubeapi_lb.id
-  port             = var.kube_api_port
+module "dashboard" {
+  source                      = "./dashboard"
+  worker_node_private_ip_map   = var.worker_node_private_ip_map
+  load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
 }

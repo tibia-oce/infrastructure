@@ -137,3 +137,19 @@ resource "oci_core_network_security_group_security_rule" "allow_kubeapi_from_my_
     }
   }
 }
+
+resource "oci_core_network_security_group_security_rule" "allow_nodeport_ingress" {
+  network_security_group_id = oci_core_network_security_group.nsg_kubeapi.id
+  direction = "INGRESS"
+  protocol  = "6"  # TCP
+  source    = "0.0.0.0/0"  # TODO: Restrict to the Load Balancer subnet
+  source_type = "CIDR_BLOCK"
+  stateless = false
+
+  tcp_options {
+    destination_port_range {
+      min = 30000
+      max = 32767
+    }
+  }
+}

@@ -33,3 +33,13 @@ variable "control_plane_private_ips" {
   description = "List of private IP addresses for control plane nodes."
   type        = list(string)
 }
+
+variable "worker_node_private_ip_map" {
+  description = "Map of all private instance IPs."
+  type        = map(string)
+}
+
+variable "security_lists" {
+  description = "The list of NSG IDs for traffic."
+  type        = list(string)
+}

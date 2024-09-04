@@ -1,19 +1,34 @@
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: traefik
+  labels:
+    app: traefik
 spec:
+  replicas: 2
   selector:
     matchLabels:
-      app: nginx
-  replicas: 3
+      app: traefik
   template:
     metadata:
       labels:
-        app: nginx
+        app: traefik
     spec:
       containers:
-      - name: nginx
-        image: nginx:alpine
+      - name: traefik
+        image: traefik:v2.10
         ports:
-        - containerPort: 80
+        - name: web
+          containerPort: 80
+        - name: websecure
+          containerPort: 443
+        - name: dashboard # New port for dashboard
+          containerPort: 8080 # Expose port 8080 for Traefik dashboard
+        args:
+        - --api.insecure=true # Enable the dashboard without authentication (use only for testing)
+        - --api.dashboard=true # Enable the dashboard feature
+        - --providers.kubernetescrd
+        - --entrypoints.web.address=:80
+        - --entrypoints.websecure.address=:443
+        - --entrypoints.traefik-dashboard.address=:8080 # Entry point for the dashboard

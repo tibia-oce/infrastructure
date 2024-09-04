@@ -109,3 +109,10 @@ config-kube:
 nodes-kube: config-kube
 	@printf "$(GREEN)Verifying connection to Kubernetes cluster...$(NC)\n"
 	@kubectl get nodes
+
+# Command to verify connection by getting Kubernetes nodes
+example: config-kube
+	@printf "$(GREEN)Verifying connection to Kubernetes cluster...$(NC)\n"
+	cd ansible && kubectl apply -f example/service.yml
+	cd ansible && kubectl apply -f example/deployment.yml
+	cd ansible && kubectl describe service traefik
