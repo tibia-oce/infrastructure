@@ -22,6 +22,13 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 ### GitOps
 [Argo](https://argo-cd.readthedocs.io/en/stable/) watches the definitions in the kubernetes folder and makes the changes to the clusters based on the state of the Git repository. [Renovate](https://github.com/renovatebot/renovate) watches the entire repository looking for dependency updates, when they are found a PR is automatically created. When some PRs are merged Flux applies the changes to the cluster.
 
+### Core Components
+
+- [cert-manager](https://github.com/cert-manager/cert-manager): Creates SSL certificates for services in the cluster.
+- [cilium](https://github.com/cilium/cilium): Internal Kubernetes container networking interface.
+- [cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.
+- [traefik](https://doc.traefik.io/traefik/): Kubernetes nodeport ingress controller using Traefik as a proxy and load balancer.
+
 <br>
 
 ## 🔧 Requirements

@@ -2,7 +2,7 @@
 
 # apiserver_endpoint is virtual ip-address which will be configured on each master
 ansible_user: ubuntu
-apiserver_endpoint: 150.230.13.23
+apiserver_endpoint: 192.9.171.77
 k3s_token: some-SUPER-DEDEUPER-secret-password # k3s_token is required  masters can talk together securely
 
 # ensure v4.19.57, v5.1.16, v5.2.0 or more recent kernel
