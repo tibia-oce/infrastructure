@@ -32,4 +32,4 @@ spec:
         - --providers.kubernetescrd
         - --entrypoints.web.address=:80
         - --entrypoints.websecure.address=:443
-        - --entrypoints.traefik-dashboard.address=:8081
+        - --entrypoints.dashboard.address=:8081

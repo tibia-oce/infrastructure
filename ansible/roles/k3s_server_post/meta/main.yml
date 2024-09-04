@@ -76,4 +76,4 @@ argument_specs:
       kube_proxy_replacement:
         description: Replace the native kube-proxy with Cilium
         type: bool
-        default: true
+        default: false

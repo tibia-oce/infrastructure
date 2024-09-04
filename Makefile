@@ -111,4 +111,21 @@ apply-charts: config-kube
 	@kubectl apply -k ./kubernetes/apps/
 	@kubectl get nodes
 	@kubectl cluster-info
-	@kubectl get pods -n kube-system
+	@kubectl get pods --all-namespaces
+
+busy-box:
+	@printf "$(GREEN)Testing API Server connectivity from CoreDNS pod...$(NC)\n"
+	-@kubectl delete pod curl-test || true
+	@kubectl run curl-test --rm -i --tty --image=busybox --restart=Never -- sh -c "wget --no-check-certificate -T 5 https://10.43.0.1:443/version || true"
+
+# SSH into the first control plane node
+ssh-control-plane: terraform-output
+	@printf "$(GREEN)SSH into the first control plane node...$(NC)\n"
+	@control_plane_ip=$$(jq -r '.control_plane_public_ips.value[0]' $(TF_OUTPUT_FILE)); \
+	ssh -i ~/.ssh/id_rsa ubuntu@$$control_plane_ip
+
+# SSH into the first worker node
+ssh-worker-node: terraform-output
+	@printf "$(GREEN)SSH into the first worker node...$(NC)\n"
+	@worker_ip=$$(jq -r '.worker_public_ips.value[0]' $(TF_OUTPUT_FILE)); \
+	ssh -i ~/.ssh/id_rsa ubuntu@$$worker_ip

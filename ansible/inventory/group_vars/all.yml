@@ -2,41 +2,48 @@
 
 # apiserver_endpoint is virtual ip-address which will be configured on each master
 ansible_user: ubuntu
-apiserver_endpoint: 192.9.171.77
-k3s_token: some-SUPER-DEDEUPER-secret-password # k3s_token is required  masters can talk together securely
+system_timezone: Australia/Sydney
+apiserver_endpoint: 192.9.175.163
+k3s_token: some-SUPER-DEDEUPER-secret-password
+flannel_iface: enp0s6
 
-# ensure v4.19.57, v5.1.16, v5.2.0 or more recent kernel
-cilium_iface: "enp0s6"
-cilium_mode: native # native when nodes on same subnet or using bgp, else set routed
-cilium_tag: v1.16.0 # cilium version tag
-cilium_hubble: true # enable hubble observability relay and ui
-cluster_cidr: 10.52.0.0/16 # if using cilium, you may specify the cluster pod cidr pool
-cilium_bgp: true
-cilium_bgp_my_asn: "64513"
-cilium_bgp_peer_asn: "64512"
-cilium_bgp_peer_address: 192.168.30.1
-cilium_bgp_lb_cidr: 192.168.31.0/24 # cidr for cilium loadbalancer ipam
-
-#######
+######
 
 k3s_version: v1.30.2+k3s2
 # this is the user that has ssh access to these machines
 systemd_dir: /etc/systemd/system
 
-# Set your timezone
-system_timezone: Australia/Sydney
-
-# interface which will be used for flannel
-# flannel_iface: enp0s6
-
 # uncomment calico_iface to use tigera operator/calico cni instead of flannel https://docs.tigera.io/calico/latest/about
-# calico_iface: "enp0s6"
+# calico_iface: "eth0"
 calico_ebpf: false # use eBPF dataplane instead of iptables
 calico_tag: v3.28.0 # calico version tag
 
+# uncomment cilium_iface to use cilium cni instead of flannel or calico
+# ensure v4.19.57, v5.1.16, v5.2.0 or more recent kernel
+# cilium_iface: "eth0"
+cilium_mode: native # native when nodes on same subnet or using bgp, else set routed
+cilium_tag: v1.16.0 # cilium version tag
+cilium_hubble: true # enable hubble observability relay and ui
 
-kube_vip_arp: false
+# if using calico or cilium, you may specify the cluster pod cidr pool
+cluster_cidr: 10.52.0.0/16
+
+# enable cilium bgp control plane for lb services and pod cidrs. disables metallb.
+cilium_bgp: false
+
+# bgp parameters for cilium cni. only active when cilium_iface is defined and cilium_bgp is true.
+cilium_bgp_my_asn: "64513"
+cilium_bgp_peer_asn: "64512"
+cilium_bgp_peer_address: 192.168.30.1
+cilium_bgp_lb_cidr: 192.168.31.0/24 # cidr for cilium loadbalancer ipam
+
+# enable kube-vip ARP broadcasts
+kube_vip_arp: trufalsee
+
+# enable kube-vip BGP peering
 kube_vip_bgp: false
+
+# bgp parameters for kube-vip
 kube_vip_bgp_routerid: "127.0.0.1" # Defines the router ID for the BGP server
 kube_vip_bgp_as: "64513" # Defines the AS for the BGP server
 kube_vip_bgp_peeraddress: "192.168.30.1" # Defines the address for the BGP peer
@@ -56,7 +63,7 @@ extra_args: >-
 # change these to your liking, the only required are: --disable servicelb, --tls-san {{ apiserver_endpoint }}
 # the contents of the if block is also required if using calico or cilium
 extra_server_args: >-
-  {{ extra_args }} {{ '--node-taint node-role.kubernetes.io/master=true:NoSchedule' if k3s_master_taint else '' }} {% if calico_iface is defined or cilium_iface is defined %} --flannel-backend=none --disable-network-policy --cluster-cidr={{ cluster_cidr | default('10.52.0.0/16') }} {% endif %} --tls-san {{ apiserver_endpoint }} --disable servicelb #magic___^_^___line
+  {{ extra_args }} {{ '--node-taint node-role.kubernetes.io/master=true:NoSchedule' if k3s_master_taint else '' }} {% if calico_iface is defined or cilium_iface is defined %} --flannel-backend=none --disable-network-policy --cluster-cidr={{ cluster_cidr | default('10.52.0.0/16') }} {% endif %} --tls-san {{ apiserver_endpoint }} --disable servicelb --disable traefik #magic___^_^___line
 extra_agent_args: >-
   {{ extra_args }} #magic___^_^___line
 # image tag for kube-vip
