@@ -1,4 +1,4 @@
-# deployment.yaml
+# kubernetes/apps/traefik/deployment.yml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +15,7 @@ spec:
       labels:
         app: traefik
     spec:
+      serviceAccountName: traefik-sa
       containers:
       - name: traefik
         image: traefik:v2.10
@@ -23,12 +24,12 @@ spec:
           containerPort: 80
         - name: websecure
           containerPort: 443
-        - name: dashboard # New port for dashboard
-          containerPort: 8080 # Expose port 8080 for Traefik dashboard
+        - name: dashboard
+          containerPort: 8081
         args:
-        - --api.insecure=true # Enable the dashboard without authentication (use only for testing)
-        - --api.dashboard=true # Enable the dashboard feature
+        - --api.insecure=true
+        - --api.dashboard=true
         - --providers.kubernetescrd
         - --entrypoints.web.address=:80
         - --entrypoints.websecure.address=:443
-        - --entrypoints.traefik-dashboard.address=:8080 # Entry point for the dashboard
+        - --entrypoints.traefik-dashboard.address=:8081
