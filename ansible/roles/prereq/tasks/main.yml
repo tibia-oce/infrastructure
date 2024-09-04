@@ -27,7 +27,8 @@
     reload: true
   tags: sysctl
 
-- name: Allow incoming TCP traffic on port 6443
+# Allow traffic to Kubernetes API server (Control Plane)
+- name: Allow incoming TCP traffic to Kubernetes API server (port 6443)
   ansible.builtin.command: iptables -I INPUT -p tcp --dport 6443 -j ACCEPT
   become: true
   become_method: sudo
@@ -35,8 +36,80 @@
   - firewall
   - iptables
 
-- name: Allow incoming nodeport TCP traffic on port 30000:32767
+# Allow NodePort range
+- name: Allow incoming NodePort TCP traffic (ports 30000-32767)
   ansible.builtin.command: iptables -I INPUT -p tcp --dport 30000:32767 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow DNS traffic (CoreDNS)
+- name: Allow incoming DNS TCP traffic on port 53
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 53 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow incoming DNS UDP traffic on port 53
+  ansible.builtin.command: iptables -I INPUT -p udp --dport 53 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Pod and service network traffic
+- name: Allow pod network traffic from Cilium CIDR (10.52.0.0/16)
+  ansible.builtin.command: iptables -I INPUT -s 10.52.0.0/16 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow service network traffic from CoreDNS CIDR (10.43.0.0/16)
+  ansible.builtin.command: iptables -I INPUT -s 10.43.0.0/16 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow Kubernetes API server traffic from both Pod CIDR and CoreDNS CIDR
+- name: Allow traffic to Kubernetes API server from Cilium CIDR
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 443 -s 10.52.0.0/16 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow traffic to Kubernetes API server from CoreDNS CIDR
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 443 -s 10.43.0.0/16 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow incoming HTTPS traffic from all external sources (public internet)
+# TODO: Limit to Load balancer Internal IP
+- name: Allow external incoming HTTPS traffic on port 443
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 443 -s 0.0.0.0/0 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow incoming HTTP traffic from all external sources (public internet)
+# TODO: Limit to Load balancer Internal IP
+- name: Allow external incoming HTTPS traffic on port 80
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 80 -s 0.0.0.0/0 -j ACCEPT
   become: true
   become_method: sudo
   tags:
