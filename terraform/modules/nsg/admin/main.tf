@@ -73,3 +73,25 @@ resource "oci_core_network_security_group_security_rule" "kubernetes_dashboard_i
     }
   }
 }
+
+# Cilium CIDR (Pod-to-pod traffic)
+resource "oci_core_network_security_group_security_rule" "cilium_internal_ingress" {
+  network_security_group_id = oci_core_network_security_group.nsg_admin.id
+  description               = "Allow all internal Kubernetes pod traffic"
+  direction                 = "INGRESS"
+  protocol                  = "all"
+  source                    = "10.52.0.0/16"
+  source_type               = "CIDR_BLOCK"
+  stateless                 = false
+}
+
+# CoreDNS CIDR (Service-to-service traffic)
+resource "oci_core_network_security_group_security_rule" "coredns_internal_ingress" {
+  network_security_group_id = oci_core_network_security_group.nsg_admin.id
+  description               = "Allow all internal Kubernetes service traffic"
+  direction                 = "INGRESS"
+  protocol                  = "all"
+  source                    = "10.43.0.0/16"
+  source_type               = "CIDR_BLOCK"
+  stateless                 = false
+}

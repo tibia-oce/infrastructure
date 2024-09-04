@@ -106,13 +106,9 @@ config-kube:
 	@printf "$(GREEN)Kubeconfig copied successfully!$(NC)\n"
 
 # Command to verify connection by getting Kubernetes nodes
-nodes-kube: config-kube
-	@printf "$(GREEN)Verifying connection to Kubernetes cluster...$(NC)\n"
+apply-charts: config-kube
+	@printf "$(GREEN)Deploying ingress controller and checking pod status...$(NC)\n"
+	@kubectl apply -k ./kubernetes/apps/
 	@kubectl get nodes
-
-# Command to verify connection by getting Kubernetes nodes
-example: config-kube
-	@printf "$(GREEN)Verifying connection to Kubernetes cluster...$(NC)\n"
-	cd ansible && kubectl apply -f example/service.yml
-	cd ansible && kubectl apply -f example/deployment.yml
-	cd ansible && kubectl describe service traefik
+	@kubectl cluster-info
+	@kubectl get pods -n kube-system

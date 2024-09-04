@@ -19,7 +19,7 @@ resource "oci_load_balancer_listener" "traefik_dashboard_listener" {
   load_balancer_id         = var.load_balancer_id
   name                     = "traefik-dashboard-listener"
   protocol                 = "TCP"
-  port                     = 8080
+  port                     = 8081
   default_backend_set_name = oci_load_balancer_backend_set.traefik_dashboard_backend_set.name
   depends_on               = [oci_load_balancer_backend_set.traefik_dashboard_backend_set]
 }

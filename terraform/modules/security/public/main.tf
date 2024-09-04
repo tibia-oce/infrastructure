@@ -15,6 +15,17 @@ resource "oci_core_security_list" "public_security_list" {
   }
 
   ingress_security_rules {
+    description = "Allow HTTP traffic from the public"
+    source      = "0.0.0.0/0"
+    protocol    = "6" # TCP
+
+    tcp_options {
+      min = 8081
+      max = 8081
+    }
+  }
+
+  ingress_security_rules {
     description = "Allow HTTPS traffic from the public"
     source      = "0.0.0.0/0"
     protocol    = "6" # TCP

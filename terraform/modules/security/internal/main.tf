@@ -1,3 +1,4 @@
+# TODO: Set variables at root for Cilium and CoreDNS
 resource "oci_core_security_list" "internal_security_list" {
   compartment_id = var.compartment_id
   vcn_id         = var.vcn_id
@@ -30,5 +31,31 @@ resource "oci_core_security_list" "internal_security_list" {
       min = 30000 
       max = 32767
     }
+  }
+
+  # Cilium CIDR
+  ingress_security_rules {
+    description = "Allow all pod-to-pod traffic"
+    source      = "10.52.0.0/16"
+    protocol    = "all"
+  }
+
+  egress_security_rules {
+    description = "Allow all outbound traffic to VCN CIDR"
+    destination = "10.52.0.0/16"
+    protocol    = "all"
+  }
+
+  # CoreDNS CIDR
+  ingress_security_rules {
+    description = "Allow all pod-to-pod traffic"
+    source      = "10.43.0.0/16"
+    protocol    = "all"
+  }
+
+  egress_security_rules {
+    description = "Allow all outbound traffic to VCN CIDR"
+    destination = "10.43.0.0/16"
+    protocol    = "all"
   }
 }
