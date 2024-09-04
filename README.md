@@ -74,7 +74,7 @@ This project was heavily influenced by the following work and communities, shout
 
 ## 🌐 Network topology
 
-Here's a macroscopic overview of the state of the network, connecting all the devices together, including this lab.
+Here's a macroscopic overview of the state of the network, connecting all the compute nodes together, with the OCI load balancers.
 
 ![network](https://raw.githubusercontent.com/tibia-oce/oci/main/docs/assets/drawings/topology.excalidraw.svg)
 
