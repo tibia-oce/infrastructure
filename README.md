@@ -40,24 +40,22 @@ This Git repository contains the following directories:
 
 ```zsh
 📁 oci
-├── 📁 scripts                      # Utility bash scripts used to assist preparing credentials
-├── 📁 ansible                      #
-│   ├── 📁 collections              #
-│   ├── 📁 inventory                #
-│   ├── 📁 roles                    #
-│   └── 📁 example                  #
-├── 📁 kubernetes                   #
-│   ├── 📁 ...                      #
-│   └── 📁 ...                      #
-└── 📁 terraform                    # 
-    └── 📁 modules                  #  
-        ├── 📁 compute              #  
-        ├── 📁 load_balancers       #  
-        ├── 📁 networking           #  
-        ├── 📁 reserved_ip          #  
-        ├── 📁 security_groups      #  
-        ├── 📁 security_groups      #  
-        └── 📁 security_lists       #   
+├── 📁 scripts                      # Utility bash scripts used to assist in preparing credentials
+├── 📁 ansible                      
+│   ├── 📁 collections              # Required Ansible collections used across playbooks
+│   ├── 📁 inventory                # Inventory files for managing host groups and variables
+│   └── 📁 roles                    # Roles for reusable automation tasks
+├── 📁 kubernetes                   
+│   ├── 📁 apps                     # Application-specific manifests and configurations for Kubernetes
+│   └── 📁 argo                     # ArgoCD configuration files for managing Kubernetes applications
+└── 📁 terraform                    
+    └── 📁 modules                  
+        ├── 📁 compute              # Terraform modules for managing compute instances
+        ├── 📁 load_balancers       # Terraform modules for configuring load balancers
+        ├── 📁 networking           # Terraform modules for setting up network components
+        ├── 📁 reserved_ip          # Terraform modules for managing reserved IP addresses
+        ├── 📁 security_groups      # Terraform modules for defining network security groups
+        └── 📁 security_lists       # Terraform modules for configuring network security lists 
 ```
 
 <br>
