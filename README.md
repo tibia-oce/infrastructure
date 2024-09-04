@@ -6,6 +6,10 @@
 
 # 🏠 Oracle K3S Cluster
 
+> [!NOTE]
+>
+> This example is **not** recommended for a production environment. This is repo only demonstrates how to use terraform with Oracle Cloud Infrastructure and aims to use the **always free** resources (but in some cases, charges may be incurred depending on region/storage etc.).  At the end of your trial period (30 days). unless you have configured pay-as-you-go for your OCI Subscription, all resources deployed will be stopped, hibernated or terminated (regardless of if the services are always-free resources or not).
+
 This is a mono repository demonstrates how to deploy a Kubernetes (K3s) cluster for free on Oracle [always free resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).  Infrastructure provisioning, configuration and deployments are managed with Infrastructure as Code (IaC) and GitOps; using toolings from [Ansible](https://www.ansible.com/), [HashiCorp](https://www.hashicorp.com/), [Kubernetes](https://kubernetes.io/), [Helm](https://github.com/helm/helm), [Kustomize](https://kustomize.io/), [ArgoCD](https://github.com/argoproj/argo-cd), [Renovate](https://github.com/renovatebot/renovate), and [GitHub Actions](https://github.com/features/actions).
 
 <br>
@@ -30,30 +34,30 @@ Once you get the account, follow the *Before you begin* and *Prepare* steps in [
 
 <br> 
 
-## 📖 Important notes
-
-> [!NOTE]
->
-> This example is **not** recommended for a production environment. The vcn security lists & security groups have been simplified
-
-* This is repo only demonstrates how to use terraform with Oracle Cloud Infrastructure and aims to use the **always free** resources (but in some cases, charges may be incurred depending on region/storage etc...). 
-* At the end of your trial period (30 days). unless you have configured pay-as-you-go for your OCI Subscription, all resources deployed will be stopped, hibernated or terminated
-
-<br>
-
 ### 📁 Directories
 
 This Git repository contains the following directories:
 
 ```zsh
-📁 homelab
-├── 📁 ansible              # 
-│   ├── 📁 bootstrap        # 
-│   ├── 📁 kubernetes       # 
-│   └── 📁 storage          #          
-└── 📁 kubernetes           # 
-    ├── 📁 kubernetes       # 
-    └── 📁 argocd           # 
+📁 oci
+├── 📁 scripts                      # Utility bash scripts used to assist preparing credentials
+├── 📁 ansible                      #
+│   ├── 📁 collections              #
+│   ├── 📁 inventory                #
+│   ├── 📁 roles                    #
+│   └── 📁 example                  #
+├── 📁 kubernetes                   #
+│   ├── 📁 ...                      #
+│   └── 📁 ...                      #
+└── 📁 terraform                    # 
+    └── 📁 modules                  #  
+        ├── 📁 compute              #  
+        ├── 📁 load_balancers       #  
+        ├── 📁 networking           #  
+        ├── 📁 reserved_ip          #  
+        ├── 📁 security_groups      #  
+        ├── 📁 security_groups      #  
+        └── 📁 security_lists       #   
 ```
 
 <br>
