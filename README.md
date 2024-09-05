@@ -31,6 +31,14 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 
 <br>
 
+## 🌐 Network topology
+
+Here's a macroscopic overview of the state of the network, connecting all the compute nodes together, with the OCI load balancers.
+
+![network](https://raw.githubusercontent.com/tibia-oce/oci/main/docs/assets/drawings/topology.excalidraw.svg)
+
+<br>
+
 ## 🔧 Requirements
 
 To use this repo you will need:
@@ -76,124 +84,3 @@ This project was heavily influenced by the following work and communities, shout
 - [solamarpreet/kubernetes-on-oci](https://github.com/solamarpreet/kubernetes-on-oci)
 - [garutilorenzo/k3s-oci-cluster](https://github.com/garutilorenzo/k3s-oci-cluster)
 - [kaplunb/oracle-cloud-k3s-article01](https://github.com/kaplunb/oracle-cloud-k3s-article01)
-
-<br>
-
-## 🌐 Network topology
-
-Here's a macroscopic overview of the state of the network, connecting all the compute nodes together, with the OCI load balancers.
-
-![network](https://raw.githubusercontent.com/tibia-oce/oci/main/docs/assets/drawings/topology.excalidraw.svg)
-
-<br>
-
-## Todo
-
-- write guide on dedicated terraform user creation to limit scope from root compartment
-    - second scripts for this?
-- is a private key upload even neccessary??
-    - if yes, Vault SSH Secrets Engine?
-- update docs with a new set of private keys (named specifically for terraform/oci)
-- need fine-grained permissions on oci api/ssh keys
-- `oci_core_public_ip` should be idempotent
-- SSH private key is needed by Ansible... can we use a collection for vault to handle this better?
-    - temp file isn't practical
-- Logging to track of all access attempts and successful connections via SSH?
-    - restrict the gateway/nsg ssh access to a whitelist
-    - cloudflare tunnel? 
-- oci_core_public_ip.ignore_changes could be more specific
-
-```
-oci
-├─ .terraformignore
-├─ ansible
-│  ├─ ansible.cfg
-│  ├─ collections
-│  │  └─ requirements.yml
-│  ├─ inventory
-│  │  ├─ .gitignore
-│  │  └─ group_vars
-│  │     └─ all.yml
-│  ├─ README.md
-│  ├─ requirements.txt
-│  ├─ roles
-│  │  ├─ download
-│  │  │  ├─ meta
-│  │  │  │  └─ main.yml
-│  │  │  └─ tasks
-│  │  │     └─ main.yml
-│  │  ├─ k3s
-│  │  │  └─ node
-│  │  │     └─ defaults
-│  │  │        └─ main.yml
-│  │  ├─ k3s_agent
-│  │  │  ├─ defaults
-│  │  │  │  └─ main.yml
-│  │  │  ├─ meta
-│  │  │  │  └─ main.yml
-│  │  │  ├─ tasks
-│  │  │  │  ├─ http_proxy.yml
-│  │  │  │  └─ main.yml
-│  │  │  └─ templates
-│  │  │     ├─ http_proxy.conf.j2
-│  │  │     └─ k3s.service.j2
-│  │  ├─ k3s_server
-│  │  │  ├─ defaults
-│  │  │  │  └─ main.yml
-│  │  │  ├─ meta
-│  │  │  │  └─ main.yml
-│  │  │  ├─ tasks
-│  │  │  │  ├─ fetch_k3s_init_logs.yml
-│  │  │  │  ├─ http_proxy.yml
-│  │  │  │  └─ main.yml
-│  │  │  └─ templates
-│  │  │     ├─ content.j2
-│  │  │     ├─ http_proxy.conf.j2
-│  │  │     ├─ k3s.service.j2
-│  │  │     ├─ kubevip.yaml.j2
-│  │  │     └─ vip.yaml.j2
-│  │  ├─ k3s_server_post
-│  │  │  ├─ defaults
-│  │  │  │  └─ main.yml
-│  │  │  ├─ meta
-│  │  │  │  └─ main.yml
-│  │  │  ├─ tasks
-│  │  │  │  ├─ cilium.yml
-│  │  │  │  └─ main.yml
-│  │  │  └─ templates
-│  │  │     └─ cilium.crs.j2
-│  │  └─ prereq
-│  │     ├─ defaults
-│  │     │  └─ main.yml
-│  │     ├─ meta
-│  │     │  └─ main.yml
-│  │     └─ tasks
-│  │        └─ main.yml
-│  └─ site.yml
-├─ kubernetes
-│  ├─ apps
-│  │  ├─ kustomization.yml
-│  │  └─ traefik
-│  │     ├─ cluster_role.yml
-│  │     ├─ deployment.yml
-│  │     ├─ kustomization.yml
-│  │     ├─ namespace.yml
-│  │     ├─ role_binding.yml
-│  │     ├─ service.yml
-│  │     └─ service_account.yml
-│  ├─ argo
-│  │  ├─ kustomization.yml
-│  │  ├─ namespace.yml
-│  │  └─ repository.yml
-│  └─ README.md
-├─ Makefile
-├─ README.md
-├─ scripts
-│  ├─ ...
-└─ terraform
-   ├─ ....
-   ├─ outputs.tf
-   ├─ README.md
-   └─ variables.tf
-
-```
