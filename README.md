@@ -102,3 +102,98 @@ Here's a macroscopic overview of the state of the network, connecting all the co
     - restrict the gateway/nsg ssh access to a whitelist
     - cloudflare tunnel? 
 - oci_core_public_ip.ignore_changes could be more specific
+
+```
+oci
+├─ .terraformignore
+├─ ansible
+│  ├─ ansible.cfg
+│  ├─ collections
+│  │  └─ requirements.yml
+│  ├─ inventory
+│  │  ├─ .gitignore
+│  │  └─ group_vars
+│  │     └─ all.yml
+│  ├─ README.md
+│  ├─ requirements.txt
+│  ├─ roles
+│  │  ├─ download
+│  │  │  ├─ meta
+│  │  │  │  └─ main.yml
+│  │  │  └─ tasks
+│  │  │     └─ main.yml
+│  │  ├─ k3s
+│  │  │  └─ node
+│  │  │     └─ defaults
+│  │  │        └─ main.yml
+│  │  ├─ k3s_agent
+│  │  │  ├─ defaults
+│  │  │  │  └─ main.yml
+│  │  │  ├─ meta
+│  │  │  │  └─ main.yml
+│  │  │  ├─ tasks
+│  │  │  │  ├─ http_proxy.yml
+│  │  │  │  └─ main.yml
+│  │  │  └─ templates
+│  │  │     ├─ http_proxy.conf.j2
+│  │  │     └─ k3s.service.j2
+│  │  ├─ k3s_server
+│  │  │  ├─ defaults
+│  │  │  │  └─ main.yml
+│  │  │  ├─ meta
+│  │  │  │  └─ main.yml
+│  │  │  ├─ tasks
+│  │  │  │  ├─ fetch_k3s_init_logs.yml
+│  │  │  │  ├─ http_proxy.yml
+│  │  │  │  └─ main.yml
+│  │  │  └─ templates
+│  │  │     ├─ content.j2
+│  │  │     ├─ http_proxy.conf.j2
+│  │  │     ├─ k3s.service.j2
+│  │  │     ├─ kubevip.yaml.j2
+│  │  │     └─ vip.yaml.j2
+│  │  ├─ k3s_server_post
+│  │  │  ├─ defaults
+│  │  │  │  └─ main.yml
+│  │  │  ├─ meta
+│  │  │  │  └─ main.yml
+│  │  │  ├─ tasks
+│  │  │  │  ├─ cilium.yml
+│  │  │  │  └─ main.yml
+│  │  │  └─ templates
+│  │  │     └─ cilium.crs.j2
+│  │  └─ prereq
+│  │     ├─ defaults
+│  │     │  └─ main.yml
+│  │     ├─ meta
+│  │     │  └─ main.yml
+│  │     └─ tasks
+│  │        └─ main.yml
+│  └─ site.yml
+├─ kubernetes
+│  ├─ apps
+│  │  ├─ kustomization.yml
+│  │  └─ traefik
+│  │     ├─ cluster_role.yml
+│  │     ├─ deployment.yml
+│  │     ├─ kustomization.yml
+│  │     ├─ namespace.yml
+│  │     ├─ role_binding.yml
+│  │     ├─ service.yml
+│  │     └─ service_account.yml
+│  ├─ argo
+│  │  ├─ kustomization.yml
+│  │  ├─ namespace.yml
+│  │  └─ repository.yml
+│  └─ README.md
+├─ Makefile
+├─ README.md
+├─ scripts
+│  ├─ ...
+└─ terraform
+   ├─ ....
+   ├─ outputs.tf
+   ├─ README.md
+   └─ variables.tf
+
+```
