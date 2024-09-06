@@ -95,3 +95,53 @@ resource "oci_core_network_security_group_security_rule" "coredns_internal_ingre
   source_type               = "CIDR_BLOCK"
   stateless                 = false
 }
+
+# Cilium Agent Communication and Metrics (4241, 9091)
+resource "oci_core_network_security_group_security_rule" "cilium_agent_ingress" {
+  network_security_group_id = oci_core_network_security_group.nsg_admin.id
+  description               = "Allow Cilium agent communication"
+  direction                 = "INGRESS"
+  protocol                  = "6" # TCP
+  source_type               = "CIDR_BLOCK"
+  source                    = "0.0.0.0/0"
+
+  tcp_options {
+    destination_port_range {
+      min = 4241
+      max = 4241
+    }
+  }
+}
+
+resource "oci_core_network_security_group_security_rule" "cilium_metrics_ingress" {
+  network_security_group_id = oci_core_network_security_group.nsg_admin.id
+  description               = "Allow Cilium metrics traffic"
+  direction                 = "INGRESS"
+  protocol                  = "6" # TCP
+  source_type               = "CIDR_BLOCK"
+  source                    = "0.0.0.0/0"
+
+  tcp_options {
+    destination_port_range {
+      min = 9091
+      max = 9091
+    }
+  }
+}
+
+# CoreDNS DNS (UDP 53)
+resource "oci_core_network_security_group_security_rule" "coredns_dns_ingress" {
+  network_security_group_id = oci_core_network_security_group.nsg_admin.id
+  description               = "Allow DNS traffic for CoreDNS"
+  direction                 = "INGRESS"
+  protocol                  = "17" # UDP
+  source_type               = "CIDR_BLOCK"
+  source                    = "0.0.0.0/0"
+
+  udp_options {
+    destination_port_range {
+      min = 53
+      max = 53
+    }
+  }
+}

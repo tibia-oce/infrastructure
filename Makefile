@@ -95,9 +95,25 @@ setup-env:
 
 # Sequentially run all necessary steps to bootstrap the K3s cluster
 bootstrap-cluster: terraform-output generate-inventory setup-env
-	@printf "$(GREEN)Bootstrapping the K3s cluster...$(NC)\n"
+	@printf "$(GREEN)Bootstrapping the K3s nodes...$(NC)\n"
 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
+	@cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
+	@kubectl cluster-info
+	@printf "$(GREEN)Restarting Metrics Server...$(NC)\n"
+	@kubectl rollout restart deployment metrics-server -n kube-system
+	@printf "$(GREEN)Starting Traefik pods...$(NC)\n"
+	@kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+	@kubectl apply -k ./kubernetes/traefik/
+	@printf "$(GREEN)Waiting for Traefik pods to be ready...$(NC)\n"
+	@timeout 20 bash -c 'while ! kubectl get pods -n traefik | grep -q "1/1 *Running"; do sleep 2; done'
+	@if [ $$? -eq 0 ]; then \
+		printf "$(GREEN)All Traefik pods are ready!$(NC)\n"; \
+	else \
+		printf "$(RED)Timed out waiting for Traefik pods to be ready$(NC)\n"; \
+		exit 1; \
+	fi
+	@kubectl get pods --all-namespaces
 
 # Retrieve the Kubeconfig from the control plane node and set up kubectl
 config-kube:
@@ -108,15 +124,10 @@ config-kube:
 # Command to verify connection by getting Kubernetes nodes
 apply-charts: config-kube
 	@printf "$(GREEN)Deploying ingress controller and checking pod status...$(NC)\n"
-	@kubectl apply -k ./kubernetes/apps/
+	# @kubectl apply -k ./kubernetes/apps/
 	@kubectl get nodes
 	@kubectl cluster-info
 	@kubectl get pods --all-namespaces
-
-busy-box:
-	@printf "$(GREEN)Testing API Server connectivity from CoreDNS pod...$(NC)\n"
-	-@kubectl delete pod curl-test || true
-	@kubectl run curl-test --rm -i --tty --image=busybox --restart=Never -- sh -c "wget --no-check-certificate -T 5 https://10.43.0.1:443/version || true"
 
 # SSH into the first control plane node
 ssh-control-plane: terraform-output
@@ -129,3 +140,22 @@ ssh-worker-node: terraform-output
 	@printf "$(GREEN)SSH into the first worker node...$(NC)\n"
 	@worker_ip=$$(jq -r '.worker_public_ips.value[0]' $(TF_OUTPUT_FILE)); \
 	ssh -i ~/.ssh/id_rsa ubuntu@$$worker_ip
+
+clean-pods:
+	@kubectl delete pods --all -n default
+
+pod-cilium:
+	@kubectl exec -it -n kube-system $(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- bash
+
+pod-traefik:
+	kubectl exec -it -n traefik $(kubectl get pods -n traefik -l app=traefik -o jsonpath='{.items[0].metadata.name}') -- bash
+
+curl-pod:
+	@printf "$(GREEN)Deleting any existing curl-pod....$(NC)\n"
+	-kubectl delete pod curl-pod --ignore-not-found=true
+	@printf "$(GREEN)Creating new curl-pod...$(NC)\n"
+	kubectl run curl-pod --image=debian --restart=Never --command -- sleep infinity
+	kubectl wait --for=condition=Ready pod/curl-pod --timeout=60s
+	sudo kubectl exec -it curl-pod -- bash -c "apt update && apt install -y curl dnsutils"
+	kubectl exec -it curl-pod -- bash
+	kubectl run -it --rm --image=busybox:1.28 dns-test --restart=Never -- bash

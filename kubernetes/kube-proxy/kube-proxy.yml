@@ -1,0 +1,100 @@
+# kube-proxy\kube-proxy.yml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:node-proxier
+rules:
+- apiGroups: [""]
+  resources:
+  - endpoints
+  - services
+  verbs: ["list", "watch"]
+- apiGroups: [""]
+  resources:
+  - nodes
+  - nodes/status
+  verbs: ["get"]
+- apiGroups: [""]
+  resources:
+  - configmaps
+  resourceNames: ["kube-proxy"]
+  verbs: ["get"]
+- apiGroups: ["networking.k8s.io"]
+  resources:
+  - networkpolicies
+  verbs: ["get", "list", "watch"]
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: system:node-proxier
+subjects:
+- kind: ServiceAccount
+  name: kube-proxy
+  namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: system:node-proxier
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-proxy
+  namespace: kube-system
+  labels:
+    k8s-app: kube-proxy
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-proxy
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-proxy
+    spec:
+      containers:
+      - name: kube-proxy
+        image: k8s.gcr.io/kube-proxy:v1.22.0
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+          limits:
+            cpu: 300m
+            memory: 300Mi
+        securityContext:
+          privileged: true
+        command:
+        - /usr/local/bin/kube-proxy
+        - --config=/var/lib/kube-proxy/config.conf
+        volumeMounts:
+        - name: kube-proxy
+          mountPath: /var/lib/kube-proxy
+        - name: xtables-lock
+          mountPath: /run/xtables.lock
+          readOnly: false
+      hostNetwork: true
+      dnsPolicy: ClusterFirst
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      volumes:
+      - name: kube-proxy
+        hostPath:
+          path: /var/lib/kube-proxy
+      - name: xtables-lock
+        hostPath:
+          path: /run/xtables.lock
+          type: FileOrCreate
+

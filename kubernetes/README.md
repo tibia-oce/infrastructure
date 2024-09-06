@@ -1,16 +1,16 @@
 
 ```
 kubernetes
-├─ apps
-│  ├─ kustomization.yml
-│  └─ traefik
-│     ├─ deployment.yml
-│     ├─ kustomization.yml
-│     ├─ namespace.yml
-│     └─ service.yml
-└─ argo
+...
+├─ README.md
+└─ traefik
+   ├─ cluster_role.yml
+   ├─ deployment.yml
+   ├─ ingressroute.yml
    ├─ kustomization.yml
    ├─ namespace.yml
-   └─ repository.yml
-
+   ├─ role_binding.yml
+   ├─ service.yml
+   ├─ service_account.yml
+   └─ service_dashboard.yml
 ```

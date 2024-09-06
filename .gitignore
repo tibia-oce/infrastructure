@@ -46,3 +46,4 @@ kubeconfig
 
 # Python
 .venv/
+test-ansible/

@@ -1,20 +1,10 @@
-extra_server_args: ""
-
-k3s_kubectl_binary: k3s kubectl
-
-group_name_master: master
-
-retry_count: 20
-
-# yamllint disable rule:line-length
-server_init_args: >-
-  {% if groups[group_name_master | default('master')] | length > 1 %}
-    {% if ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname'] %}
-      --cluster-init
-    {% else %}
-      --server https://{{ hostvars[groups[group_name_master | default('master')][0]].k3s_node_ip | split(",") | first | ansible.utils.ipwrap }}:6443
-    {% endif %}
-    --token {{ k3s_token }}
-  {% endif %} {{ extra_server_args }}
-
-systemd_dir: /etc/systemd/system
+---
+k3s_server_location: "/var/lib/rancher/k3s"
+systemd_dir: "/etc/systemd/system"  # noqa var-naming[no-role-prefix]
+api_port: 6443  # noqa var-naming[no-role-prefix]
+kubeconfig: ~/.kube/config.new  # noqa var-naming[no-role-prefix]
+user_kubectl: true  # noqa var-naming[no-role-prefix]
+cluster_context: k3s-ansible  # noqa var-naming[no-role-prefix]
+server_group: server  # noqa var-naming[no-role-prefix]
+agent_group: agent  # noqa var-naming[no-role-prefix]
+use_external_database: false # noqa var-naming[no-role-prefix]

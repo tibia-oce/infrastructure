@@ -15,7 +15,7 @@ resource "oci_core_security_list" "public_security_list" {
   }
 
   ingress_security_rules {
-    description = "Allow HTTP traffic from the public"
+    description = "Allow HTTP traffic from the public (for dashboard)"
     source      = "0.0.0.0/0"
     protocol    = "6" # TCP
 
