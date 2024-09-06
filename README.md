@@ -80,6 +80,7 @@ This Git repository contains the following directories:
 This project was heavily influenced by the following work and communities, shout out to all the amazing people and resources for design, code and ideas:
 
 - [r/Homelab](https://www.reddit.com/r/homelab/)
+- [k3s-io/k3s-ansible](https://github.com/k3s-io/k3s-ansible)
 - [techno-tim/k3s-ansible](https://github.com/techno-tim/k3s-ansible)
 - [solamarpreet/kubernetes-on-oci](https://github.com/solamarpreet/kubernetes-on-oci)
 - [garutilorenzo/k3s-oci-cluster](https://github.com/garutilorenzo/k3s-oci-cluster)

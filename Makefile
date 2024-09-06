@@ -11,8 +11,9 @@ export SCRIPTS_DIR="scripts"
 export ANSIBLE_DIR="ansible"
 export VENV_DIR=".venv"
 export TF_OUTPUT_FILE="$(TF_DIR)/terraform_output.json"
-export ANSIBLE_INVENTORY_DIR="ansible/inventory"
-export ANSIBLE_INVENTORY_FILE="$(ANSIBLE_INVENTORY_DIR)/hosts.ini"
+export ANSIBLE_INVENTORY_DIR="ansible"
+export ANSIBLE_INVENTORY_FILE="$(ANSIBLE_INVENTORY_DIR)/inventory.yml"
+export INVENTORY_SAMPLE_FILE="$(ANSIBLE_INVENTORY_DIR)/inventory-sample.yml"
 
 # Generate a hidden tfvars file with OCI credentials from the Terraform agent
 tfvars:
@@ -59,61 +60,94 @@ terraform-output:
 	@printf "$(GREEN)Extracting Terraform outputs to $(TF_OUTPUT_FILE)...$(NC)\n"
 	terraform -chdir=$(TF_DIR) output -json > $(TF_OUTPUT_FILE)
 
-# Generate Ansible inventory from Terraform outputs
 generate-inventory: terraform-output
 	@printf "$(GREEN)Generating Ansible inventory in $(ANSIBLE_INVENTORY_FILE)...$(NC)\n"
-	@mkdir -p $(ANSIBLE_INVENTORY_DIR)  # Ensure the directory exists
-	
-	@echo "[master]" > $(ANSIBLE_INVENTORY_FILE)
-	@jq -r '.control_plane_public_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
-	
-	@echo "[node]" >> $(ANSIBLE_INVENTORY_FILE)
-	@jq -r '.worker_public_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
-	
-	@echo "[k3s_cluster:children]" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "master" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "node" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
-	
-	@echo "[all:vars]" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "ansible_user=ubuntu" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "ansible_ssh_private_key_file=~/.ssh/id_rsa" >> $(ANSIBLE_INVENTORY_FILE)
-	
-	@load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
-	sed -i "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
-	@printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
+	@cp $(INVENTORY_SAMPLE_FILE) $(ANSIBLE_INVENTORY_FILE)
+
+	@jq -r '.control_plane_public_ips.value[]' $(TF_OUTPUT_FILE) | while read ip; do \
+	  sed -i "/server:/a\        $$ip:" $(ANSIBLE_INVENTORY_FILE); \
+	done
+	@sed -i "/server:/a\      hosts:" $(ANSIBLE_INVENTORY_FILE)
+
+	@jq -r '.worker_public_ips.value[]' $(TF_OUTPUT_FILE) | while read ip; do \
+	  sed -i "/agent:/a\        $$ip:" $(ANSIBLE_INVENTORY_FILE); \
+	done
+	@sed -i "/agent:/a\      hosts:" $(ANSIBLE_INVENTORY_FILE)
+
+	@jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE) | while read ip; do \
+	  sed -i "s|api_endpoint:.*|api_endpoint: $$ip|" $(ANSIBLE_INVENTORY_FILE); \
+	done
+
+
+# @printf "$(GREEN)Generating Ansible inventory in $(ANSIBLE_INVENTORY_FILE)...$(NC)\n"
+# @mkdir -p $(ANSIBLE_INVENTORY_DIR)  # Ensure the directory exists
+
+# @echo "[master]" > $(ANSIBLE_INVENTORY_FILE)
+# @jq -r '.control_plane_public_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
+# @echo "" >> $(ANSIBLE_INVENTORY_FILE)
+
+# @echo "[node]" >> $(ANSIBLE_INVENTORY_FILE)
+# @jq -r '.worker_public_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
+# @echo "" >> $(ANSIBLE_INVENTORY_FILE)
+
+# @echo "[k3s_cluster:children]" >> $(ANSIBLE_INVENTORY_FILE)
+# @echo "master" >> $(ANSIBLE_INVENTORY_FILE)
+# @echo "node" >> $(ANSIBLE_INVENTORY_FILE)
+# @echo "" >> $(ANSIBLE_INVENTORY_FILE)
+
+# @echo "[all:vars]" >> $(ANSIBLE_INVENTORY_FILE)
+# @echo "load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+# @echo "ansible_user=ubuntu" >> $(ANSIBLE_INVENTORY_FILE)
+# @echo "ansible_ssh_private_key_file=~/.ssh/id_rsa" >> $(ANSIBLE_INVENTORY_FILE)
+
+# @load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
+# sed -i "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
+# @printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
 
 # Set up Python virtual environment and install Ansible
 setup-env:
 	@printf "$(GREEN)Setting up Python virtual environment and installing Ansible...$(NC)\n"
-	cd ansible/ && python3 -m venv $(VENV_DIR)
-	. ansible/$(VENV_DIR)/bin/activate && pip install -q -r ansible/requirements.txt
-	ansible-galaxy install -r ansible/collections/requirements.yml
+	cd ansible && \
+	python3 -m venv $(VENV_DIR) && \
+	. $(VENV_DIR)/bin/activate && \
+	python3 -m pip install --upgrade pip && \
+	python3 -m pip install --upgrade ansible && \
+	ansible-galaxy install -r collections/requirements.yml
 
-# Sequentially run all necessary steps to bootstrap the K3s cluster
 bootstrap-cluster: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Bootstrapping the K3s nodes...$(NC)\n"
-	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
-	@cp ./ansible/kubeconfig ~/.kube/config
+	cd ansible && . $(VENV_DIR)/bin/activate && ANSIBLE_CONFIG=./ansible.cfg ansible-playbook ./playbooks/site.yml -i ./inventory.yml --private-key ~/.ssh/id_rsa
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
 	@kubectl cluster-info
-	@printf "$(GREEN)Restarting Metrics Server...$(NC)\n"
-	@kubectl rollout restart deployment metrics-server -n kube-system
-	@printf "$(GREEN)Starting Traefik pods...$(NC)\n"
-	@kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-	@kubectl apply -k ./kubernetes/traefik/
-	@printf "$(GREEN)Waiting for Traefik pods to be ready...$(NC)\n"
-	@timeout 20 bash -c 'while ! kubectl get pods -n traefik | grep -q "1/1 *Running"; do sleep 2; done'
-	@if [ $$? -eq 0 ]; then \
-		printf "$(GREEN)All Traefik pods are ready!$(NC)\n"; \
-	else \
-		printf "$(RED)Timed out waiting for Traefik pods to be ready$(NC)\n"; \
-		exit 1; \
-	fi
 	@kubectl get pods --all-namespaces
+
+reset: terraform-output generate-inventory setup-env
+	@printf "$(GREEN)Resetting the K3s cluster...$(NC)\n"
+	cd ansible && . $(VENV_DIR)/bin/activate && ANSIBLE_CONFIG=./ansible.cfg ansible-playbook ./playbooks/reset.yml -i ./inventory.yml --private-key ~/.ssh/id_rsa
+	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
+
+# Sequentially run all necessary steps to bootstrap the K3s cluster
+# bootstrap-cluster: terraform-output generate-inventory setup-env
+# 	@printf "$(GREEN)Bootstrapping the K3s nodes...$(NC)\n"
+# 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./playbooks/site.yml -i ./inventory.yml --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
+	
+# 	# @cp ./ansible/kubeconfig ~/.kube/config
+# 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
+# 	@kubectl cluster-info
+# 	# @printf "$(GREEN)Restarting Metrics Server...$(NC)\n"
+# 	# @kubectl rollout restart deployment metrics-server -n kube-system
+# 	# @printf "$(GREEN)Starting Traefik pods...$(NC)\n"
+# 	# @kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+# 	# @kubectl apply -k ./kubernetes/traefik/
+# 	# @printf "$(GREEN)Waiting for Traefik pods to be ready...$(NC)\n"
+# 	# @timeout 20 bash -c 'while ! kubectl get pods -n traefik | grep -q "1/1 *Running"; do sleep 2; done'
+# 	# @if [ $$? -eq 0 ]; then \
+# 	# 	printf "$(GREEN)All Traefik pods are ready!$(NC)\n"; \
+# 	# else \
+# 	# 	printf "$(RED)Timed out waiting for Traefik pods to be ready$(NC)\n"; \
+# 	# 	exit 1; \
+# 	# fi
+# 	# @kubectl get pods --all-namespaces
 
 # Retrieve the Kubeconfig from the control plane node and set up kubectl
 config-kube:

@@ -47,3 +47,5 @@ kubeconfig
 # Python
 .venv/
 test-ansible/
+ansible/inventory.yml
+ansible-2/
