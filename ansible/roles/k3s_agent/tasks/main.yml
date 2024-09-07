@@ -1,52 +1,36 @@
-- name: Get k3s installed version
-  ansible.builtin.command: k3s --version
-  register: k3s_version_output
-  changed_when: false
-  ignore_errors: true
-
-- name: Set k3s installed version
-  when: k3s_version_output.rc == 0
-  ansible.builtin.set_fact:
-    installed_k3s_version: "{{ k3s_version_output.stdout_lines[0].split(' ')[2] }}"
-
-- name: Download artifact only if needed
-  when: k3s_version_output.rc != 0 or installed_k3s_version is version(k3s_version, '<') and airgap_dir is undefined
+---
+- name: Check for PXE-booted system
   block:
-  - name: Download K3s install script
-    ansible.builtin.get_url:
-      url: https://get.k3s.io/
-      timeout: 120
-      dest: /usr/local/bin/k3s-install.sh
-      owner: root
-      group: root
-      mode: "0755"
+    - name: Check if system is PXE-booted
+      ansible.builtin.command:
+        cmd: cat /proc/cmdline
+      register: boot_cmdline
+      changed_when: false
+      check_mode: false
 
-  - name: Download K3s binary
-    ansible.builtin.command:
-      cmd: /usr/local/bin/k3s-install.sh
-    environment:
-      INSTALL_K3S_SKIP_START: "true"
-      INSTALL_K3S_VERSION: "{{ k3s_version }}"
-      INSTALL_K3S_EXEC: "agent"
-    changed_when: true
+    - name: Set fact for PXE-booted system
+      ansible.builtin.set_fact:
+        is_pxe_booted: "{{ 'root=/dev/nfs' in boot_cmdline.stdout }}"
+      when: boot_cmdline.stdout is defined
 
-  - name: Add the token for joining the cluster to the environment
-    no_log: true # avoid logging the server token
-    ansible.builtin.lineinfile:
-      path: "{{ systemd_dir }}/k3s-agent.service.env"
-      line: "K3S_TOKEN={{ token }}"
+    - name: Include http_proxy configuration tasks
+      ansible.builtin.include_tasks: http_proxy.yml
 
-- name: Copy K3s service file
+- name: Deploy K3s http_proxy conf
+  ansible.builtin.include_tasks: http_proxy.yml
+  when: proxy_env is defined
+
+- name: Configure the k3s service
   ansible.builtin.template:
-    src: k3s-agent.service.j2
-    dest: "{{ systemd_dir }}/k3s-agent.service"
+    src: k3s.service.j2
+    dest: "{{ systemd_dir }}/k3s-node.service"
     owner: root
     group: root
     mode: "0755"
 
-- name: Ensure k3s-agent service is not enabled or started
+- name: Manage k3s service
   ansible.builtin.systemd:
-    name: k3s-agent
+    name: k3s-node
     daemon_reload: true
-    state: stopped # Prevents the service from running
-    enabled: false # Prevents the service from starting at boot
+    state: restarted
+    enabled: true

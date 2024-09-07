@@ -1,6 +1,4 @@
-venv
-.venv
-.vscode
-.vagrant
-inventory.yml
-playbook/debug.yml
+.env/
+*.log
+ansible.cfg
+kubeconfig
