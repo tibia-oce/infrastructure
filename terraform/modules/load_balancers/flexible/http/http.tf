@@ -1,7 +1,7 @@
 # ====================================================================
 # Backend Set, Listener, and Backends for HTTP (port 80)
 # This defines the entire configuration for handling HTTP traffic 
-# using NodePort 30080.
+# using NodePort 80.
 # ====================================================================
 
 resource "oci_load_balancer_backend_set" "traefik_http_backend_set" {
@@ -11,7 +11,7 @@ resource "oci_load_balancer_backend_set" "traefik_http_backend_set" {
 
   health_checker {
     protocol = "TCP"
-    port     = 30080  # Health check for HTTP on NodePort 30080
+    port     = 80  # Health check for HTTP on NodePort 80
   }
 }
 
@@ -29,5 +29,5 @@ resource "oci_load_balancer_backend" "traefik_http_backend" {
   backendset_name  = oci_load_balancer_backend_set.traefik_http_backend_set.name
   ip_address       = each.value
   load_balancer_id = var.load_balancer_id
-  port             = 30080  # NodePort for HTTP on worker nodes
+  port             = 80  # NodePort for HTTP on worker nodes
 }

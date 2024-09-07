@@ -33,7 +33,7 @@ hcp auth login --client-id=<id> --client-secret=<secret>
 ### Set the Vault Application Name in Your Profile
 ```
 hcp profile set vault-secrets/app <app_name>
-hcp profile init --vault-secrets --app <app_name>
+
 ```
 
 ### Upload keys
@@ -41,11 +41,10 @@ hcp profile init --vault-secrets --app <app_name>
 **TODO: Don't use default 'id_rsa'**
 
 ```
-hcp vault-secrets secrets create ssh_public_key --data-file=/root/.ssh/id_rsa.pub --app <app_name>
-
-hcp vault-secrets secrets create ssh_private_key --data-file=/root/.ssh/id_rsa --app <app_name>
-
-hcp vault-secrets secrets create oci_private_key --data-file=/root/.oci/oci_api_key.pem --app <app_name>
+hcp profile init --vault-secrets --app <app_name>
+hcp vault-secrets secrets create ssh_public_key --data-file=$HOME/.ssh/id_rsa.pub --app <app_name>
+hcp vault-secrets secrets create ssh_private_key --data-file=$HOME/.ssh/id_rsa --app <app_name>
+hcp vault-secrets secrets create oci_private_key --data-file=$HOME/.oci/oci_api_key.pem --app <app_name>
 ```
 
 # References

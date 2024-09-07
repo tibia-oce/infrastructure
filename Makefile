@@ -24,23 +24,34 @@ provider:
 	@printf "$(GREEN)Generating provider configuration...$(NC)\n"
 	cd $(SCRIPTS_DIR) && ./provider.sh
 
+check_tf_requirements:
+	@if [ ! -f "$(TF_DIR)/provider.tf" ]; then \
+		printf "$(RED)Error: provider.tf not found. Please run 'make provider'.$(NC)\n"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(TF_DIR)/terraform.tfvars" ]; then \
+		printf "$(RED)Error: terraform.tfvars not found. Please run 'make tfvars'.$(NC)\n"; \
+		exit 1; \
+	fi
+	@printf "$(GREEN)Both provider.tf and terraform.tfvars exist. Proceeding...$(NC)\n"
+	
 # Initialize Terraform for the K3S environment
-oci-init:
+oci-init: check_tf_requirements
 	@printf "$(GREEN)Initializing Terraform in $(TF_DIR)...$(NC)\n"
 	cd $(TF_DIR) && terraform init
 
 # Generate and display a Terraform execution plan for the K3S environment
-oci-plan:
+oci-plan: check_tf_requirements
 	@printf "$(YELLOW)Generating Terraform plan in $(TF_DIR)...$(NC)\n"
 	cd $(TF_DIR) && terraform plan
 
 # Sync state with HCP remote backend
-oci-refresh:
+oci-refresh: check_tf_requirements
 	@printf "$(GREEN)Refreshing Terraform state from remote HCP Terraform Cloud...$(NC)\n"
 	cd $(TF_DIR) && terraform refresh
 
 # Apply the Terraform plan to the K3S environment with auto-approval
-oci-apply:
+oci-apply: check_tf_requirements
 	@printf "$(GREEN)Applying Terraform plan in $(TF_DIR) with auto-approval...$(NC)\n"
 	cd $(TF_DIR) && terraform apply -auto-approve
 
@@ -50,7 +61,7 @@ oci-fmt:
 	cd $(TF_DIR) && terraform fmt
 
 # Destroy the Terraform-managed infrastructure in the K3S environment with auto-approval
-oci-destroy:
+oci-destroy: check_tf_requirements
 	@printf "$(RED)Destroying Terraform-managed infrastructure in $(TF_DIR) with auto-approval...$(NC)\n"
 	cd $(TF_DIR) && terraform destroy -auto-approve
 
@@ -82,16 +93,16 @@ generate-inventory: terraform-output
 	@echo "ansible_user=ubuntu" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "ansible_ssh_private_key_file=~/.ssh/id_rsa" >> $(ANSIBLE_INVENTORY_FILE)
 	
-	@load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
-	sed -i "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
-	@printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
+	# @load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
+	# sed -i "" "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
+	# @printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
 
 # Set up Python virtual environment and install Ansible
 setup-env:
 	@printf "$(GREEN)Setting up Python virtual environment and installing Ansible...$(NC)\n"
 	cd ansible/ && python3 -m venv $(VENV_DIR)
-	. ansible/$(VENV_DIR)/bin/activate && pip install -q -r ansible/requirements.txt
-	ansible-galaxy install -r ansible/collections/requirements.yml
+	. ansible/$(VENV_DIR)/bin/activate && pip install --upgrade pip && pip install -q -r ansible/requirements.txt
+	. ansible/$(VENV_DIR)/bin/activate && ansible-galaxy install -r ansible/collections/requirements.yml
 
 # Sequentially run all necessary steps to bootstrap the K3s cluster
 bootstrap-cluster: terraform-output generate-inventory setup-env

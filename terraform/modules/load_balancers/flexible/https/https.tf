@@ -1,7 +1,7 @@
 # ====================================================================
 # Backend Set, Listener, and Backends for HTTPS (port 443)
 # This defines the entire configuration for handling HTTPS traffic 
-# using NodePort 30443.
+# using NodePort 443.
 # ====================================================================
 
 resource "oci_load_balancer_backend_set" "traefik_https_backend_set" {
@@ -11,7 +11,7 @@ resource "oci_load_balancer_backend_set" "traefik_https_backend_set" {
 
   health_checker {
     protocol = "TCP"
-    port     = 30443  # Health check for HTTPS on NodePort 30443
+    port     = 443  # Health check for HTTPS on NodePort 443
   }
 }
 
@@ -29,5 +29,5 @@ resource "oci_load_balancer_backend" "traefik_https_backend" {
   backendset_name  = oci_load_balancer_backend_set.traefik_https_backend_set.name
   ip_address       = each.value
   load_balancer_id = var.load_balancer_id
-  port             = 30443  # NodePort for HTTPS on worker nodes
+  port             = 443  # NodePort for HTTPS on worker nodes
 }

@@ -1,10 +1,25 @@
 #!/bin/bash
+# If no access permissions: chmod +x scripts/provider.sh
 
-# TODO: Remove in favour of var.sh script to .tfvars
-
+# Function to print error messages in red
 print_red() {
   echo -e "\033[31m$1\033[0m"
 }
+
+# Function to check if a command exists
+check_command() {
+  if ! command -v "$1" &> /dev/null; then
+    print_red "Error: Required command '$1' is not installed. Please install it and try again."
+    exit 1
+  fi
+}
+
+# Check if required CLI tools are installed
+check_command grep
+check_command openssl
+check_command curl
+check_command jq
+
 
 # Check if OCI config file exists
 if [ ! -f ~/.oci/config ]; then
@@ -13,8 +28,8 @@ if [ ! -f ~/.oci/config ]; then
 fi
 
 # Check if Terraform credentials file exists
-if [ ! -f /root/.terraform.d/credentials.tfrc.json ]; then
-  print_red "Error: Terraform credentials file '/root/.terraform.d/credentials.tfrc.json' not found. Please login to Terraform Cloud and try again."
+if [ ! -f ~/.terraform.d/credentials.tfrc.json ]; then
+  print_red "Error: Terraform credentials file '~/.terraform.d/credentials.tfrc.json' not found. Please login to Terraform Cloud using 'terraform login'."
   exit 1
 fi
 
@@ -30,11 +45,12 @@ tenancy_ocid=$(grep '^tenancy=' ~/.oci/config | cut -d'=' -f2 | tr -d '\n')
 user_ocid=$(grep '^user=' ~/.oci/config | cut -d'=' -f2 | tr -d '\n')
 fingerprint=$(openssl rsa -pubout -outform DER -in ~/.oci/oci_api_key.pem | openssl md5 -c | awk '{print $2}' | tr -d '\n')
 region=$(grep '^region=' ~/.oci/config | cut -d'=' -f2 | tr -d '\n')
-my_public_ip_cidr=$(echo "$(curl -s ifconfig.me)/32" | tr -d '\n')
 private_key_path=~/.oci/oci_api_key.pem
+my_public_ip=$(curl -4 -s ifconfig.me)
+my_public_ip_cidr="${my_public_ip}/32"
 
 # Extracting HashiCorp Cloud values
-hashicorp_api_token=$(jq -r '.credentials."app.terraform.io".token' /root/.terraform.d/credentials.tfrc.json)
+hashicorp_api_token=$(jq -r '.credentials."app.terraform.io".token' ~/.terraform.d/credentials.tfrc.json)
 hashicorp_org_name=$(curl -s \
   --header "Authorization: Bearer $hashicorp_api_token" \
   https://app.terraform.io/api/v2/organizations | jq -r '.data[-1].attributes.name')
