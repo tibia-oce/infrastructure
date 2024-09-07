@@ -11,9 +11,8 @@ export SCRIPTS_DIR="scripts"
 export ANSIBLE_DIR="ansible"
 export VENV_DIR=".venv"
 export TF_OUTPUT_FILE="$(TF_DIR)/terraform_output.json"
-export ANSIBLE_INVENTORY_DIR="ansible"
-export ANSIBLE_INVENTORY_FILE="$(ANSIBLE_INVENTORY_DIR)/inventory.yml"
-export INVENTORY_SAMPLE_FILE="$(ANSIBLE_INVENTORY_DIR)/inventory-sample.yml"
+export ANSIBLE_INVENTORY_DIR="ansible/inventory"
+export ANSIBLE_INVENTORY_FILE="$(ANSIBLE_INVENTORY_DIR)/hosts.ini"
 
 # Generate a hidden tfvars file with OCI credentials from the Terraform agent
 tfvars:
@@ -60,44 +59,51 @@ terraform-output:
 	@printf "$(GREEN)Extracting Terraform outputs to $(TF_OUTPUT_FILE)...$(NC)\n"
 	terraform -chdir=$(TF_DIR) output -json > $(TF_OUTPUT_FILE)
 
+# Generate Ansible inventory from Terraform outputs
 generate-inventory: terraform-output
 	@printf "$(GREEN)Generating Ansible inventory in $(ANSIBLE_INVENTORY_FILE)...$(NC)\n"
-	@cp $(INVENTORY_SAMPLE_FILE) $(ANSIBLE_INVENTORY_FILE)
-
-	@jq -r '.control_plane_public_ips.value[]' $(TF_OUTPUT_FILE) | while read ip; do \
-	  sed -i "/server:/a\        $$ip:" $(ANSIBLE_INVENTORY_FILE); \
-	done
-	@sed -i "/server:/a\      hosts:" $(ANSIBLE_INVENTORY_FILE)
-
-	@jq -r '.worker_public_ips.value[]' $(TF_OUTPUT_FILE) | while read ip; do \
-	  sed -i "/agent:/a\        $$ip:" $(ANSIBLE_INVENTORY_FILE); \
-	done
-	@sed -i "/agent:/a\      hosts:" $(ANSIBLE_INVENTORY_FILE)
-
-	# @jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE) | while read ip; do \
-	#   sed -i "s|api_endpoint:.*|api_endpoint: $$ip|" $(ANSIBLE_INVENTORY_FILE); \
-	# done
+	@mkdir -p $(ANSIBLE_INVENTORY_DIR)  # Ensure the directory exists
+	
+	@echo "[master]" > $(ANSIBLE_INVENTORY_FILE)
+	@jq -r '.control_plane_public_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
+	
+	@echo "[node]" >> $(ANSIBLE_INVENTORY_FILE)
+	@jq -r '.worker_public_ips.value[]' $(TF_OUTPUT_FILE) >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
+	
+	@echo "[k3s_cluster:children]" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "master" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "node" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
+	
+	@echo "[all:vars]" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "ansible_user=ubuntu" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "ansible_ssh_private_key_file=~/.ssh/id_rsa" >> $(ANSIBLE_INVENTORY_FILE)
+	
+	@load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
+	sed -i "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
+	@printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
 
 # Set up Python virtual environment and install Ansible
 setup-env:
 	@printf "$(GREEN)Setting up Python virtual environment and installing Ansible...$(NC)\n"
-	cd ansible && \
-	python3 -m venv $(VENV_DIR) && \
-	. $(VENV_DIR)/bin/activate && \
-	python3 -m pip install --upgrade pip && \
-	python3 -m pip install --upgrade ansible && \
-	ansible-galaxy install -r collections/requirements.yml
+	cd ansible/ && python3 -m venv $(VENV_DIR)
+	. ansible/$(VENV_DIR)/bin/activate && pip install -q -r ansible/requirements.txt
+	ansible-galaxy install -r ansible/collections/requirements.yml
 
+# Sequentially run all necessary steps to bootstrap the K3s cluster
 bootstrap-cluster: terraform-output generate-inventory setup-env
-	@printf "$(GREEN)Bootstrapping the K3s nodes...$(NC)\n"
-	cd ansible && . $(VENV_DIR)/bin/activate && ANSIBLE_CONFIG=./ansible.cfg ansible-playbook ./playbooks/site.yml -i ./inventory.yml --private-key ~/.ssh/id_rsa
+	@printf "$(GREEN)Bootstrapping the K3s cluster...$(NC)\n"
+	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
+	cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
-	@kubectl cluster-info
-	@kubectl get pods --all-namespaces
+	kubectl get pods -n kube-system -o wide
 
 reset: terraform-output generate-inventory setup-env
-	@printf "$(GREEN)Resetting the K3s cluster...$(NC)\n"
-	cd ansible && . $(VENV_DIR)/bin/activate && ANSIBLE_CONFIG=./ansible.cfg ansible-playbook ./playbooks/reset.yml -i ./inventory.yml --private-key ~/.ssh/id_rsa
+	@printf "$(GREEN)Resetting cluster...$(NC)\n"
+	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./reset.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
 
 # Retrieve the Kubeconfig from the control plane node and set up kubectl
 config-kube:
@@ -108,7 +114,7 @@ config-kube:
 # Command to verify connection by getting Kubernetes nodes
 apply-charts: config-kube
 	@printf "$(GREEN)Deploying ingress controller and checking pod status...$(NC)\n"
-	# @kubectl apply -k ./kubernetes/apps/
+	@kubectl apply -k ./kubernetes/apps/
 	@kubectl get nodes
 	@kubectl cluster-info
 	@kubectl get pods --all-namespaces
@@ -124,6 +130,7 @@ ssh-worker-node: terraform-output
 	@printf "$(GREEN)SSH into the first worker node...$(NC)\n"
 	@worker_ip=$$(jq -r '.worker_public_ips.value[0]' $(TF_OUTPUT_FILE)); \
 	ssh -i ~/.ssh/id_rsa ubuntu@$$worker_ip
+	# cilium connectivity test
 
 clean-pods:
 	@kubectl delete pods --all -n default
@@ -143,3 +150,38 @@ curl-pod:
 	sudo kubectl exec -it curl-pod -- bash -c "apt update && apt install -y curl dnsutils"
 	kubectl exec -it curl-pod -- bash
 	kubectl run -it --rm --image=busybox:1.28 dns-test --restart=Never -- bash
+
+test-dns:
+	kubectl run -it --rm --restart=Never busybox --image=busybox
+	# ping 10.43.0.10
+
+coredns-logs:
+	@kubectl logs -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].metadata.name}')
+
+# Fetch logs for metrics-server pod in kube-system namespace
+metrics-server-logs:
+	@kubectl logs -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=metrics-server -o jsonpath='{.items[0].metadata.name}')
+
+cilium-service-list:
+	@kubectl exec -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- cilium service list
+
+# Get the status of Cilium
+cilium-status:
+	@kubectl exec -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- cilium status
+
+cilium-lb-routes:
+	kubectl exec -n kube-system $(kubectl get pod -l k8s-app=cilium -n kube-system -o jsonpath='{.items[0].metadata.name}') -- cilium bpf lb list
+
+# Remove metrics server
+# kubectl delete deployment metrics-server -n kube-system
+# kubectl delete apiservice v1beta1.metrics.k8s.io
+
+# Restart metrics server
+# kubectl scale deployment metrics-server -n kube-system --replicas=0
+# kubectl scale deployment metrics-server -n kube-system --replicas=1
+
+# kubectl run curlpod --image=radial/busyboxplus:curl -i --tty --rm --restart=Never -- sh
+
+# kubectl run curlpod --image=busybox:1.34.1-uclibc-arm64 --restart=Never -i --tty --rm -- sh
+
+# kubectl run curlpodd --image=arm64v8/ubuntu --restart=Never -i --tty --rm -- bash
