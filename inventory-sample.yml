@@ -1,0 +1,22 @@
+k3s_cluster:
+  children:
+    server:
+    agent:
+
+  vars:
+    ansible_port: 22
+    api_port: 6443
+    ansible_user: ubuntu
+    k3s_version: v1.30.2+k3s1
+    token: "super-duper-secret-token"
+    api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups['server'][0]) }}"
+    extra_server_args: ""
+    extra_agent_args: ""
+
+# extra_server_args: "--tls-san {{api_endpoint}} --prefer-bundled-bin --disable servicelb"
+# extra_agent_args: "--prefer-bundled-bin"
+# k3s_server_location: /var/lib/rancher/k3s
+# systemd_dir: /etc/systemd/system
+# k3s_install_dir: /usr/local/bin
+# k3s_config_file: "/etc/rancher/k3s/config.yaml"
+# kubeconfig: "/root/.kube/config"
