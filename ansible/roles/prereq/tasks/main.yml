@@ -67,3 +67,172 @@
     path: /etc/sudoers
     validate: visudo -cf %s
   when: ansible_os_family in [ "RedHat", "Suse" ]
+
+
+# Pod and service network traffic
+- name: Allow pod network traffic from Cilium CIDR (10.52.0.0/16)
+  ansible.builtin.command: iptables -I INPUT -s 10.52.0.0/16 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow service network traffic from CoreDNS CIDR (10.43.0.0/16)
+  ansible.builtin.command: iptables -I INPUT -s 10.43.0.0/16 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow service network traffic from CoreDNS CIDR (10.43.0.0/16)
+  ansible.builtin.command: iptables -I OUTPUT -s 10.43.0.0/16 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow traffic from 10.0.0.0/24 network
+- name: Allow traffic from 10.0.0.0/24 network
+  ansible.builtin.command: iptables -I INPUT -s 10.0.0.0/24 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Cilium-specific rules
+- name: Allow Cilium health check traffic (port 4240)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 4240 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow Cilium agent communication (port 4241)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 4241 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow DNS traffic
+- name: Allow incoming DNS traffic (port 53 UDP)
+  ansible.builtin.command: iptables -I INPUT -p udp --dport 53 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow outgoing DNS traffic
+- name: Allow outgoing DNS traffic (port 53 UDP)
+  ansible.builtin.command: iptables -I OUTPUT -p udp --dport 53 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow DNS traffic
+- name: Allow incoming DNS traffic (port 53 TCP)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 53 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow outgoing DNS traffic
+- name: Allow outgoing DNS traffic (port 53 TCP)
+  ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 53 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow incoming HTTPS traffic from all external sources (public internet)
+- name: Allow external incoming HTTPS traffic on port 443
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 443 -s 0.0.0.0/0 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow incoming HTTP traffic from all external sources (public internet)
+- name: Allow external incoming HTTP traffic on port 80
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 80 -s 0.0.0.0/0 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow traffic to Kubernetes API server (Control Plane)
+- name: Allow incoming TCP traffic to Kubernetes API server (port 6443)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 6443 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow NodePort range
+- name: Allow incoming NodePort TCP traffic (ports 30000-32767)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 30000:32767 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow Cilium metrics (port 9091)
+- name: Allow incoming Cilium metrics traffic (port 9091)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 9091 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow Metrics traffic (port 10250)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 10250 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# New rules
+# Allow Cilium gops health check (port 9890)
+- name: Allow incoming gops health check traffic (port 9890)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 9890 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow VXLAN traffic (port 8472)
+- name: Allow incoming VXLAN traffic (port 8472)
+  ansible.builtin.command: iptables -I INPUT -p udp --dport 8472 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+# Allow BGP traffic (port 179)
+- name: Allow incoming BGP traffic (port 179)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 179 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
