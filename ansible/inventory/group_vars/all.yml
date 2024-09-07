@@ -1,7 +1,8 @@
 ---
+# TODO: Move k3s_token, and apiserver_endpoint to hosts.ini vars
 k3s_version: v1.30.2+k3s2
 apiserver_endpoint: 159.13.39.158
-k3s_token: some-SUPER-DEDEUPER-secret-password
+k3s_token: SQJXehbzE1WES9k7LAYw9YZTCu8yVAoVWXX6JTDG2xmbIVtxtNiQUYmi1WBcLnAr
 ansible_user: ubuntu
 systemd_dir: /etc/systemd/system
 system_timezone: Australia/Sydney
@@ -70,7 +71,6 @@ extra_server_args: >-
   {% endif %}
   --tls-san {{ apiserver_endpoint }}
   --disable servicelb
-  --disable traefik
 
 extra_agent_args: >-
   {{ extra_args }}

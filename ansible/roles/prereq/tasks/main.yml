@@ -236,3 +236,16 @@
   tags:
   - firewall
   - iptables
+
+- name: Install common networking tools
+  become: true
+  apt:
+    name:
+      - net-tools
+      - curl
+      - wget
+      - dnsutils
+      - iputils-ping
+    state: present
+    update_cache: true
+

@@ -94,8 +94,16 @@ generate-inventory: terraform-output
 	@echo "ansible_ssh_private_key_file=~/.ssh/id_rsa" >> $(ANSIBLE_INVENTORY_FILE)
 	
 	@load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
-	sed -i "" "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
-	@printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
+	token=$$(pwgen -s 64 1); \
+	if [ "$$(uname)" = "Darwin" ]; then \
+		sed -i "" "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml; \
+		sed -i "" "s|k3s_token:.*|k3s_token: $$token|" ./ansible/inventory/group_vars/all.yml; \
+	else \
+		sed -i "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml; \
+		sed -i "s|k3s_token:.*|k3s_token: $$token|" ./ansible/inventory/group_vars/all.yml; \
+	fi
+	@printf "$(GREEN)Updated apiserver_endpoint and k3s_token in all.yml with the load_balancer_public_ip and a new token...$(NC)\n"
+
 
 # Set up Python virtual environment and install Ansible
 setup-env:
@@ -108,13 +116,27 @@ setup-env:
 bootstrap-cluster: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Bootstrapping the K3s cluster...$(NC)\n"
 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
+	@mkdir -p ~/.kube
 	cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
 	kubectl get pods -n kube-system -o wide
+	
+	# @printf "$(GREEN)Deploying Traefik...$(NC)\n
+	# kubectl apply -k ./ansible/example/nonse/
+	# kubectl delete -f ansible/example/traefik.yml
+	# kubectl apply -f ansible/example/deployment.yml
+	# kubectl apply -f ansible/example/service.yml
+
+deploy-traefik:
+	# kubectl delete deployment traefik -n kube-system
+	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.1/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+	kubectl apply -k ./ansible/example/nonse/
+	kubectl rollout restart deployment traefik -n default
 
 reset: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Resetting cluster...$(NC)\n"
 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./reset.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
+	cd ansible && rm -f kubeconfig
 
 # Retrieve the Kubeconfig from the control plane node and set up kubectl
 config-kube:
@@ -162,8 +184,13 @@ curl-pod:
 	kubectl exec -it curl-pod -- bash
 	kubectl run -it --rm --image=busybox:1.28 dns-test --restart=Never -- bash
 
+traefik-logs:
+	@kubectl logs -n default $$(kubectl get pods -n default -l app=traefik -o jsonpath='{.items[0].metadata.name}')
+
 test-dns:
-	kubectl run -it --rm --restart=Never busybox --image=busybox
+	@kubectl delete pod alpine --ignore-not-found
+	@kubectl run -it --rm --restart=Never alpine --image=alpine -- /bin/sh -c "\
+		apk add --no-cache curl bind-tools && /bin/sh"
 	# ping 10.43.0.10
 
 coredns-logs:
@@ -196,3 +223,10 @@ cilium-lb-routes:
 # kubectl run curlpod --image=busybox:1.34.1-uclibc-arm64 --restart=Never -i --tty --rm -- sh
 
 # kubectl run curlpodd --image=arm64v8/ubuntu --restart=Never -i --tty --rm -- bash
+
+
+# kubectl create secret generic traefik-ingress-controller-token --from-literal=token="$(openssl rand -base64 64)" -n default
+# kubectl create serviceaccount traefik-ingress-controller -n default
+# kubectl patch serviceaccount traefik-ingress-controller -n default -p '{"secrets": [{"name": "traefik-ingress-controller-token"}]}'
+# kubectl rollout restart deployment traefik -n default
+

@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  namespace: traefik
+  labels:
+    app: traefik
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik-sa
+      containers:
+      - name: traefik
+        image: traefik:v2.10
+        args:
+        - "--api.dashboard=true"
+        - "--api.insecure=true"
+        - "--providers.kubernetescrd"
+        - "--providers.kubernetesingress"
+        - "--entrypoints.web.address=:80"
+        - "--entrypoints.websecure.address=:443"
+        - "--entrypoints.dashboard.address=:8081"
+        ports:
+        - name: web
+          containerPort: 80
+        - name: websecure
+          containerPort: 443
+        - name: dashboard
+          containerPort: 8081
+        volumeMounts:
+        - name: traefik-token
+          mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+          readOnly: true
+      volumes:
+      - name: traefik-token
+        secret:
+          secretName: traefik-token-secret
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: traefik-token-secret
+  namespace: traefik
+type: Opaque
+data:
+  token: SzEwOTMyODRkOTdkM2E1MTZmMDgzMDgzMmU0ZDU2ZmZjNWE2NWI5MjRmZjEzMzAyOWFmZGMyYWJjMDc1MzY3NDNiZDo6c2VydmVyOmJiMmNmZDczNjBjY2ZhNjE5YTA3MTk2MDFlYTFjMzMy
