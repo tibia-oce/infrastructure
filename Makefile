@@ -93,9 +93,9 @@ generate-inventory: terraform-output
 	@echo "ansible_user=ubuntu" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "ansible_ssh_private_key_file=~/.ssh/id_rsa" >> $(ANSIBLE_INVENTORY_FILE)
 	
-	# @load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
-	# sed -i "" "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
-	# @printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
+	@load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
+	sed -i "" "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml
+	@printf "$(GREEN)Updated apiserver_endpoint in all.yml with the load_balancer_public_ip...$(NC)\n"
 
 # Set up Python virtual environment and install Ansible
 setup-env:

@@ -1,6 +1,6 @@
 ---
 k3s_version: v1.30.2+k3s2
-apiserver_endpoint: 192.168.30.222
+apiserver_endpoint: 159.13.39.158
 k3s_token: some-SUPER-DEDEUPER-secret-password
 ansible_user: ubuntu
 systemd_dir: /etc/systemd/system

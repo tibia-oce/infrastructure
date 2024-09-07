@@ -7,7 +7,6 @@ After=network-online.target
 Type=notify
 ExecStartPre=-/sbin/modprobe br_netfilter
 ExecStartPre=-/sbin/modprobe overlay
-# Conditional snapshotter based on PXE boot status
 ExecStart=/usr/local/bin/k3s agent \
   --server https://{{ apiserver_endpoint | ansible.utils.ipwrap }}:6443 \
   {% if is_pxe_booted | default(false) %}--snapshotter native \
