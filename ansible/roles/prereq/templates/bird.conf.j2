@@ -1,0 +1,26 @@
+# BIRD configuration for MetalLB BGP
+router id {{ ansible_default_ipv4.address }};
+
+protocol kernel {
+    persist;
+    scan time 20;
+    export all;
+}
+
+protocol device {
+    scan time 10;
+}
+
+protocol direct {
+    interface "*";
+}
+
+# BGP protocol for the peer
+protocol bgp my_peer {
+    local as {{ metal_lb_bgp_my_asn }};
+    neighbor {{ metal_lb_bgp_peer_address }} as {{ metal_lb_bgp_peer_asn }};
+    source address {{ ansible_default_ipv4.address }};
+    import all;
+    export all;
+    graceful restart on;
+}

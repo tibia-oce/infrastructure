@@ -33,6 +33,11 @@
     reload: true
   tags: sysctl
 
+- name: Deploy birdc daemon
+  ansible.builtin.include_tasks: birdc.yml
+  when: metal_lb_mode == "bgp" and (not cilium_bgp or cilium_iface is not defined)
+  tags: sysctl
+
 - name: Add br_netfilter to /etc/modules-load.d/
   ansible.builtin.copy:
     content: br_netfilter
@@ -68,6 +73,20 @@
     validate: visudo -cf %s
   when: ansible_os_family in [ "RedHat", "Suse" ]
 
+- name: Install common networking tools
+  become: true
+  apt:
+    name:
+      - net-tools
+      - curl
+      - wget
+      - dnsutils
+      - iputils-ping
+      - bird
+      - bridge-utils
+      - arping
+    state: present
+    update_cache: true
 
 # Pod and service network traffic
 - name: Allow pod network traffic from Cilium CIDR (10.52.0.0/16)
@@ -237,15 +256,27 @@
   - firewall
   - iptables
 
-- name: Install common networking tools
+# Allow BGP traffic (port 179)
+- name: Allow incoming BGP traffic (port 179)
+  ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 179 -j ACCEPT
   become: true
-  apt:
-    name:
-      - net-tools
-      - curl
-      - wget
-      - dnsutils
-      - iputils-ping
-    state: present
-    update_cache: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
 
+- name: Allow metallb ingress traffic (port 7946)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 7946 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow metallb egress traffic (port 7946)
+  ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 7946 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
