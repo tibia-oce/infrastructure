@@ -15,6 +15,7 @@ resource "oci_core_instance" "k3s_control_plane" {
     subnet_id        = var.subnet_id
     assign_public_ip = true
     nsg_ids          = var.network_groups
+    private_ip       = length(var.private_ips) > 0 ? element(var.private_ips, count.index) : null
   }
 
   source_details {

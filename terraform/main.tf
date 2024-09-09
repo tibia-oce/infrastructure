@@ -65,19 +65,9 @@ module "flexible_lb" {
   ]
 }
 
-# module "network_lb" {
-#   source                    = "./modules/load_balancers/network"
-#   display_name              = "my-network-lb"
-#   availability_domain       = data.oci_identity_availability_domains.ads.availability_domains[0].name
-#   subnet_cidr               = var.subnet_cidr
-#   compartment_ocid          = var.compartment_ocid
-#   subnet_id                 = module.network.subnet_id
-#   my_public_ip_cidr         = var.my_public_ip_cidr
-#   control_plane_private_ips = local.k3s_control_plane_private_ips
-# }
-
 module "control_plane" {
   # TODO: Add count to control plane module
+  private_ips = ["10.0.1.5"]
   source                = "./modules/compute/control_plane"
   ubuntu_arm_image_ocid = "ocid1.image.oc1.ap-sydney-1.aaaaaaaavr5qhtpawoy2ppcmuvd3eq2yz2tfxtukbuwdgisld26qjr7iioaa"
   shape                 = "VM.Standard.A1.Flex"
@@ -97,17 +87,18 @@ module "control_plane" {
 }
 
 module "workers_arm" {
+  arm_instance_count    = 2
+  private_ips = ["10.0.1.10", "10.0.1.11"]
   source                = "./modules/compute/workers_arm"
   ubuntu_arm_image_ocid = "ocid1.image.oc1.ap-sydney-1.aaaaaaaavr5qhtpawoy2ppcmuvd3eq2yz2tfxtukbuwdgisld26qjr7iioaa"
   shape                 = "VM.Standard.A1.Flex"
-  arm_instance_count    = 2
   memory_in_gbs         = 6
   ocpus                 = 1
   availability_domain   = data.oci_identity_availability_domains.ads.availability_domains[0].name
   compartment_ocid      = var.compartment_ocid
   subnet_id             = module.network.subnet_id
   ssh_authorized_keys   = data.hcp_vault_secrets_secret.ssh_public_key.secret_value
-  network_groups = [
+  network_groups        = [
     module.nsg.kubeapi_nsg_id,
     module.nsg.game_service_nsg_id,
     module.nsg.public_web_nsg_id,
@@ -117,10 +108,11 @@ module "workers_arm" {
 }
 
 module "workers_x86" {
+  x86_instance_count    = 0
+  private_ips = ["10.0.1.20", "10.0.1.21"]
   source                = "./modules/compute/workers_x86"
   ubuntu_x86_image_ocid = "ocid1.image.oc1.ap-sydney-1.aaaaaaaam3pvui5qih7wruqjnfjcjgnq2iiyirpg47rqjeyfarvse53t76ma"
   shape                 = "VM.Standard.E2.1.Micro"
-  x86_instance_count    = 0
   memory_in_gbs         = 1
   ocpus                 = 1
   availability_domain   = data.oci_identity_availability_domains.ads.availability_domains[0].name
@@ -135,3 +127,14 @@ module "workers_x86" {
     module.nsg.admin_nsg_id,
   ]
 }
+
+# module "network_lb" {
+#   source                    = "./modules/load_balancers/network"
+#   display_name              = "my-network-lb"
+#   availability_domain       = data.oci_identity_availability_domains.ads.availability_domains[0].name
+#   subnet_cidr               = var.subnet_cidr
+#   compartment_ocid          = var.compartment_ocid
+#   subnet_id                 = module.network.subnet_id
+#   my_public_ip_cidr         = var.my_public_ip_cidr
+#   control_plane_private_ips = local.k3s_control_plane_private_ips
+# }

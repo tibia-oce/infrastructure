@@ -14,6 +14,7 @@ resource "oci_core_instance" "k3s_worker_arm" {
   create_vnic_details {
     subnet_id        = var.subnet_id
     assign_public_ip = true
+    private_ip = length(var.private_ips) > 0 ? element(var.private_ips, count.index) : null
     nsg_ids          = var.network_groups
   }
 
