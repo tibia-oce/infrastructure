@@ -14,7 +14,7 @@
     - restrict the gateway/nsg ssh access to a whitelist
     - cloudflare tunnel? 
 - oci_core_public_ip.ignore_changes could be more specific
-- Create dedicated user 
+- Create bastion server for TF and Ansible
 
 -----
 
@@ -47,8 +47,8 @@ Generate provider and variables files:
 Ensure HCP Vault has required keys:
 
     ```
-    hcp profile init --vault-secrets --app <app_name>
-    hcp vault-secrets secrets create ssh_public_key --data-file=$HOME/.ssh/id_rsa.pub --app <app_name>
-    hcp vault-secrets secrets create ssh_private_key --data-file=$HOME/.ssh/id_rsa --app <app_name>
-    hcp vault-secrets secrets create oci_private_key --data-file=$HOME/.oci/oci_api_key.pem --app <app_name>
+    hcp profile init --vault-secrets --app tibia-oce
+    hcp vault-secrets secrets create ssh_public_key --data-file=$HOME/.ssh/id_rsa.pub --app tibia-oce
+    hcp vault-secrets secrets create ssh_private_key --data-file=$HOME/.ssh/id_rsa --app tibia-oce
+    hcp vault-secrets secrets create oci_private_key --data-file=$HOME/.oci/oci_api_key.pem --app tibia-oce
     ```
