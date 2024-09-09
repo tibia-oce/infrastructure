@@ -117,6 +117,17 @@ resource "oci_core_security_list" "internal_security_list" {
     }
   }
 
+  ingress_security_rules {
+    description = "Allow Cilium metrics traffic (port 9091)"
+    source      = "0.0.0.0/0"
+    protocol    = "6" # TCP
+
+    tcp_options {
+      min = 179
+      max = 179
+    }
+  }
+
   # CoreDNS DNS traffic
   ingress_security_rules {
     description = "Allow incoming DNS traffic (UDP port 53)"
