@@ -49,3 +49,6 @@ kubeconfig
 test-ansible/
 ansible/inventory.yml
 ansible-2/
+
+# MacOS
+.DS_Store
