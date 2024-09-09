@@ -6,8 +6,6 @@ metadata:
 spec:
   addresses:
 {% if metal_lb_ip_range is string %}
-{# metal_lb_ip_range was used in the legacy way: single string instead of a list #}
-{#   => transform to list with single element #}
 {% set metal_lb_ip_range = [metal_lb_ip_range] %}
 {% endif %}
 {% for range in metal_lb_ip_range %}
@@ -21,6 +19,11 @@ kind: L2Advertisement
 metadata:
   name: default
   namespace: metallb-system
+spec:
+  interfaces:
+    - enp0s6
+  ipAddressPools:
+    - first-pool
 {% endif %}
 {% if metal_lb_mode == "bgp" %}
 ---
