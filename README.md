@@ -35,7 +35,7 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 
 Here's a macroscopic overview of the state of the network, connecting all the compute nodes together, with the OCI load balancers.
 
-![network](https://raw.githubusercontent.com/tibia-oce/oci/main/docs/assets/drawings/topology.excalidraw.svg)
+![network](/docs/assets/drawings/topology.excalidraw.svg)
 
 <br>
 
