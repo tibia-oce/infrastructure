@@ -22,10 +22,13 @@ _... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
 [![Server](https://img.shields.io/static/v1?label=Server&message=Offline&color=red&style=for-the-badge&logo=v&logoColor=white)](#)&nbsp;&nbsp;
 [![Website](https://img.shields.io/static/v1?label=Website&message=Offline&color=red&style=for-the-badge&logo=statuspage&logoColor=white)](#)&nbsp;&nbsp;
 
-
 </div>
 
+<br>
+
 ---
+
+<br>
 
 # 🏠 Oracle K3S Cluster
 
