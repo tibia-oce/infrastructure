@@ -1,6 +1,32 @@
-<p align="center">
-  <img src="https://garutilorenzo.github.io/images/k3s-logo-large.png?" alt="k3s Logo"/>
-</p>
+<div align="center">
+
+<img src="https://miro.medium.com/v2/resize:fit:1024/0*tTUoVKGzxtZYA5xp.png" align="center" width="144px" height="144px"/>
+
+### Mythbound Tibia Infrastructure :octocat:
+
+_... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
+
+</div>
+
+<div align="center">
+
+[![Discord](https://img.shields.io/discord/1196758719048994856?style=for-the-badge&label&logo=discord&logoColor=white&color=blue)](https://discord.gg/)&nbsp;&nbsp;
+[![Kubernetes](https://img.shields.io/static/v1?label=K3s&message=v1.30.2&color=blue&style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)&nbsp;&nbsp;
+[![Renovate](https://img.shields.io/github/actions/workflow/status/tibia-oce/oci/renovate.yml?branch=main&label=&logo=renovatebot&style=for-the-badge&color=blue)](https://github.com/tibia-oce/oci/actions/workflows/renovate.yml)
+
+</div>
+
+<div align="center">
+
+[![Cluster](https://img.shields.io/static/v1?label=Cluster&message=Online&color=brightgreen&style=for-the-badge&logo=v&logoColor=white)](#)&nbsp;&nbsp;
+[![Server](https://img.shields.io/static/v1?label=Server&message=Offline&color=red&style=for-the-badge&logo=v&logoColor=white)](#)&nbsp;&nbsp;
+[![Website](https://img.shields.io/static/v1?label=Website&message=Offline&color=red&style=for-the-badge&logo=statuspage&logoColor=white)](#)&nbsp;&nbsp;
+
+</div>
+
+<br>
+
+---
 
 <br>
 
