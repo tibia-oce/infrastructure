@@ -9,6 +9,21 @@
     state: disabled
   when: ansible_os_family == "RedHat"
 
+- name: Install common networking tools
+  become: true
+  apt:
+    name:
+      - net-tools
+      - curl
+      - wget
+      - dnsutils
+      - iputils-ping
+      - bird
+      - bridge-utils
+      - arping
+    state: present
+    update_cache: true
+
 - name: Enable IPv4 forwarding
   ansible.posix.sysctl:
     name: net.ipv4.ip_forward
@@ -31,11 +46,6 @@
     value: "2"
     state: present
     reload: true
-  tags: sysctl
-
-- name: Deploy birdc daemon
-  ansible.builtin.include_tasks: birdc.yml
-  when: metal_lb_mode == "bgp" and (not cilium_bgp or cilium_iface is not defined)
   tags: sysctl
 
 - name: Add br_netfilter to /etc/modules-load.d/
@@ -72,21 +82,6 @@
     path: /etc/sudoers
     validate: visudo -cf %s
   when: ansible_os_family in [ "RedHat", "Suse" ]
-
-- name: Install common networking tools
-  become: true
-  apt:
-    name:
-      - net-tools
-      - curl
-      - wget
-      - dnsutils
-      - iputils-ping
-      - bird
-      - bridge-utils
-      - arping
-    state: present
-    update_cache: true
 
 # Pod and service network traffic
 - name: Allow pod network traffic from Cilium CIDR (10.52.0.0/16)

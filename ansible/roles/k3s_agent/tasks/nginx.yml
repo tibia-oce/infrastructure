@@ -1,0 +1,36 @@
+---
+- name: Install and configure NGINX on worker nodes
+  become: true
+  block:
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create the NGINX proxy configuration
+      copy:
+        dest: /etc/nginx/sites-available/default
+        content: |
+          server {
+              listen 80;
+              listen [::]:80;
+
+              location / {
+                  proxy_pass http://10.0.1.110:80;  # Forward to the MetalLB service IP for HTTP
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+
+    - name: Enable NGINX service
+      systemd:
+        name: nginx
+        enabled: yes
+        state: started
+
+    - name: Restart NGINX to apply changes
+      service:
+        name: nginx
+        state: restarted

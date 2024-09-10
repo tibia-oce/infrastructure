@@ -9,6 +9,11 @@
   tags: cilium
   when: cilium_iface is defined
 
+- name: Deploy birdc daemon
+  ansible.builtin.include_tasks: birdc.yml
+  when: metal_lb_mode == "bgp" and (not cilium_bgp or cilium_iface is not defined)
+  tags: sysctl
+
 - name: Deploy metallb pool
   ansible.builtin.include_tasks: metallb.yml
   tags: metallb

@@ -20,6 +20,11 @@
   ansible.builtin.include_tasks: http_proxy.yml
   when: proxy_env is defined
 
+- name: Deploy nginx manifest
+  ansible.builtin.include_tasks: nginx.yml
+  tags: nginx
+  when: metal_lb_mode == "layer2"
+
 - name: Configure the k3s service
   ansible.builtin.template:
     src: k3s.service.j2
