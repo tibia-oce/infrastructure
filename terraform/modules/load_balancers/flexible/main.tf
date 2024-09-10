@@ -52,8 +52,8 @@ module "https" {
   load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
 }
 
-module "dashboard" {
-  source                      = "./dashboard"
-  worker_node_private_ip_map   = var.worker_node_private_ip_map
-  load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
-}
+# module "dashboard" {
+#   source                      = "./dashboard"
+#   worker_node_private_ip_map   = var.worker_node_private_ip_map
+#   load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
+# }

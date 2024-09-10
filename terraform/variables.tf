@@ -167,3 +167,9 @@ variable "additional_trusted_sources" {
   type        = list(string)
   default     = ["10.0.0.0/24"]
 }
+
+variable "metal_lb_cidr" {
+  description = "The CIDR block of MetalLB network."
+  default     = "10.0.1.96/28" # Covers 10.0.1.96 - 10.0.1.111
+  type        = string
+}

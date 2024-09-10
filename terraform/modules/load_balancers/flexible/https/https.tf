@@ -1,33 +1,37 @@
 # ====================================================================
 # Backend Set, Listener, and Backends for HTTPS (port 443)
 # This defines the entire configuration for handling HTTPS traffic 
-# using NodePort 30443.
+# using port 443.
 # ====================================================================
 
-resource "oci_load_balancer_backend_set" "nodeport_https_backend_set" {
+resource "oci_load_balancer_backend_set" "proxy_https_backend_set" {
   load_balancer_id = var.load_balancer_id
-  name             = "nodeport-https-backend"
+  name             = "https-proxy-backend"
   policy           = "ROUND_ROBIN"
 
   health_checker {
-    protocol = "TCP"
-    port     = 30443  # Health check for HTTPS on NodePort 30443
+    protocol = "HTTPS"
+    url_path = "/"
+    port     = 443
+    return_code = 200
+    retries      = 3
+    timeout_in_millis = 3000
   }
 }
 
-resource "oci_load_balancer_listener" "nodeport_https_listener" {
+resource "oci_load_balancer_listener" "proxy_https_listener" {
   load_balancer_id         = var.load_balancer_id
-  name                     = "nodeport-listener-https"
+  name                     = "https-proxy-backend"
   protocol                 = "TCP"
-  port                     = 443  # External port for HTTPS
-  default_backend_set_name = oci_load_balancer_backend_set.nodeport_https_backend_set.name
-  depends_on               = [oci_load_balancer_backend_set.nodeport_https_backend_set]
+  port                     = 443
+  default_backend_set_name = oci_load_balancer_backend_set.proxy_https_backend_set.name
+  depends_on               = [oci_load_balancer_backend_set.proxy_https_backend_set]
 }
 
-resource "oci_load_balancer_backend" "nodeport_https_backend" {
+resource "oci_load_balancer_backend" "proxy_https_backend" {
   for_each         = var.worker_node_private_ip_map
-  backendset_name  = oci_load_balancer_backend_set.nodeport_https_backend_set.name
+  backendset_name  = oci_load_balancer_backend_set.proxy_https_backend_set.name
   ip_address       = each.value
   load_balancer_id = var.load_balancer_id
-  port             = 30443  # NodePort for HTTPS on worker nodes
+  port             = 443
 }
