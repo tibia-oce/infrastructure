@@ -74,6 +74,38 @@ resource "oci_core_network_security_group_security_rule" "kubernetes_dashboard_i
   }
 }
 
+# MetalLB
+resource "oci_core_network_security_group_security_rule" "metallb_comms" {
+  source                    = "0.0.0.0/0"
+  network_security_group_id = oci_core_network_security_group.nsg_admin.id
+  direction                 = "INGRESS"
+  protocol                  = "6" # TCP
+  source_type               = "CIDR_BLOCK"
+  
+  tcp_options {
+    destination_port_range {
+      min = 7946
+      max = 7946
+    }
+  }
+}
+
+# BGP
+resource "oci_core_network_security_group_security_rule" "bgp_comms" {
+  source                    = "0.0.0.0/0"
+  network_security_group_id = oci_core_network_security_group.nsg_admin.id
+  direction                 = "INGRESS"
+  protocol                  = "6" # TCP
+  source_type               = "CIDR_BLOCK"
+  
+  tcp_options {
+    destination_port_range {
+      min = 179
+      max = 179
+    }
+  }
+}
+
 # Cilium CIDR (Pod-to-pod traffic)
 resource "oci_core_network_security_group_security_rule" "cilium_internal_ingress" {
   network_security_group_id = oci_core_network_security_group.nsg_admin.id

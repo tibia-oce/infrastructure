@@ -19,6 +19,12 @@ variable "kube_api_port" {
   default     = 6443
 }
 
+variable "bgp_port" {
+  description = "Port number for the Kubernetes API."
+  type        = number
+  default     = 179
+}
+
 variable "subnet_cidr" {
   description = "The CIDR block of the subnet within the VCN."
   type        = string

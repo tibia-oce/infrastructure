@@ -1,154 +1,163 @@
-# Build a Kubernetes cluster using K3s via Ansible
+# Automated build of HA k3s Cluster with `kube-vip` and MetalLB
 
-Author: <https://github.com/itwars>  
-Current Maintainer: <https://github.com/dereknola>
+![Fully Automated K3S etcd High Availability Install](https://img.youtube.com/vi/CbkEWcUZ7zM/0.jpg)
 
-Easily bring up a cluster on machines running:
+This playbook will build an HA Kubernetes cluster with `k3s`, `kube-vip` and MetalLB via `ansible`.
 
-- [X] Debian
-- [X] Ubuntu
-- [X] Raspberry Pi OS
-- [X] RHEL Family (CentOS, Redhat, Rocky Linux...)
-- [X] SUSE Family (SLES, OpenSUSE Leap, Tumbleweed...)
-- [X] ArchLinux
+This is based on the work from [this fork](https://github.com/212850a/k3s-ansible) which is based on the work from [k3s-io/k3s-ansible](https://github.com/k3s-io/k3s-ansible). It uses [kube-vip](https://kube-vip.io/) to create a load balancer for control plane, and [metal-lb](https://metallb.universe.tf/installation/) for its service `LoadBalancer`.
 
-on processor architectures:
+If you want more context on how this works, see:
+
+📄 [Documentation](https://technotim.live/posts/k3s-etcd-ansible/) (including example commands)
+
+📺 [Watch the Video](https://www.youtube.com/watch?v=CbkEWcUZ7zM)
+
+## 📖 k3s Ansible Playbook
+
+Build a Kubernetes cluster using Ansible with k3s. The goal is easily install a HA Kubernetes cluster on machines running:
+
+- [x] Debian (tested on version 11)
+- [x] Ubuntu (tested on version 22.04)
+- [x] Rocky (tested on version 9)
+
+on processor architecture:
 
 - [X] x64
 - [X] arm64
 - [X] armhf
 
-## System requirements
+## ✅ System requirements
 
-The control node **must** have Ansible 8.0+ (ansible-core 2.15+)
+- Control Node (the machine you are running `ansible` commands) must have Ansible 2.11+ If you need a quick primer on Ansible [you can check out my docs and setting up Ansible](https://technotim.live/posts/ansible-automation/).
 
-All managed nodes in inventory must have:
-- Passwordless SSH access
-- Root access (or a user with equivalent permissions) 
+- You will also need to install collections that this playbook uses by running `ansible-galaxy collection install -r ./collections/requirements.yml` (important❗)
 
-It is also recommended that all managed nodes disable firewalls and swap. See [K3s Requirements](https://docs.k3s.io/installation/requirements) for more information.
+- [`netaddr` package](https://pypi.org/project/netaddr/) must be available to Ansible. If you have installed Ansible via apt, this is already taken care of. If you have installed Ansible via `pip`, make sure to install `netaddr` into the respective virtual environment.
 
-## Usage
+- `server` and `agent` nodes should have passwordless SSH access, if not you can supply arguments to provide credentials `--ask-pass --ask-become-pass` to each command.
 
-First copy the sample inventory to `inventory.yml`.
+## 🚀 Getting Started
+
+### 🍴 Preparation
+
+First create a new directory based on the `sample` directory within the `inventory` directory:
 
 ```bash
-cp inventory-sample.yml inventory.yml
+cp -R inventory/sample inventory/my-cluster
 ```
 
-Second edit the inventory file to match your cluster setup. For example:
-```bash
-k3s_cluster:
-  children:
-    server:
-      hosts:
-        192.16.35.11:
-    agent:
-      hosts:
-        192.16.35.12:
-        192.16.35.13:
+Second, edit `inventory/my-cluster/hosts.ini` to match the system information gathered above
+
+For example:
+
+```ini
+[master]
+192.168.30.38
+192.168.30.39
+192.168.30.40
+
+[node]
+192.168.30.41
+192.168.30.42
+
+[k3s_cluster:children]
+master
+node
 ```
 
-If needed, you can also edit `vars` section at the bottom to match your environment.
+If multiple hosts are in the master group, the playbook will automatically set up k3s in [HA mode with etcd](https://rancher.com/docs/k3s/latest/en/installation/ha-embedded/).
 
-If multiple hosts are in the server group the playbook will automatically setup k3s in HA mode with embedded etcd.
-An odd number of server nodes is required (3,5,7). Read the [official documentation](https://docs.k3s.io/datastore/ha-embedded) for more information.
+Finally, copy `ansible.example.cfg` to `ansible.cfg` and adapt the inventory path to match the files that you just created.
 
-Setting up a loadbalancer or VIP beforehand to use as the API endpoint is possible but not covered here.
+This requires at least k3s version `1.19.1` however the version is configurable by using the `k3s_version` variable.
 
+If needed, you can also edit `inventory/my-cluster/group_vars/all.yml` to match your environment.
+
+### ☸️ Create Cluster
 
 Start provisioning of the cluster using the following command:
 
 ```bash
-ansible-playbook playbooks/site.yml -i inventory.yml
+ansible-playbook site.yml -i inventory/my-cluster/hosts.ini
 ```
 
-### Using an external database
+After deployment control plane will be accessible via virtual ip-address which is defined in inventory/group_vars/all.yml as `apiserver_endpoint`
 
-If an external database is preferred, this can be achieved by passing the `--datastore-endpoint` as an extra server argument as well as setting the `use_external_database` flag to true.
+### 🔥 Remove k3s cluster
 
 ```bash
-k3s_cluster:
-  children:
-    server:
-      hosts:
-        192.16.35.11:
-        192.16.35.12:
-    agent:
-      hosts:
-        192.16.35.13:
-
-  vars:
-    use_external_database: true
-    extra_server_args: "--datastore-endpoint=postgres://username:password@hostname:port/database-name"
+ansible-playbook reset.yml -i inventory/my-cluster/hosts.ini
 ```
 
-The `use_external_database` flag is required when more than one server is defined, as otherwise an embedded etcd cluster will be created instead.
+>You should also reboot these nodes due to the VIP not being destroyed
 
-The format of the datastore-endpoint parameter is dependent upon the datastore backend, please visit the [K3s datastore endpoint format](https://docs.k3s.io/datastore#datastore-endpoint-format-and-functionality) for details on the format and supported datastores.
+## ⚙️ Kube Config
 
-## Upgrading
-
-A playbook is provided to upgrade K3s on all nodes in the cluster. To use it, update `k3s_version` with the desired version in `inventory.yml` and run:
+To copy your `kube config` locally so that you can access your **Kubernetes** cluster run:
 
 ```bash
-ansible-playbook playbooks/upgrade.yml -i inventory.yml
+scp debian@master_ip:/etc/rancher/k3s/k3s.yaml ~/.kube/config
 ```
-
-## Airgap Install
-
-Airgap installation is supported via the `airgap_dir` variable. This variable should be set to the path of a directory containing the K3s binary and images. The release artifacts can be downloaded from the [K3s Releases](https://github.com/k3s-io/k3s/releases). You must download the appropriate images for you architecture (any of the compression formats will work).
-
-An example folder for an x86_64 cluster:
+If you get file Permission denied, go into the node and temporarly run:
 ```bash
-$ ls ./playbooks/my-airgap/
-total 248M
--rwxr-xr-x 1 $USER $USER  58M Nov 14 11:28 k3s
--rw-r--r-- 1 $USER $USER 190M Nov 14 11:30 k3s-airgap-images-amd64.tar.gz
-
-$ cat inventory.yml
-...
-airgap_dir: ./my-airgap # Paths are relative to the playbooks directory
+sudo chmod 777 /etc/rancher/k3s/k3s.yaml
 ```
-
-Additionally, if deploying on a OS with SELinux, you will also need to download the latest [k3s-selinux RPM](https://github.com/k3s-io/k3s-selinux/releases/latest) and place it in the airgap folder.
-
-
-It is assumed that the control node has access to the internet. The playbook will automatically download the k3s install script on the control node, and then distribute all three artifacts to the managed nodes. 
-
-## Kubeconfig
-
-After successful bringup, the kubeconfig of the cluster is copied to the control node  and merged with `~/.kube/config` under the `k3s-ansible` context.
-Assuming you have [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) installed, you can confirm access to your **Kubernetes** cluster with the following:
-
+Then copy with the scp command and reset the permissions back to:
 ```bash
-kubectl config use-context k3s-ansible
-kubectl get nodes
+sudo chmod 600 /etc/rancher/k3s/k3s.yaml
 ```
 
-If you wish for your kubeconfig to be copied elsewhere and not merged, you can set the `kubeconfig` variable in `inventory.yml` to the desired path.
-
-## Local Testing
-
-A Vagrantfile is provided that provision a 5 nodes cluster using Vagrant (LibVirt or Virtualbox as provider). To use it:
-
+You'll then want to modify the config to point to master IP by running:
 ```bash
-vagrant up
+sudo nano ~/.kube/config
+```
+Then change `server: https://127.0.0.1:6443` to match your master IP: `server: https://192.168.1.222:6443`
+
+### 🔨 Testing your cluster
+
+See the commands [here](https://technotim.live/posts/k3s-etcd-ansible/#testing-your-cluster).
+
+### Troubleshooting
+
+Be sure to see [this post](https://github.com/techno-tim/k3s-ansible/discussions/20) on how to troubleshoot common problems
+
+### Testing the playbook using molecule
+
+This playbook includes a [molecule](https://molecule.rtfd.io/)-based test setup.
+It is run automatically in CI, but you can also run the tests locally.
+This might be helpful for quick feedback in a few cases.
+You can find more information about it [here](molecule/README.md).
+
+### Pre-commit Hooks
+
+This repo uses `pre-commit` and `pre-commit-hooks` to lint and fix common style and syntax errors.  Be sure to install python packages and then run `pre-commit install`.  For more information, see [pre-commit](https://pre-commit.com/)
+
+## 🌌 Ansible Galaxy
+
+This collection can now be used in larger ansible projects.
+
+Instructions:
+
+- create or modify a file `collections/requirements.yml` in your project
+
+```yml
+collections:
+  - name: ansible.utils
+  - name: community.general
+  - name: ansible.posix
+  - name: kubernetes.core
+  - name: https://github.com/techno-tim/k3s-ansible.git
+    type: git
+    version: master
 ```
 
-By default, each node is given 2 cores and 2GB of RAM and runs Ubuntu 20.04. You can customize these settings by editing the `Vagrantfile`.
+- install via `ansible-galaxy collection install -r ./collections/requirements.yml`
+- every role is now available via the prefix `techno_tim.k3s_ansible.` e.g. `techno_tim.k3s_ansible.lxc`
 
-## Need More Features?
+## Thanks 🤝
 
-This project is intended to provide a "vanilla" K3s install. If you need more features, such as:
-- Private Registry
-- Advanced Storage (Longhorn, Ceph, etc)
-- External Database
-- External Load Balancer or VIP
-- Alternative CNIs
+This repo is really standing on the shoulders of giants. Thank you to all those who have contributed and thanks to these repos for code and ideas:
 
-See these other projects:
-- https://github.com/PyratLabs/ansible-role-k3s
-- https://github.com/techno-tim/k3s-ansible
-- https://github.com/jon-stumpf/k3s-ansible
-- https://github.com/alexellis/k3sup
+- [k3s-io/k3s-ansible](https://github.com/k3s-io/k3s-ansible)
+- [geerlingguy/turing-pi-cluster](https://github.com/geerlingguy/turing-pi-cluster)
+- [212850a/k3s-ansible](https://github.com/212850a/k3s-ansible)

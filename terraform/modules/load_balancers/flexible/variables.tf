@@ -43,3 +43,13 @@ variable "security_lists" {
   description = "The list of NSG IDs for traffic."
   type        = list(string)
 }
+
+variable "api_https_port" {
+  type        = number
+  default = 433
+}
+
+variable "api_http_port" {
+  type        = number
+  default = 80
+}

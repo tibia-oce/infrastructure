@@ -1,0 +1,32 @@
+---
+- name: Install and Configure BIRD for MetalLB BGP
+  when: metal_lb_mode == "bgp"
+  block:
+
+    - name: Install BIRD routing daemon
+      package:
+        name: bird
+        state: present
+
+    - name: Deploy BIRD configuration from template
+      template:
+        src: templates/bird.conf.j2
+        dest: /etc/bird/bird.conf
+        owner: root
+        group: root
+        mode: '0644'
+        backup: yes
+
+    - name: Ensure BIRD is enabled and running
+      systemd:
+        name: bird
+        enabled: yes
+        state: started
+
+    - name: Check BIRD status
+      shell: birdc show protocols all
+      register: bird_status
+
+    - name: Output BIRD status
+      debug:
+        var: bird_status.stdout

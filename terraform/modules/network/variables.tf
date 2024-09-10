@@ -28,3 +28,9 @@ variable "security_lists" {
   description = "The list of NSG IDs for traffic."
   type        = list(string)
 }
+
+variable "metal_lb_cidr" {
+  description = "The CIDR block of MetalLB network."
+  default     = "10.0.1.96/28"
+  type        = string
+}

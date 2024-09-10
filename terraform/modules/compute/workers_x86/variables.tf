@@ -50,5 +50,10 @@ variable "ssh_authorized_keys" {
 variable "x86_instance_count" {
   description = "The number of x86 worker instances to create."
   type        = number
-  default     = 1
+  default     = 0
+}
+
+variable "private_ips" {
+  type    = list(string)
+  default = []
 }

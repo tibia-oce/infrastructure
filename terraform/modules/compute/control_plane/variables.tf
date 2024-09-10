@@ -51,3 +51,8 @@ variable "ssh_authorized_keys" {
   description = "The SSH authorized keys for the instance."
   type        = string
 }
+
+variable "private_ips" {
+  type    = list(string)
+  default = []
+}

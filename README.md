@@ -6,10 +6,6 @@
 
 # 🏠 Oracle K3S Cluster
 
-> [!NOTE]
->
-> This repository is for demonstration only and not recommended for production. It uses [OCI always-free](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm), re-claimable compute instances, which after the 30-day trial, OCI may stop, hibernate, or terminate.
-
 This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for free on Oracle [always free resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).  Infrastructure provisioning, configuration and deployments are managed with Infrastructure as Code (IaC) and GitOps; using toolings from [Ansible](https://www.ansible.com/), [HashiCorp](https://www.hashicorp.com/), [Kubernetes](https://kubernetes.io/), [Helm](https://github.com/helm/helm), [Kustomize](https://kustomize.io/), [ArgoCD](https://github.com/argoproj/argo-cd), [Renovate](https://github.com/renovatebot/renovate), and [GitHub Actions](https://github.com/features/actions).
 
 <br>
@@ -20,34 +16,25 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 [Terraform Cloud](https://www.hashicorp.com/products/terraform) handles the locking and consistency of state files, which helps prevent issues that might arise from multiple users or processes trying to modify the state simultaneously.
 
 ### GitOps
-[Argo](https://argo-cd.readthedocs.io/en/stable/) watches the definitions in the kubernetes folder and makes the changes to the clusters based on the state of the Git repository. [Renovate](https://github.com/renovatebot/renovate) watches the entire repository looking for dependency updates, when they are found a PR is automatically created. When some PRs are merged Flux applies the changes to the cluster.
+[Argo](https://argo-cd.readthedocs.io/en/stable/) watches the definitions in the kubernetes folder and makes the changes to the clusters based on the state of the Git repository. [Renovate](https://github.com/renovatebot/renovate) watches the repository looking for dependency updates, when they are found a PR is automatically created. When some PRs are merged Argo applies the changes to the cluster.
 
 ### Core Components
 
 - [cert-manager](https://github.com/cert-manager/cert-manager): Creates SSL certificates for services in the cluster.
-- [cilium](https://github.com/cilium/cilium): Internal Kubernetes container networking interface.
-- [cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.
-- [traefik](https://doc.traefik.io/traefik/): Kubernetes nodeport ingress controller using Traefik as a proxy and load balancer.
+- [flannel](https://github.com/flannel-io/flannel): internal Kubernetes container networking interface.
+- [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an os-level pass through proxy to support cloud integration
+- [traefik](https://doc.traefik.io/traefik/): ingress controller LoadBlancer service acting as a reverse proxy for tls termination and service load balancing
+- ~~[cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.~~
 
 <br>
 
 ## 🌐 Network topology
 
-Here's a macroscopic overview of the state of the network, connecting all the compute nodes together, with the OCI load balancers.
+Here's a macroscopic overview of the state of the network, integrated with Oracle ingress points.
 
-![network](https://raw.githubusercontent.com/tibia-oce/oci/main/docs/assets/drawings/topology.excalidraw.svg)
+![network](/docs/assets/drawings/topology.excalidraw.svg)
 
 <br>
-
-## 🔧 Requirements
-
-To use this repo you will need:
-
-* an Oracle Cloud account. You can register [here](https://cloud.oracle.com)
-
-Once you get the account, follow the *Before you begin* and *Prepare* steps in [this](https://docs.oracle.com/en-us/iaas/developer-tutorials/tutorials/tf-provider/01-summary.htm) document.
-
-<br> 
 
 ### 📁 Directories
 
@@ -74,6 +61,23 @@ This Git repository contains the following directories:
 ```
 
 <br>
+
+## 🔧 Requirements
+
+> [!NOTE]
+>
+> This repository is for demonstration only and not recommended for production. It uses [OCI always-free](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm), re-claimable compute instances, which after the 30-day trial, OCI may stop, hibernate, or terminate.
+
+To use this repo you will need:
+
+* an Oracle Cloud account.
+* a HCP Vault account.
+* a HCP Terraform account.
+* a HCP Service Principal.
+
+Read more [here](/docs/0-setup.md).
+
+<br> 
 
 ## 🤙 Related projects & many thanks 
 

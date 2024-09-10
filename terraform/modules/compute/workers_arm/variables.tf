@@ -51,3 +51,8 @@ variable "arm_instance_count" {
   type        = number
   default     = 1
 }
+
+variable "private_ips" {
+  type    = list(string)
+  default = []
+}

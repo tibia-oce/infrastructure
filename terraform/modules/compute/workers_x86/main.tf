@@ -1,9 +1,9 @@
 resource "oci_core_instance" "k3s_worker_x86" {
-  for_each = { for idx in range(var.x86_instance_count) : idx => idx }
+  count = var.x86_instance_count
 
   availability_domain = var.availability_domain
   compartment_id      = var.compartment_ocid
-  display_name        = format("k3s-worker-x86-%d", each.key)
+  display_name        = format("k3s-worker-x86-%d", count.index)
   shape               = var.shape
 
   shape_config {
@@ -14,6 +14,7 @@ resource "oci_core_instance" "k3s_worker_x86" {
   create_vnic_details {
     subnet_id        = var.subnet_id
     assign_public_ip = true
+    private_ip = length(var.private_ips) > 0 ? element(var.private_ips, count.index) : null
     nsg_ids          = var.network_groups
   }
 

@@ -1,0 +1,27 @@
+---
+- name: Install and configure NGINX on worker nodes
+  become: true
+  block:
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create the NGINX proxy configuration using template
+      ansible.builtin.template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Enable NGINX service
+      systemd:
+        name: nginx
+        enabled: yes
+        state: started
+
+    - name: Restart NGINX to apply changes
+      service:
+        name: nginx
+        state: restarted
