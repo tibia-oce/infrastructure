@@ -121,11 +121,14 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
 	kubectl get pods -n kube-system -o wide
 	
-	# @printf "$(GREEN)Deploying Traefik...$(NC)\n
 	# kubectl apply -k ./ansible/example/nonse/
 	# kubectl delete -f ansible/example/traefik.yml
-	# kubectl apply -f ansible/example/deployment.yml
 	# kubectl apply -f ansible/example/service.yml
+
+nginx:
+	@printf "$(GREEN)Deploying Example App...$(NC)\n"
+	kubectl apply -f ansible/example/deployment.yml
+	kubectl get svc nginx
 
 deploy-traefik:
 	# kubectl delete deployment traefik -n kube-system
@@ -196,37 +199,14 @@ test-dns:
 coredns-logs:
 	@kubectl logs -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].metadata.name}')
 
-# Fetch logs for metrics-server pod in kube-system namespace
 metrics-server-logs:
 	@kubectl logs -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=metrics-server -o jsonpath='{.items[0].metadata.name}')
 
 cilium-service-list:
 	@kubectl exec -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- cilium service list
 
-# Get the status of Cilium
 cilium-status:
 	@kubectl exec -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- cilium status
 
 cilium-lb-routes:
 	kubectl exec -n kube-system $(kubectl get pod -l k8s-app=cilium -n kube-system -o jsonpath='{.items[0].metadata.name}') -- cilium bpf lb list
-
-# Remove metrics server
-# kubectl delete deployment metrics-server -n kube-system
-# kubectl delete apiservice v1beta1.metrics.k8s.io
-
-# Restart metrics server
-# kubectl scale deployment metrics-server -n kube-system --replicas=0
-# kubectl scale deployment metrics-server -n kube-system --replicas=1
-
-# kubectl run curlpod --image=radial/busyboxplus:curl -i --tty --rm --restart=Never -- sh
-
-# kubectl run curlpod --image=busybox:1.34.1-uclibc-arm64 --restart=Never -i --tty --rm -- sh
-
-# kubectl run curlpodd --image=arm64v8/ubuntu --restart=Never -i --tty --rm -- bash
-
-
-# kubectl create secret generic traefik-ingress-controller-token --from-literal=token="$(openssl rand -base64 64)" -n default
-# kubectl create serviceaccount traefik-ingress-controller -n default
-# kubectl patch serviceaccount traefik-ingress-controller -n default -p '{"secrets": [{"name": "traefik-ingress-controller-token"}]}'
-# kubectl rollout restart deployment traefik -n default
-
