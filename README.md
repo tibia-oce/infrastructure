@@ -36,23 +36,6 @@ Here's a macroscopic overview of the state of the network, integrated with Oracl
 
 <br>
 
-## 🔧 Requirements
-
-> [!NOTE]
->
-> This repository is for demonstration only and not recommended for production. It uses [OCI always-free](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm), re-claimable compute instances, which after the 30-day trial, OCI may stop, hibernate, or terminate.
-
-To use this repo you will need:
-
-* an Oracle Cloud account.
-* a HCP Vault account.
-* a HCP Terraform account.
-* a HCP Service Principal.
-
-Read more [here](/docs/0-setup.md).
-
-<br> 
-
 ### 📁 Directories
 
 This Git repository contains the following directories:
@@ -78,6 +61,23 @@ This Git repository contains the following directories:
 ```
 
 <br>
+
+## 🔧 Requirements
+
+> [!NOTE]
+>
+> This repository is for demonstration only and not recommended for production. It uses [OCI always-free](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm), re-claimable compute instances, which after the 30-day trial, OCI may stop, hibernate, or terminate.
+
+To use this repo you will need:
+
+* an Oracle Cloud account.
+* a HCP Vault account.
+* a HCP Terraform account.
+* a HCP Service Principal.
+
+Read more [here](/docs/0-setup.md).
+
+<br> 
 
 ## 🤙 Related projects & many thanks 
 
