@@ -13,7 +13,8 @@ spec:
     - port: 80
       targetPort: 80
   type: LoadBalancer
-  loadBalancerIP: 10.0.1.110 # Static IP from MetalLB pool
+  # Static IP from MetalLB pool
+  loadBalancerIP: 10.0.1.110
 
 ---
 apiVersion: apps/v1
@@ -24,7 +25,7 @@ spec:
   selector:
     matchLabels:
       app: nginx
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
