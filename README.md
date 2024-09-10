@@ -10,14 +10,6 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 
 <br>
 
-## 🌐 Network topology
-
-Here's a macroscopic overview of the state of the network, integrated with Oracle ingress points.
-
-![network](/docs/assets/drawings/topology.excalidraw.svg)
-
-<br>
-
 ## ⛵ Features
 
 ### State Management
@@ -33,6 +25,14 @@ Here's a macroscopic overview of the state of the network, integrated with Oracl
 - [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an os-level pass through proxy to support cloud integration
 - [traefik](https://doc.traefik.io/traefik/): ingress controller LoadBlancer service acting as a reverse proxy for tls termination and service load balancing
 - ~~[cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.~~
+
+<br>
+
+## 🌐 Network topology
+
+Here's a macroscopic overview of the state of the network, integrated with Oracle ingress points.
+
+![network](/docs/assets/drawings/topology.excalidraw.svg)
 
 <br>
 
