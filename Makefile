@@ -13,6 +13,7 @@ export VENV_DIR=".venv"
 export TF_OUTPUT_FILE="$(TF_DIR)/terraform_output.json"
 export ANSIBLE_INVENTORY_DIR="ansible/inventory"
 export ANSIBLE_INVENTORY_FILE="$(ANSIBLE_INVENTORY_DIR)/hosts.ini"
+export ANSIBLE_PRIVATE_KEY_PATH="~/.ssh/id_rsa"
 
 # Generate a hidden tfvars file with OCI credentials from the Terraform agent
 tfvars:
@@ -89,21 +90,9 @@ generate-inventory: terraform-output
 	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
 	
 	@echo "[all:vars]" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "ansible_user=ubuntu" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "ansible_ssh_private_key_file=~/.ssh/id_rsa" >> $(ANSIBLE_INVENTORY_FILE)
-	
-	@load_balancer_ip=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE)); \
-	token=$$(pwgen -s 64 1); \
-	if [ "$$(uname)" = "Darwin" ]; then \
-		sed -i "" "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml; \
-		sed -i "" "s|k3s_token:.*|k3s_token: $$token|" ./ansible/inventory/group_vars/all.yml; \
-	else \
-		sed -i "s|apiserver_endpoint:.*|apiserver_endpoint: $$load_balancer_ip|" ./ansible/inventory/group_vars/all.yml; \
-		sed -i "s|k3s_token:.*|k3s_token: $$token|" ./ansible/inventory/group_vars/all.yml; \
-	fi
-	@printf "$(GREEN)Updated apiserver_endpoint and k3s_token in all.yml with the load_balancer_public_ip and a new token...$(NC)\n"
-
+	@echo "apiserver_endpoint=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "k3s_token=$$(jq -r '.k3s_token.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "ansible_ssh_private_key_file=${ANSIBLE_PRIVATE_KEY_PATH}" >> $(ANSIBLE_INVENTORY_FILE)
 
 # Set up Python virtual environment and install Ansible
 setup-env:

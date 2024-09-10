@@ -42,6 +42,12 @@ variable "ssh_public_key_secret_name" {
   default     = "ssh_public_key"
 }
 
+variable "k3s_token" {
+  description = "The name of the k3s token secret in Vault."
+  type        = string
+  default     = "k3s_token"
+}
+
 # ====================================================================
 # OCI (Oracle Cloud Infrastructure) Configuration
 # These variables define the essential identifiers and configuration

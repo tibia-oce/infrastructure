@@ -1,9 +1,5 @@
 ---
-# TODO: Move k3s_token, and apiserver_endpoint to hosts.ini vars
-# TODO: Organise var groups better
 k3s_version: v1.30.2+k3s2
-apiserver_endpoint: 192.9.162.252
-k3s_token: 7AKVLIgjdkW5ct84BsMoJHIGjjBnNQVkJex9DC5z0XVpPjNz9JxwEqTj2Rh1AZIh
 ansible_user: ubuntu
 systemd_dir: /etc/systemd/system
 system_timezone: Australia/Sydney
@@ -14,9 +10,14 @@ metal_lb_mode: layer2
 metal_lb_speaker_tag_version: v0.14.8
 metal_lb_controller_tag_version: v0.14.8
 metal_lb_ip_range: 10.0.1.96-10.0.1.111 # "10.0.1.96/28"
-metal_lb_bgp_peer_address: 168.138.110.132
+metal_lb_bgp_peer_address: 10.0.1.1
 metal_lb_bgp_peer_asn: "64513"
 metal_lb_bgp_my_asn: "64512"
+
+# LoadBalancer services
+metal_lb_api_proxy: 10.0.1.110
+https_port: 443
+http_port: 80
 
 # Interface which will be used for flannel
 flannel_iface: enp0s6

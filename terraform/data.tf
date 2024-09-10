@@ -17,6 +17,11 @@ data "hcp_vault_secrets_secret" "ssh_public_key" {
   secret_name = var.ssh_public_key_secret_name
 }
 
+data "hcp_vault_secrets_secret" "k3s_token" {
+  app_name    = var.vault_app_name
+  secret_name = var.k3s_token
+}
+
 data "oci_core_vnic_attachments" "k3s_control_plane_vnic_attachment" {
   for_each       = { for idx, id in module.control_plane.control_plane_instance_ids : idx => id }
   compartment_id = var.compartment_ocid

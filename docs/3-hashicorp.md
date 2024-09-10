@@ -45,6 +45,8 @@ hcp profile init --vault-secrets --app <app_name>
 hcp vault-secrets secrets create ssh_public_key --data-file=$HOME/.ssh/id_rsa.pub --app <app_name>
 hcp vault-secrets secrets create ssh_private_key --data-file=$HOME/.ssh/id_rsa --app <app_name>
 hcp vault-secrets secrets create oci_private_key --data-file=$HOME/.oci/oci_api_key.pem --app <app_name>
+pwgen -s 64 1 | hcp vault-secrets secrets create k3s_token --data-file=- --app <app_name>
+
 ```
 
 # References

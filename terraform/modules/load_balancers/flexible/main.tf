@@ -26,10 +26,9 @@ resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
 
 # ====================================================================
 # Module Configurations
-# The following modules define the HTTP, HTTPS, and Traefik dashboard 
+# The following modules define the path based routing to the cluster
 # services, which integrate with the Flexible Load Balancer. Each module 
-# handles a specific type of traffic and routes it to the appropriate 
-# NodePort services running on the Kubernetes worker nodes.
+# handles a specific route of traffic.
 # ====================================================================
 
 module "kubeapi" {
@@ -40,20 +39,11 @@ module "kubeapi" {
   kube_api_port = var.kube_api_port
 }
 
-module "http" {
-  source                      = "./http"
-  worker_node_private_ip_map   = var.worker_node_private_ip_map
-  load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
+module "api" {
+  source                      = "./api"
+  worker_node_private_ip_map  = var.worker_node_private_ip_map
+  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+  url_path                    = "/api"
+  https_port                  = 433
+  http_port                   = 80
 }
-
-module "https" {
-  source                      = "./https"
-  worker_node_private_ip_map   = var.worker_node_private_ip_map
-  load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
-}
-
-# module "dashboard" {
-#   source                      = "./dashboard"
-#   worker_node_private_ip_map   = var.worker_node_private_ip_map
-#   load_balancer_id             = oci_load_balancer_load_balancer.kubeapi_lb.id
-# }

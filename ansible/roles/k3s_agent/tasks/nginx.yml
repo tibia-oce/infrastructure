@@ -7,22 +7,13 @@
         name: nginx
         state: present
 
-    - name: Create the NGINX proxy configuration
-      copy:
+    - name: Create the NGINX proxy configuration using template
+      ansible.builtin.template:
+        src: nginx.conf.j2
         dest: /etc/nginx/sites-available/default
-        content: |
-          server {
-              listen 80;
-              listen [::]:80;
-
-              location / {
-                  proxy_pass http://10.0.1.110:80;  # Forward to the MetalLB service IP for HTTP
-                  proxy_set_header Host $host;
-                  proxy_set_header X-Real-IP $remote_addr;
-                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $scheme;
-              }
-          }
+        owner: root
+        group: root
+        mode: "0644"
 
     - name: Enable NGINX service
       systemd:
