@@ -18,7 +18,7 @@ _... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
 
 <div align="center">
 
-[![Cluster](https://img.shields.io/static/v1?label=Cluster&message=Offline&color=red&style=for-the-badge&logo=statuspage&logoColor=white)](#)&nbsp;&nbsp;
+[![Cluster](https://img.shields.io/static/v1?label=Cluster&message=Online&color=brightgreen&style=for-the-badge&logo=v&logoColor=white)](#)&nbsp;&nbsp;
 [![Server](https://img.shields.io/static/v1?label=Server&message=Offline&color=red&style=for-the-badge&logo=v&logoColor=white)](#)&nbsp;&nbsp;
 [![Website](https://img.shields.io/static/v1?label=Website&message=Offline&color=red&style=for-the-badge&logo=statuspage&logoColor=white)](#)&nbsp;&nbsp;
 
