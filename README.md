@@ -14,6 +14,14 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 
 <br>
 
+## 🌐 Network topology
+
+Here's a macroscopic overview of the state of the network, integrated with Oracle ingress points.
+
+![network](/docs/assets/drawings/topology.excalidraw.svg)
+
+<br>
+
 ## ⛵ Features
 
 ### State Management
@@ -25,18 +33,10 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 ### Core Components
 
 - [cert-manager](https://github.com/cert-manager/cert-manager): Creates SSL certificates for services in the cluster.
-- [cilium](https://github.com/cilium/cilium): Internal Kubernetes container networking interface.
-- [traefik](https://doc.traefik.io/traefik/): Kubernetes nodeport ingress controller using Traefik as a proxy and load balancer.
-- [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an OS level pass-through proxy to support cloud integration
+- [flannel](https://github.com/flannel-io/flannel): internal Kubernetes container networking interface.
+- [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an os-level pass through proxy to support cloud integration
+- [traefik](https://doc.traefik.io/traefik/): ingress controller LoadBlancer service acting as a reverse proxy for tls termination and service load balancing
 - ~~[cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.~~
-
-<br>
-
-## 🌐 Network topology
-
-Here's a macroscopic overview of the state of the network, connecting all the compute nodes together, with the OCI load balancers.
-
-![network](/docs/assets/drawings/topology.excalidraw.svg)
 
 <br>
 
@@ -44,9 +44,12 @@ Here's a macroscopic overview of the state of the network, connecting all the co
 
 To use this repo you will need:
 
-* an Oracle Cloud account. You can register [here](https://cloud.oracle.com)
+* an Oracle Cloud account.
+* a HCP Vault account.
+* a HCP Terraform account.
+* a HCP Service Principal.
 
-Once you get the account, follow the *Before you begin* and *Prepare* steps in [this](https://docs.oracle.com/en-us/iaas/developer-tutorials/tutorials/tf-provider/01-summary.htm) document.
+Read more [here](/docs/0-setup.md).
 
 <br> 
 

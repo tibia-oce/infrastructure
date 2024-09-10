@@ -1,5 +1,7 @@
 https://signup.cloud.oracle.com/?intcmp=OcomFreeTierPromoBanner&language=en_US
 
+* once you get the account, follow the *Before you begin* and *Prepare* steps in [this](https://docs.oracle.com/en-us/iaas/developer-tutorials/tutorials/tf-provider/01-summary.htm) document.
+
 ----
 
 Terraform OCI user creation (Optional)
