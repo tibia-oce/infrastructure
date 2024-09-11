@@ -1,8 +1,9 @@
 # Constants for formatting/prints
-RED=\033[31m
-GREEN=\033[32m
+LINE := "----------------------------------------"
 YELLOW=\033[33m
+GREEN=\033[32m
 BLUE=\033[34m
+RED=\033[31m
 NC=\033[0m
 
 # Define environment variables for directories
@@ -109,21 +110,20 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
 	kubectl get pods -n kube-system -o wide
-	
-	# kubectl apply -k ./ansible/example/nonse/
-	# kubectl delete -f ansible/example/traefik.yml
-	# kubectl apply -f ansible/example/service.yml
 
-nginx:
+traefik:
 	@printf "$(GREEN)Deploying Example App...$(NC)\n"
-	kubectl apply -f ansible/example/deployment.yml
-	kubectl get svc nginx
-
-deploy-traefik:
-	# kubectl delete deployment traefik -n kube-system
-	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.1/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-	kubectl apply -k ./ansible/example/nonse/
-	kubectl rollout restart deployment traefik -n default
+	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+	@kubectl apply -f ansible/example/deployment.yml
+	@printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
+	@kubectl wait --for=condition=Ready pod -l app=traefik -n traefik --timeout=15s || \
+	(printf "$(RED)Timeout: Traefik pods not ready in time!$(NC)\n" && exit 1)
+	@printf "\n"
+	@printf "\n$(LINE)\n$(GREEN)Traefik services$(NC)\n$(LINE)\n"
+	@kubectl get svc -n traefik | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
+	@printf "\n$(LINE)\n$(GREEN)Traefik Pods$(NC)\n$(LINE)\n"
+	@kubectl get pods -n traefik | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
+	@printf "\n$(LINE)\n"
 
 reset: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Resetting cluster...$(NC)\n"
@@ -177,7 +177,7 @@ curl-pod:
 	kubectl run -it --rm --image=busybox:1.28 dns-test --restart=Never -- bash
 
 traefik-logs:
-	@kubectl logs -n default $$(kubectl get pods -n default -l app=traefik -o jsonpath='{.items[0].metadata.name}')
+	@kubectl logs -n traefik $$(kubectl get pods -n traefik -l app=traefik -o jsonpath='{.items[0].metadata.name}')
 
 test-dns:
 	@kubectl delete pod alpine --ignore-not-found
@@ -199,3 +199,7 @@ cilium-status:
 
 cilium-lb-routes:
 	kubectl exec -n kube-system $(kubectl get pod -l k8s-app=cilium -n kube-system -o jsonpath='{.items[0].metadata.name}') -- cilium bpf lb list
+
+# kubectl exec -it traefik-bf9f5f77-985dl -n traefik -- /bin/sh
+# wget --header="Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" --no-check-certificate https://10.43.0.1:443/version -O /tmp/version_output
+# cat /tmp/version_output
