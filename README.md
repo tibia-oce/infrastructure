@@ -10,8 +10,8 @@ _... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
 
 <div align="center">
 
-[![Discord](https://img.shields.io/discord/1196758719048994856?style=for-the-badge&label&logo=discord&logoColor=white&color=blue)](https://discord.gg/)&nbsp;&nbsp;
 [![Kubernetes](https://img.shields.io/static/v1?label=K3s&message=v1.30.2&color=blue&style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)&nbsp;&nbsp;
+[![Discord](https://img.shields.io/discord/1283279739775352896?style=for-the-badge&label&logo=discord&logoColor=white&color=blue)]([https://discord.gg/1283279739775352896](https://discord.gg/Erhz4GmDMd))&nbsp;&nbsp;
 [![Renovate](https://img.shields.io/github/actions/workflow/status/tibia-oce/oci/renovate.yml?branch=main&label=&logo=renovatebot&style=for-the-badge&color=blue)](https://github.com/tibia-oce/oci/actions/workflows/renovate.yml)
 
 </div>
@@ -48,8 +48,9 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 
 - [cert-manager](https://github.com/cert-manager/cert-manager): Creates SSL certificates for services in the cluster.
 - [flannel](https://github.com/flannel-io/flannel): internal Kubernetes container networking interface.
+- [metal-lb](https://metallb.universe.tf/): baremetal network load balancing to integrate with Oracle cloud without the need for a CCM
 - [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an os-level pass through proxy to support cloud integration
-- [traefik](https://doc.traefik.io/traefik/): ingress controller LoadBlancer service acting as a reverse proxy for tls termination and service load balancing
+- [traefik](https://doc.traefik.io/traefik/): ingress controller for a reverse proxy and service load balancing
 - ~~[cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.~~
 
 <br>
