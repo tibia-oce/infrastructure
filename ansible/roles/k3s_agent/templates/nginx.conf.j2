@@ -2,7 +2,6 @@ server {
     listen 80;
     listen [::]:80;
 
-    # Root route for general traffic on HTTP
     location / {
         proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/;
         proxy_set_header Host $host;
@@ -11,9 +10,26 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # /api route for HTTP
     location /api {
         proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Correctly handling the dashboard path with trailing slash
+    location /dashboard/ {
+        proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/dashboard/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Handle the static files under /statics/ for the dashboard
+    location /statics/ {
+        proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/statics/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
