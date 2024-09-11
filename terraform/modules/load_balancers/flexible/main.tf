@@ -44,7 +44,7 @@ module "api_backends" {
   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
   worker_node_private_ip_map  = var.worker_node_private_ip_map
   service_name                = "api"
-  url_path                    = "/api"
+  url_path                    = "/api/"
   https_port                  = 443
   http_port                   = 80
 }
@@ -66,7 +66,7 @@ module "path_routing" {
 
   path_routes = [
     {
-      path            = "/api"
+      path            = "/api/"
       backend_set_name = module.api_backends.http_backend_set_name
       match_type      = "PREFIX_MATCH"
     },

@@ -10,7 +10,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /api {
+    location /api/ {
         proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/api/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -44,7 +44,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /ws {
+    location /ws/ {
         proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/ws/;
         proxy_set_header Host $host;
         proxy_set_header Upgrade $http_upgrade;
