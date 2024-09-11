@@ -122,11 +122,16 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /etc/traefik
+        - name: kube-ca-cert
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca.crt
       volumes:
       - name: config
         configMap:
           name: traefik-config
-
+      - name: kube-ca-cert
+        configMap:
+          name: kube-root-ca.crt
 ---
 
 apiVersion: v1

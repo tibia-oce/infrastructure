@@ -110,6 +110,7 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
 	kubectl get pods -n kube-system -o wide
+	make traefik
 
 traefik:
 	@printf "$(GREEN)Deploying Traefik Services...$(NC)\n"
@@ -200,7 +201,7 @@ cilium-status:
 cilium-lb-routes:
 	kubectl exec -n kube-system $(kubectl get pod -l k8s-app=cilium -n kube-system -o jsonpath='{.items[0].metadata.name}') -- cilium bpf lb list
 
-# kubectl exec -it traefik-86b7d76d94-68962 -n traefik -- /bin/sh
+# kubectl exec -it traefik-86b7d76d94-d45zd -n traefik -- /bin/sh
 # wget --header="Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" --no-check-certificate https://10.43.0.1:443/version -O /tmp/version_output
 # cat /tmp/version_output
 
