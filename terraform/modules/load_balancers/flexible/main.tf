@@ -39,11 +39,74 @@ module "kubeapi" {
   kube_api_port = var.kube_api_port
 }
 
-module "api" {
-  source                      = "./api"
-  worker_node_private_ip_map  = var.worker_node_private_ip_map
+module "api_backends" {
+  source                     = "./backend"
   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+  worker_node_private_ip_map  = var.worker_node_private_ip_map
+  service_name                = "api"
   url_path                    = "/api"
-  https_port                  = 433
+  https_port                  = 443
   http_port                   = 80
+}
+
+module "dashboard_backends" {
+  source                     = "./backend"
+  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+  worker_node_private_ip_map  = var.worker_node_private_ip_map
+  service_name                = "dashboard"
+  url_path                    = "/dashboard/"
+  https_port                  = 443
+  http_port                   = 80
+}
+
+module "path_routing" {
+  source               = "./routing"
+  load_balancer_id     = oci_load_balancer_load_balancer.kubeapi_lb.id
+  path_route_set_name  = "api-dashboard-path-route-set"
+
+  path_routes = [
+    {
+      path            = "/api"
+      backend_set_name = module.api_backends.http_backend_set_name
+      match_type      = "PREFIX_MATCH"
+    },
+    {
+      path            = "/dashboard/"
+      backend_set_name = module.dashboard_backends.http_backend_set_name
+      match_type      = "PREFIX_MATCH"
+    }
+  ]
+}
+
+module "http_listener" {
+  source                  = "./listener"
+  load_balancer_id         = oci_load_balancer_load_balancer.kubeapi_lb.id
+  listener_name            = "http-listener"
+  listener_protocol        = "HTTP"
+  listener_port            = 80
+  default_backend_set_name = module.api_backends.http_backend_set_name
+  path_route_set_name      = module.path_routing.path_route_set_name
+}
+
+module "https_listener" {
+  source                  = "./listener"
+  load_balancer_id         = oci_load_balancer_load_balancer.kubeapi_lb.id
+  listener_name            = "https-listener"
+  listener_protocol        = "HTTP"
+  listener_port            = 443
+  default_backend_set_name = module.api_backends.https_backend_set_name
+  path_route_set_name      = module.path_routing.path_route_set_name
+
+  # TODO: Enable TLS between Domain and LB comms?
+  # # Enable SSL
+  # ssl_configuration_enabled        = true
+  # certificate_name                 = "my-cert"
+  # ssl_has_session_resumption       = true
+  # ssl_certificate_ids              = ["ocid1.certificate.oc1..example"]
+  # ssl_cipher_suite_name            = "oci-cipher-suite-v1"
+  # ssl_protocols                    = ["TLSv1.2", "TLSv1.3"]
+  # ssl_server_order_preference      = "ENFORCED"
+  # ssl_trusted_certificate_authority_ids = ["ocid1.certificateauthority.oc1..example"]
+  # ssl_verify_depth                 = 3
+  # ssl_verify_peer_certificate      = true
 }

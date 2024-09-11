@@ -1,3 +1,7 @@
+variable "service_name" {
+  type = string
+}
+
 variable "load_balancer_id" {
   description = "ID of the OCI load balancer"
   type        = string
@@ -20,5 +24,4 @@ variable "http_port" {
 
 variable "url_path" {
   type        = string
-  default = "/api"
 }
