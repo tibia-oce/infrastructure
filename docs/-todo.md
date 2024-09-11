@@ -28,6 +28,9 @@ Install OCI CLI:
 Install Kubectl:
 - https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
 
+Install Kustomize:
+- https://kubectl.docs.kubernetes.io/installation/kustomize/
+
 Install HCP CLI:
 - https://developer.hashicorp.com/hcp/docs/vault-secrets/get-started/install-hcp-cli
 - hcp auth login
