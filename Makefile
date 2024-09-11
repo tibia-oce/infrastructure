@@ -112,9 +112,9 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	kubectl get pods -n kube-system -o wide
 
 traefik:
-	@printf "$(GREEN)Deploying Example App...$(NC)\n"
+	@printf "$(GREEN)Deploying Traefik Services...$(NC)\n"
 	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-	@kubectl apply -f ansible/example/deployment.yml
+	@kubectl apply -k kubernetes/traefik/
 	@printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
 	@kubectl wait --for=condition=Ready pod -l app=traefik -n traefik --timeout=15s || \
 	(printf "$(RED)Timeout: Traefik pods not ready in time!$(NC)\n" && exit 1)
@@ -122,7 +122,7 @@ traefik:
 	@printf "\n$(LINE)\n$(GREEN)Traefik services$(NC)\n$(LINE)\n"
 	@kubectl get svc -n traefik | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
 	@printf "\n$(LINE)\n$(GREEN)Traefik Pods$(NC)\n$(LINE)\n"
-	@kubectl get pods -n traefik | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
+	@kubectl get pods --all-namespaces | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
 	@printf "\n$(LINE)\n"
 
 reset: terraform-output generate-inventory setup-env
@@ -200,6 +200,13 @@ cilium-status:
 cilium-lb-routes:
 	kubectl exec -n kube-system $(kubectl get pod -l k8s-app=cilium -n kube-system -o jsonpath='{.items[0].metadata.name}') -- cilium bpf lb list
 
-# kubectl exec -it traefik-bf9f5f77-985dl -n traefik -- /bin/sh
+# kubectl exec -it traefik-86b7d76d94-68962 -n traefik -- /bin/sh
 # wget --header="Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" --no-check-certificate https://10.43.0.1:443/version -O /tmp/version_output
 # cat /tmp/version_output
+
+# kubectl exec -it coredns-576bfc4dc7-htzvx -n kube-system -- /bin/sh
+
+# kubectl exec -it <coredns-pod> -n kube-system -- curl -k https://10.43.0.1:443/version
+
+
+# kubectl exec -it coredns-576bfc4dc7-htzvx -n kube-system -- curl -k https://10.43.0.1:443/version
