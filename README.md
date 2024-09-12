@@ -47,6 +47,10 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 ### State Management
 [Terraform Cloud](https://www.hashicorp.com/products/terraform) handles the locking and consistency of state files, which helps prevent issues that might arise from multiple users or processes trying to modify the state simultaneously.
 
+### Secret Management
+
+[HashiCorp Vault](https://www.vaultproject.io/) stores and manages secrets, passwords, and API keys. It controls access, provides dynamic secrets, and supports automatic rotation to enhance security and limit exposure.
+
 ### Core Components
 
 - [cloudflare](https://www.cloudflare.com/en-au/application-services/products/dns/): dns resolution for layer 4 and layer 7 cluster applications.
