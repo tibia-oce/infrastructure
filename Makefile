@@ -131,16 +131,13 @@ traefik:
 
 gatus:
 	@printf "$(GREEN)Deploying gatus Services...$(NC)\n"
-	@kubectl apply -k kubernetes/gatus/
+	@kubectl apply -k kubernetes/apps/
 	@printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
 	@kubectl wait --for=condition=Ready pod -l app=gatus -n kube-system --timeout=15s || \
 	(printf "$(RED)Timeout: gatus pods not ready in time!$(NC)\n" && exit 1)
-	@printf "\n"
-	@printf "\n$(LINE)\n$(GREEN)Gatus services$(NC)\n$(LINE)\n"
-	@kubectl get svc -n kube-system | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
-	@printf "\n"
-	@printf "\n$(LINE)\n$(GREEN)Gatus logs$(NC)\n$(LINE)\n"
+	@printf "\n$(LINE)\n$(GREEN)Gatus pods$(NC)\n$(LINE)\n"
 	@kubectl get pods -n kube-system -l app=gatus
+	@printf "\n"
 
 port-gatus:
 	@GATUS_POD=$$(kubectl get pods -n kube-system -l app=gatus -o jsonpath='{.items[0].metadata.name}'); \
