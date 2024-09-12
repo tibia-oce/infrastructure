@@ -38,12 +38,6 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 
 ## ⛵ Features
 
-### State Management
-[Terraform Cloud](https://www.hashicorp.com/products/terraform) handles the locking and consistency of state files, which helps prevent issues that might arise from multiple users or processes trying to modify the state simultaneously.
-
-### GitOps
-[Argo](https://argo-cd.readthedocs.io/en/stable/) watches the definitions in the kubernetes folder and makes the changes to the clusters based on the state of the Git repository. [Renovate](https://github.com/renovatebot/renovate) watches the repository looking for dependency updates, when they are found a PR is automatically created. When some PRs are merged Argo applies the changes to the cluster.
-
 ### Core Components
 
 - [cloudflare](https://www.cloudflare.com/en-au/application-services/products/dns/): dns resolution for layer 4 and layer 7 cluster applications.
@@ -54,6 +48,15 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 - [cert-manager](https://github.com/cert-manager/cert-manager): creates SSL certificates for services in the cluster.
 - [gatus](https://gatus.io/): monitors the health and performance of services, with alerts.
 - [cloudflared](https://github.com/cloudflare/cloudflared): enables CloudFlare secure access to certain ingress routes.
+
+### State Management
+[Terraform Cloud](https://www.hashicorp.com/products/terraform) handles the locking and consistency of state files, which helps prevent issues that might arise from multiple users or processes trying to modify the state simultaneously.
+
+### GitOps
+
+[Argo CD](https://argo-cd.readthedocs.io/en/stable/) monitors the repository's Kubernetes manifests and ensures the cluster matches the desired state in Git. When changes are merged, Argo CD automatically applies them to the cluster.
+
+[Renovate](https://github.com/renovatebot/renovate) watches for dependency updates, creating pull requests when updates are found. Once merged, Argo CD detects and applies the changes, deploying the updated dependencies.
 
 <br>
 
