@@ -169,3 +169,19 @@ spec:
         - name: api@internal
           kind: TraefikService
 
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: gatus-status
+  namespace: kube-system
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/status`)
+      kind: Rule
+      services:
+        - name: gatus
+          port: 8080

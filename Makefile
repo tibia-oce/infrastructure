@@ -112,6 +112,9 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	kubectl get pods -n kube-system -o wide
 	make traefik
 
+namespaces:
+	kubectl get pods --all-namespaces
+
 traefik:
 	@printf "$(GREEN)Deploying Traefik Services...$(NC)\n"
 	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
@@ -126,7 +129,27 @@ traefik:
 	@kubectl get pods --all-namespaces | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
 	@printf "\n$(LINE)\n"
 
-port-forward-traefik:
+gatus:
+	@printf "$(GREEN)Deploying gatus Services...$(NC)\n"
+	@kubectl apply -k kubernetes/gatus/
+	@printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
+	@kubectl wait --for=condition=Ready pod -l app=gatus -n kube-system --timeout=15s || \
+	(printf "$(RED)Timeout: gatus pods not ready in time!$(NC)\n" && exit 1)
+	@printf "\n"
+	@printf "\n$(LINE)\n$(GREEN)Gatus services$(NC)\n$(LINE)\n"
+	@kubectl get svc -n kube-system | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
+	@printf "\n"
+	@printf "\n$(LINE)\n$(GREEN)Gatus logs$(NC)\n$(LINE)\n"
+	@kubectl get pods -n kube-system -l app=gatus
+
+port-gatus:
+	@GATUS_POD=$$(kubectl get pods -n kube-system -l app=gatus -o jsonpath='{.items[0].metadata.name}'); \
+	echo "Port-forwarding pod: $$GATUS_POD"; \
+	kubectl port-forward -n kube-system $$GATUS_POD 9090:8080 & \
+	sleep 2; \
+	printf "\n$(LINE)\n$(GREEN)http://localhost:9090$(NC)\n$(LINE)\n\n"
+
+port-traefik:
 	@TRAFFIC_POD=$$(kubectl get pods -n traefik -o jsonpath='{.items[0].metadata.name}'); \
 	echo "Port-forwarding pod: $$TRAFFIC_POD"; \
 	kubectl port-forward -n traefik $$TRAFFIC_POD 8080:80 & \
