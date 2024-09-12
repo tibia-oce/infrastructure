@@ -147,16 +147,26 @@ apps:
 
 certificates:
 	@printf "\n$(LINE)\n$(GREEN)Certificates...$(NC)\n$(LINE)\n"
-	kubectl get certificaterequests --all-namespaces
-	kubectl get certificates --all-namespaces
+	$(call kubectl_get,certificaterequests)
+	$(call kubectl_get,certificates)
+	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
+	$(call kubectl_get,secret)
+
+	$(call kubectl_logs,cert-manager)
+	$(call kubectl_logs,cert-manager-webhook)
+	$(call kubectl_logs,cert-manager-cainjector)
 	@printf "\n"
-	@printf "\n$(LINE)\n$(GREEN)Webook logs...$(NC)\n$(LINE)\n"
-	kubectl logs -n cert-manager deployment/cert-manager-webhook | tail -n 5
-	@printf "\n$(LINE)\n$(GREEN)Injecttor logs...$(NC)\n$(LINE)\n"
-	kubectl logs -n cert-manager deployment/cert-manager-cainjector | tail -n 5
-	@printf "\n$(LINE)\n$(GREEN)Manager logs...$(NC)\n$(LINE)\n"
-	kubectl logs -n cert-manager deployment/cert-manager | tail -n 5
+
+define kubectl_get
+	@printf "> kubectl get $1 -n cert-manager\n"
+	@kubectl get $1 -n cert-manager
 	@printf "\n"
+endef
+
+define kubectl_logs
+	@printf "\n$(LINE)\n$(GREEN)$1 logs...$(NC)\n> kubectl logs -n cert-manager deployment/$1\n$(LINE)\n"
+	@kubectl logs -n cert-manager deployment/$1 | tail -n 4
+endef
 
 port-gatus:
 	@GATUS_POD=$$(kubectl get pods -n kube-system -l app=gatus -o jsonpath='{.items[0].metadata.name}'); \
