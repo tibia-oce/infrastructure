@@ -53,10 +53,10 @@ This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for f
 - [metal-lb](https://metallb.universe.tf/): layer 2 & 3 network load balancing to integrate with Oracle cloud without a CCM.
 - [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an os-level pass through proxy to support cloud integration.
 - [flannel](https://github.com/flannel-io/flannel): internal Kubernetes container networking interface.
-- [traefik](https://doc.traefik.io/traefik/): ingress controller for a reverse proxy and service load balancing.
-- [cert-manager](https://github.com/cert-manager/cert-manager): creates SSL certificates for services in the cluster.
+- [traefik](https://doc.traefik.io/traefik/): as a reverse proxy and service load balancing ingress controller.
+- [cert-manager](https://github.com/cert-manager/cert-manager): manages SSL certificates for services in the cluster.
 - [gatus](https://gatus.io/): monitors the health and performance of services, with alerts.
-- [cloudflared](https://github.com/cloudflare/cloudflared): enables CloudFlare secure access to certain ingress routes.
+- [cloudflared](https://github.com/cloudflare/cloudflared): enables zero-trust tunnelling to certain ingress routes.
 
 <br>
 
