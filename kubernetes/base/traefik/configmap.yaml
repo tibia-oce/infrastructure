@@ -8,7 +8,14 @@ data:
     [entryPoints]
       [entryPoints.web]
         address = ":80"
+      [entryPoints.websecure]
+        address = ":443"
     
+    [tls]
+      [[tls.certificates]]
+        certFile = "/certs/tls.crt"
+        keyFile = "/certs/tls.key"
+
     [api]
       dashboard = true
       insecure = true
@@ -29,3 +36,4 @@ data:
       endpoint = "https://10.43.0.1:443"
       token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
       timeout = 60
+    

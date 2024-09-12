@@ -3,12 +3,12 @@ kind: Kustomization
 
 namespace: traefik
 resources:
-- namespace.yaml
-- serviceaccount.yaml
-- clusterrole.yaml
-- rolebinding.yaml
-- configmap.yaml
-- service.yaml
-- deployment.yaml
-- ingressroute.yaml
-
+  - https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+  - namespace.yaml
+  - serviceaccount.yaml
+  - clusterrole.yaml
+  - rolebinding.yaml
+  - configmap.yaml
+  - service.yaml
+  - deployment.yaml
+  - ingressroute.yaml
