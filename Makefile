@@ -129,14 +129,13 @@ traefik:
 	@kubectl get pods --all-namespaces | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
 	@printf "\n$(LINE)\n"
 
-gatus:
-	@printf "$(GREEN)Deploying gatus Services...$(NC)\n"
+apps:
+	@printf "$(GREEN)Deploying app manifests and checking pod status...$(NC)\n"
 	@kubectl apply -k kubernetes/apps/
-	@printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
-	@kubectl wait --for=condition=Ready pod -l app=gatus -n kube-system --timeout=15s || \
-	(printf "$(RED)Timeout: gatus pods not ready in time!$(NC)\n" && exit 1)
-	@printf "\n$(LINE)\n$(GREEN)Gatus pods$(NC)\n$(LINE)\n"
-	@kubectl get pods -n kube-system -l app=gatus
+	@printf "\n$(LINE)\n$(GREEN)Node status...$(NC)\n$(LINE)\n"
+	@kubectl get nodes
+	@printf "\n$(LINE)\n$(GREEN)Pod status...$(NC)\n$(LINE)\n"
+	@kubectl get pods --all-namespaces
 	@printf "\n"
 
 port-gatus:
@@ -163,14 +162,6 @@ config-kube:
 	@printf "$(GREEN)Copying kubeconfig from ansible to ~/.kube/config...$(NC)\n"
 	@cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Kubeconfig copied successfully!$(NC)\n"
-
-# Command to verify connection by getting Kubernetes nodes
-apply-charts: config-kube
-	@printf "$(GREEN)Deploying ingress controller and checking pod status...$(NC)\n"
-	@kubectl apply -k ./kubernetes/apps/
-	@kubectl get nodes
-	@kubectl cluster-info
-	@kubectl get pods --all-namespaces
 
 # SSH into the first control plane node
 ssh-control-plane: terraform-output
