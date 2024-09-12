@@ -1,4 +1,3 @@
-# kubernetes\traefik\namespace.yml
 apiVersion: v1
 kind: Namespace
 metadata:
