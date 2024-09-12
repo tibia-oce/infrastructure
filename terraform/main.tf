@@ -11,7 +11,7 @@ module "network" {
   compartment_id    = var.compartment_ocid
   my_public_ip_cidr = var.my_public_ip_cidr
   kube_api_port     = var.kube_api_port
-  metal_lb_cidr      = var.metal_lb_cidr
+  metal_lb_cidr     = var.metal_lb_cidr
   security_lists = [
     module.security.admin_security_list_id,
     module.security.internal_security_list_id,
@@ -127,6 +127,13 @@ module "workers_x86" {
     module.nsg.ssh_nsg_id,
     module.nsg.admin_nsg_id,
   ]
+}
+
+module "domain" {
+  source               = "./modules/domain"
+  lb_public_ip_address = module.reserved_ip.reserved_ip_address
+  cf_zone_id           = data.hcp_vault_secrets_secret.cf_zone_id.secret_value
+  domain               = var.domain
 }
 
 # module "network_lb" {

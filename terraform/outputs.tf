@@ -29,8 +29,18 @@ output "load_balancer_public_ip" {
   description = "The public IP address of the load balancer."
 }
 
+output "web_domain" {
+  description = "The web application domain managed by Cloudflare"
+  value       = module.domain.web_domain
+}
+
+output "game_domain" {
+  description = "The game server domain managed by Cloudflare"
+  value       = module.domain.game_domain
+}
+
 output "k3s_token" {
-  value       = trimspace(data.hcp_vault_secrets_secret.k3s_token.secret_value)
+  value     = trimspace(data.hcp_vault_secrets_secret.k3s_token.secret_value)
   sensitive = true
 }
 

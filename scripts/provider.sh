@@ -75,6 +75,10 @@ provider "hcp" {
   client_secret = var.hcp_client_secret
 }
 
+provider "cloudflare" {
+  api_token = data.hcp_vault_secrets_secret.cf_token.secret_value
+}
+
 provider "oci" {
   private_key      = data.hcp_vault_secrets_secret.oci_private_key.secret_value
   
