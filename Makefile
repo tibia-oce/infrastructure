@@ -112,12 +112,19 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	kubectl get pods -n kube-system -o wide
 	make traefik
 
-namespaces:
-	kubectl get pods --all-namespaces
+status:
+	@printf "\n$(LINE)\n$(GREEN)Nodes...$(NC)\n$(LINE)\n"
+	@kubectl get nodes
+	@printf "\n$(LINE)\n$(GREEN)Pods...$(NC)\n$(LINE)\n"
+	@kubectl get pods --all-namespaces
+	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
+	kubectl get svc --all-namespaces
+	@printf "\n"
+
+# kubectl get certificates --all-namespaces
 
 traefik:
 	@printf "$(GREEN)Deploying Traefik Services...$(NC)\n"
-	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
 	@kubectl apply -k kubernetes/base/
 	@printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
 	@kubectl wait --for=condition=Ready pod -l app=traefik -n traefik --timeout=15s || \
@@ -136,6 +143,19 @@ apps:
 	@kubectl get nodes
 	@printf "\n$(LINE)\n$(GREEN)Pod status...$(NC)\n$(LINE)\n"
 	@kubectl get pods --all-namespaces
+	@printf "\n"
+
+certificates:
+	@printf "\n$(LINE)\n$(GREEN)Certificates...$(NC)\n$(LINE)\n"
+	kubectl get certificaterequests --all-namespaces
+	kubectl get certificates --all-namespaces
+	@printf "\n"
+	@printf "\n$(LINE)\n$(GREEN)Webook logs...$(NC)\n$(LINE)\n"
+	kubectl logs -n cert-manager deployment/cert-manager-webhook | tail -n 5
+	@printf "\n$(LINE)\n$(GREEN)Injecttor logs...$(NC)\n$(LINE)\n"
+	kubectl logs -n cert-manager deployment/cert-manager-cainjector | tail -n 5
+	@printf "\n$(LINE)\n$(GREEN)Manager logs...$(NC)\n$(LINE)\n"
+	kubectl logs -n cert-manager deployment/cert-manager | tail -n 5
 	@printf "\n"
 
 port-gatus:
@@ -210,22 +230,8 @@ coredns-logs:
 metrics-server-logs:
 	@kubectl logs -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=metrics-server -o jsonpath='{.items[0].metadata.name}')
 
-cilium-service-list:
-	@kubectl exec -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- cilium service list
-
-cilium-status:
-	@kubectl exec -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- cilium status
-
-cilium-lb-routes:
-	kubectl exec -n kube-system $(kubectl get pod -l k8s-app=cilium -n kube-system -o jsonpath='{.items[0].metadata.name}') -- cilium bpf lb list
-
-# kubectl exec -it traefik-86b7d76d94-d45zd -n traefik -- /bin/sh
-# wget --header="Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" --no-check-certificate https://10.43.0.1:443/version -O /tmp/version_output
-# cat /tmp/version_output
-
-# kubectl exec -it coredns-576bfc4dc7-htzvx -n kube-system -- /bin/sh
-
-# kubectl exec -it <coredns-pod> -n kube-system -- curl -k https://10.43.0.1:443/version
-
-
-# kubectl exec -it coredns-576bfc4dc7-htzvx -n kube-system -- curl -k https://10.43.0.1:443/version
+curl-version:
+	@POD_NAME=$$(kubectl get pods -n traefik -o jsonpath="{.items[0].metadata.name}"); \
+	kubectl exec -it $$POD_NAME -n traefik -- /bin/sh -c '\
+		wget --header="Authorization: Bearer $$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" --no-check-certificate https://10.43.0.1:443/version -O /tmp/version_output && \
+		cat /tmp/version_output'
