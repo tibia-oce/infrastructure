@@ -52,3 +52,8 @@ ansible-2/
 
 # MacOS
 .DS_Store
+
+# Ansible
+.env/
+*.log
+kubeconfig
