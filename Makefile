@@ -118,7 +118,7 @@ namespaces:
 traefik:
 	@printf "$(GREEN)Deploying Traefik Services...$(NC)\n"
 	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-	@kubectl apply -k kubernetes/traefik/
+	@kubectl apply -k kubernetes/base/
 	@printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
 	@kubectl wait --for=condition=Ready pod -l app=traefik -n traefik --timeout=15s || \
 	(printf "$(RED)Timeout: Traefik pods not ready in time!$(NC)\n" && exit 1)
