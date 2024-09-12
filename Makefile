@@ -122,9 +122,16 @@ traefik:
 	@printf "\n"
 	@printf "\n$(LINE)\n$(GREEN)Traefik services$(NC)\n$(LINE)\n"
 	@kubectl get svc -n traefik | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
-	@printf "\n$(LINE)\n$(GREEN)Traefik Pods$(NC)\n$(LINE)\n"
+	@printf "\n$(LINE)\n$(GREEN)Namespace pods$(NC)\n$(LINE)\n"
 	@kubectl get pods --all-namespaces | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
 	@printf "\n$(LINE)\n"
+
+port-forward-traefik:
+	@TRAFFIC_POD=$$(kubectl get pods -n traefik -o jsonpath='{.items[0].metadata.name}'); \
+	echo "Port-forwarding pod: $$TRAFFIC_POD"; \
+	kubectl port-forward -n traefik $$TRAFFIC_POD 8080:80 & \
+	sleep 2; \
+	printf "\n$(LINE)\n$(GREEN)http://localhost:8080/dashboard/$(NC)\n$(LINE)\n\n"
 
 reset: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Resetting cluster...$(NC)\n"
