@@ -53,3 +53,18 @@ variable "api_http_port" {
   type        = number
   default = 80
 }
+
+variable "private_key" {
+  type        = string
+  description = "The private key for the Cloudflare SSL certificate."
+}
+
+variable "public_certificate" {
+  type        = string
+  description = "The public certificate for the Cloudflare SSL certificate."
+}
+
+variable "ca_certificate" {
+  type        = string
+  description = "The ca certificate for the Cloudflare SSL certificate."
+}

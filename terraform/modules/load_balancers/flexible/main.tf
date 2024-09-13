@@ -24,6 +24,14 @@ resource "oci_load_balancer_load_balancer" "kubeapi_lb" {
   }
 }
 
+resource "oci_load_balancer_certificate" "cloudflare_cert" {
+  load_balancer_id = oci_load_balancer_load_balancer.kubeapi_lb.id
+  certificate_name = "cloudflare-cert"
+  private_key      = var.private_key
+  public_certificate = var.public_certificate
+  ca_certificate = var.ca_certificate
+}
+
 # ====================================================================
 # Module Configurations
 # The following modules define the path based routing to the cluster
@@ -39,74 +47,86 @@ module "kubeapi" {
   kube_api_port = var.kube_api_port
 }
 
-module "api_backends" {
+module "status_backend" {
   source                     = "./backend"
   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
   worker_node_private_ip_map  = var.worker_node_private_ip_map
-  service_name                = "api"
-  url_path                    = "/api/"
+  hostname                    = "status.mythbound.dev"
+  service_name                = "status"
+  url_path                    = "/"
   https_port                  = 443
   http_port                   = 80
 }
 
-module "dashboard_backends" {
+module "root_backend" {
   source                     = "./backend"
   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
   worker_node_private_ip_map  = var.worker_node_private_ip_map
-  service_name                = "dashboard"
-  url_path                    = "/dashboard/"
+  hostname                    = "mythbound.dev"
+  service_name                = "root"
+  url_path                    = "/"
   https_port                  = 443
   http_port                   = 80
 }
 
-module "path_routing" {
-  source               = "./routing"
-  load_balancer_id     = oci_load_balancer_load_balancer.kubeapi_lb.id
-  path_route_set_name  = "api-dashboard-path-route-set"
+# todo: move to tcp (7171, 7172)
+module "game_backend" {
+  source                     = "./backend"
+  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+  worker_node_private_ip_map  = var.worker_node_private_ip_map
+  hostname                    = "game.mythbound.dev"
+  service_name                = "game"
+  url_path                    = "/"
+  https_port                  = 443
+  http_port                   = 80
+}
 
-  path_routes = [
-    {
-      path            = "/api/"
-      backend_set_name = module.api_backends.http_backend_set_name
-      match_type      = "PREFIX_MATCH"
-    },
-    {
-      path            = "/dashboard/"
-      backend_set_name = module.dashboard_backends.http_backend_set_name
-      match_type      = "PREFIX_MATCH"
-    }
-  ]
+module "myaac_backend" {
+  source                     = "./backend"
+  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+  worker_node_private_ip_map  = var.worker_node_private_ip_map
+  hostname                    = "myaac.mythbound.dev"
+  service_name                = "myaac"
+  url_path                    = "/"
+  https_port                  = 443
+  http_port                   = 80
 }
 
 module "http_listener" {
   source                  = "./listener"
-  load_balancer_id         = oci_load_balancer_load_balancer.kubeapi_lb.id
-  listener_name            = "http-listener"
-  listener_protocol        = "HTTP"
-  listener_port            = 80
-  default_backend_set_name = module.api_backends.http_backend_set_name
-  path_route_set_name      = module.path_routing.path_route_set_name
+
+  # Load balancer and listener information
+  load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
+  listener_name           = "http-listener"
+  listener_protocol       = "HTTP"
+  listener_port           = 80  # todo: move to tcp (7171, 7172)
+
+  # Hostnames and backend map
+  hostname_names          = ["game.mythbound.dev"] 
+  hostname_backend_map    = {
+    "game.mythbound.dev"   = module.game_backend.http_backend_set_name
+  }
 }
 
 module "https_listener" {
   source                  = "./listener"
-  load_balancer_id         = oci_load_balancer_load_balancer.kubeapi_lb.id
-  listener_name            = "https-listener"
-  listener_protocol        = "HTTP"
-  listener_port            = 443
-  default_backend_set_name = module.api_backends.https_backend_set_name
-  path_route_set_name      = module.path_routing.path_route_set_name
 
-  # TODO: Enable TLS between Domain and LB comms?
-  # # Enable SSL
-  # ssl_configuration_enabled        = true
-  # certificate_name                 = "my-cert"
-  # ssl_has_session_resumption       = true
-  # ssl_certificate_ids              = ["ocid1.certificate.oc1..example"]
-  # ssl_cipher_suite_name            = "oci-cipher-suite-v1"
-  # ssl_protocols                    = ["TLSv1.2", "TLSv1.3"]
-  # ssl_server_order_preference      = "ENFORCED"
-  # ssl_trusted_certificate_authority_ids = ["ocid1.certificateauthority.oc1..example"]
-  # ssl_verify_depth                 = 3
-  # ssl_verify_peer_certificate      = true
+  # Load balancer and listener information
+  load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
+  listener_name           = "https-listener"
+  listener_protocol       = "HTTP"
+  listener_port           = 443
+
+  # Hostnames and backend map
+  hostname_names          = ["mythbound.dev", "myaac.mythbound.dev", "status.mythbound.dev"]
+  hostname_backend_map    = {
+    "mythbound.dev"        = module.root_backend.https_backend_set_name
+    "myaac.mythbound.dev"    = module.myaac_backend.https_backend_set_name
+    "status.mythbound.dev" = module.status_backend.https_backend_set_name
+  }
+
+  # SSL Configuration
+  ssl_configuration_enabled    = true
+  certificate_name             = oci_load_balancer_certificate.cloudflare_cert.certificate_name
+  ssl_protocols                = ["TLSv1.2", "TLSv1.3"]
 }

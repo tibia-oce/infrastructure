@@ -25,3 +25,7 @@ variable "http_port" {
 variable "url_path" {
   type        = string
 }
+
+variable "hostname" {
+  type = string
+}

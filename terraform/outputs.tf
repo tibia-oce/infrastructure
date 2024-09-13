@@ -29,9 +29,14 @@ output "load_balancer_public_ip" {
   description = "The public IP address of the load balancer."
 }
 
-output "web_domain" {
+output "status_domain" {
+  description = "The status application domain managed by Cloudflare"
+  value       = module.domain.status_domain
+}
+
+output "myaac_domain" {
   description = "The web application domain managed by Cloudflare"
-  value       = module.domain.web_domain
+  value       = module.domain.myaac_domain
 }
 
 output "game_domain" {

@@ -1,3 +1,5 @@
+# todo: make https and http dynamic 
+
 # modules/load_balancer_backend/backend.tf
 resource "oci_load_balancer_backend_set" "https_backend_set" {
   load_balancer_id = var.load_balancer_id
@@ -29,7 +31,7 @@ resource "oci_load_balancer_backend_set" "http_backend_set" {
   }
 }
 
-resource "oci_load_balancer_backend" "http_backends" {
+resource "oci_load_balancer_backend" "http_backend" {
   for_each         = var.worker_node_private_ip_map
   backendset_name  = oci_load_balancer_backend_set.http_backend_set.name
   ip_address       = each.value
@@ -37,7 +39,7 @@ resource "oci_load_balancer_backend" "http_backends" {
   port             = var.http_port
 }
 
-resource "oci_load_balancer_backend" "https_backends" {
+resource "oci_load_balancer_backend" "https_backend" {
   for_each         = var.worker_node_private_ip_map
   backendset_name  = oci_load_balancer_backend_set.https_backend_set.name
   ip_address       = each.value

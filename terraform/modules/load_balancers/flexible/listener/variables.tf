@@ -14,15 +14,6 @@ variable "listener_port" {
   type = number
 }
 
-variable "default_backend_set_name" {
-  type = string
-}
-
-variable "path_route_set_name" {
-  type = string
-  default = ""
-}
-
 variable "ssl_configuration_enabled" {
   type    = bool
   default = false
@@ -53,6 +44,11 @@ variable "ssl_protocols" {
   default = []
 }
 
+variable "hostname_names" {
+  type    = list(string)
+  default = []
+}
+
 variable "ssl_server_order_preference" {
   type    = string
   default = ""
@@ -71,4 +67,8 @@ variable "ssl_verify_depth" {
 variable "ssl_verify_peer_certificate" {
   type    = bool
   default = false
+}
+
+variable "hostname_backend_map" {
+  type = map(string)
 }
