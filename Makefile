@@ -95,6 +95,10 @@ generate-inventory: terraform-output
 	@echo "k3s_token=$$(jq -r '.k3s_token.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "ansible_ssh_private_key_file=${ANSIBLE_PRIVATE_KEY_PATH}" >> $(ANSIBLE_INVENTORY_FILE)
 
+	@echo "myaac_domain=$$(jq -r '.myaac_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "status_domain=$$(jq -r '.status_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "game_domain=$$(jq -r '.game_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+
 # Set up Python virtual environment and install Ansible
 setup-env:
 	@printf "$(GREEN)Setting up Python virtual environment and installing Ansible...$(NC)\n"

@@ -1,52 +1,41 @@
+# HTTP configuration to allow traffic on port 80
 server {
     listen 80;
     listen [::]:80;
 
+    server_name mythbound.dev status.mythbound.dev web.mythbound.dev game.mythbound.dev;
+
+    # Forward all HTTP traffic (without TLS) to the MetalLB load balancer IP
     location / {
-        proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/;
+        proxy_pass http://{{ metal_lb_api_proxy }};  # Forward HTTP traffic directly
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+        proxy_set_header X-Forwarded-Proto http;
 
-    location /api/ {
-        proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/api/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    
-        # WebSocket support
+        # WebSocket upgrade for HTTP traffic
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_http_version 1.1;
     }
+}
 
-    location /dashboard/ {
-        proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/dashboard/;
+# HTTPS configuration to pass through traffic to Traefik (MetalLB)
+server {
+    listen 443;
+    listen [::]:443;
+
+    server_name mythbound.dev status.mythbound.dev web.mythbound.dev game.mythbound.dev;
+
+    # Forward HTTPS traffic (with TLS pass-through) to MetalLB load balancer IP
+    location / {
+        proxy_pass https://{{ metal_lb_api_proxy }};  # Forward HTTPS traffic
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto https;
 
-        # WebSocket support
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_http_version 1.1;
-    }
-
-    location /statics/ {
-        proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/statics/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /ws/ {
-        proxy_pass http://{{ metal_lb_api_proxy }}:{{ http_port }}/ws/;
-        proxy_set_header Host $host;
+        # WebSocket upgrade for HTTPS traffic
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_http_version 1.1;
