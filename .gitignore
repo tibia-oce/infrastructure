@@ -43,6 +43,7 @@ terraform.rc
 terraform/terraform_output.json
 hosts.ini
 kubeconfig
+*.pem
 
 # Python
 .venv/
