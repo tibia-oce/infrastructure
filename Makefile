@@ -110,7 +110,6 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
 	kubectl get pods -n kube-system -o wide
-	make traefik
 
 status:
 	@printf "\n$(LINE)\n$(GREEN)Nodes...$(NC)\n$(LINE)\n"
