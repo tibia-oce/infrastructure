@@ -19,13 +19,21 @@ spec:
         image: traefik:v2.9
         args:
           - "--entrypoints.web.address=:80"
+          - "--entrypoints.websecure.address=:443"
           - "--api.dashboard=true"
           - "--api.insecure=true"
           - "--providers.kubernetescrd"
           - "--providers.kubernetesingress"
+          - "--certificatesresolvers.le.acme.storage=/dev/null"
+          - "--certificatesresolvers.le.acme.email=jordan.hoare@outlook.com"  # Email for LetsEncrypt
+          - "--certificatesresolvers.le.acme.tlschallenge=true"
+          - "--certificatesresolvers.le.acme.httpchallenge=true"
+          - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
         ports:
           - name: web
             containerPort: 80
+          - name: websecure
+            containerPort: 443
         volumeMounts:
         - name: config
           mountPath: /etc/traefik
@@ -35,7 +43,7 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: traefik-config
+          name: traefik-config                            # ConfigMap for Traefik config
       - name: kube-ca-cert
         configMap:
-          name: kube-root-ca.crt
+          name: kube-root-ca.crt                          # Kubernetes CA cert for internal communication
