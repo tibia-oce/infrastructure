@@ -107,6 +107,7 @@ setup-env:
 	. ansible/$(VENV_DIR)/bin/activate && ansible-galaxy install -r ansible/collections/requirements.yml
 
 # Sequentially run all necessary steps to bootstrap the K3s cluster
+# todo: configure vault injector or similar to pass the keys for ssl termination
 bootstrap-cluster: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Bootstrapping the K3s cluster...$(NC)\n"
 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
@@ -114,6 +115,10 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
 	kubectl get pods -n kube-system -o wide
+	kubectl create secret tls cloudflare-tls \
+		--cert=public_cert.pem \
+		--key=private_key.pem \
+		--namespace=kube-system
 
 status:
 	@printf "\n$(LINE)\n$(GREEN)Nodes...$(NC)\n$(LINE)\n"
@@ -138,7 +143,7 @@ traefik:
 	@printf "\n$(LINE)\n$(GREEN)Namespace pods$(NC)\n$(LINE)\n"
 	@kubectl get pods --all-namespaces | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
 	@printf "\n$(LINE)\n"
-
+	
 apps:
 	@printf "$(GREEN)Deploying app manifests and checking pod status...$(NC)\n"
 	@kubectl apply -k kubernetes/apps/

@@ -62,7 +62,7 @@ Ensure HCP Vault has required keys:
 
     # Create a cloduflare certifate & download cf ca cert
     hcp vault-secrets secrets create cf_origin_certificate --data-file=public_cert.pem --app <app>
-    hcp vault-secrets secrets create cf_private_key --data-file=origin_ca_rsa_root.pem --app <app>
+    hcp vault-secrets secrets create cf_private_key --data-file=private_key.pem --app <app>
     hcp vault-secrets secrets create cf_ca_certificate --data-file=cloudflare_ca_cert.pem --app <app>
     ```
 
