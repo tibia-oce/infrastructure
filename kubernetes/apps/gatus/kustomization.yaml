@@ -6,7 +6,6 @@ namespace: kube-system
 resources:
   - configmap.yaml
   - serviceaccount.yaml
-  - certificate.yaml
   - deployment.yaml
   - service.yaml
   - ingressroute.yaml

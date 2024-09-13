@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 namespace: traefik
+
 resources:
   - namespace.yaml
   - https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
@@ -12,3 +13,15 @@ resources:
   - deployment.yaml
   - service.yaml
   - ingressroute.yaml
+
+# todo: will be moved to an injector later
+secretGenerator:
+  - name: cloudflare-tls
+    namespace: traefik
+    files:
+      - public_cert.pem
+      - private_key.pem
+    type: "kubernetes.io/tls"
+
+generatorOptions:
+  disableNameSuffixHash: true

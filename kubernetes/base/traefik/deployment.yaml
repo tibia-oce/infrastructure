@@ -24,11 +24,6 @@ spec:
           - "--api.insecure=true"
           - "--providers.kubernetescrd"
           - "--providers.kubernetesingress"
-          - "--certificatesresolvers.le.acme.storage=/dev/null"
-          - "--certificatesresolvers.le.acme.email=jordan.hoare@outlook.com"  # Email for LetsEncrypt
-          - "--certificatesresolvers.le.acme.tlschallenge=true"
-          - "--certificatesresolvers.le.acme.httpchallenge=true"
-          - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
         ports:
           - name: web
             containerPort: 80
@@ -43,7 +38,7 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: traefik-config                            # ConfigMap for Traefik config
+          name: traefik-config
       - name: kube-ca-cert
         configMap:
-          name: kube-root-ca.crt                          # Kubernetes CA cert for internal communication
+          name: kube-root-ca.crt

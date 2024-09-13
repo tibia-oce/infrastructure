@@ -3,16 +3,14 @@ kind: IngressRoute
 metadata:
   name: gatus-status
   namespace: kube-system
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt"
 spec:
   entryPoints:
     - websecure
   routes:
-    - match: PathPrefix(`/status`)
+    - match: Host(`status.mythbound.dev`)
       kind: Rule
       services:
         - name: gatus
           port: 8080
   tls:
-    secretName: gatus-tls
+    secretName: cloudflare-tls
