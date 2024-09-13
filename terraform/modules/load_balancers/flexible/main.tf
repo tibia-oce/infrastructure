@@ -112,12 +112,9 @@ module "https_listener" {
   source                  = "./listener"
 
   # Load balancer and listener information
-  # Use TCP protocol to force forwarding on the encrypted traffic.
-  # This will result in SSL passthrough, where the load balancer simply 
-  # forwards the encrypted traffic without decrypting it.
   load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
   listener_name           = "https-listener"
-  listener_protocol       = "TCP"
+  listener_protocol       = "HTTP"
   listener_port           = 443
 
   # Hostnames and backend map
@@ -128,9 +125,7 @@ module "https_listener" {
     "status.mythbound.dev" = module.status_backend.https_backend_set_name
   }
 
-  # Since we are configuring the 443 traffic over TCP for SSL passthrough
-  # we don't need to define the SSL config for the OCI Load Balancer
-  # ssl_configuration_enabled    = true
-  # certificate_name             = oci_load_balancer_certificate.cloudflare_cert.certificate_name
-  # ssl_protocols                = ["TLSv1.2", "TLSv1.3"]
+  ssl_configuration_enabled    = true
+  certificate_name             = oci_load_balancer_certificate.cloudflare_cert.certificate_name
+  ssl_protocols                = ["TLSv1.2", "TLSv1.3"]
 }

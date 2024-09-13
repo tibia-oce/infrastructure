@@ -1,16 +1,40 @@
-apiVersion: traefik.containo.us/v1alpha1
+# HTTP Route (Port 80)
+apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: traefik-dashboard
-  namespace: traefik
+  name: traefik-dashboard-http
+  namespace: kube-system
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+      kind: Rule
+      services:
+        - name: traefik
+          port: 80
+          scheme: http
+          serversTransport: dashboard-transport
+
+---
+
+# HTTPS Route (Port 443)
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard-https
+  namespace: kube-system
 spec:
   entryPoints:
     - websecure
   routes:
-    - match: PathPrefix(`/dashboard`)
+    - match: Host(`status.mythbound.dev`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
       kind: Rule
       services:
-        - name: api@internal
-          kind: TraefikService
+        - name: traefik
+          port: 443
+          scheme: https
+          serversTransport: dashboard-transport
   tls:
     secretName: cloudflare-tls
+

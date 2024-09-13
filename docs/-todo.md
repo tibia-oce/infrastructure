@@ -15,6 +15,7 @@
     - cloudflare tunnel? 
 - oci_core_public_ip.ignore_changes could be more specific
 - Create bastion server for TF and Ansible
+- Configure flannel to use node networking? (https://docs.k3s.io/networking/basic-network-options)
 
 -----
 

@@ -1,8 +1,9 @@
+# traefik/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: traefik-config
-  namespace: traefik
+  namespace: kube-system
 data:
   traefik.toml: |
     [entryPoints]
@@ -10,30 +11,10 @@ data:
         address = ":80"
       [entryPoints.websecure]
         address = ":443"
-    
-    [tls]
-      [[tls.certificates]]
-        certFile = "/certs/tls.crt"
-        keyFile = "/certs/tls.key"
-
-    [api]
-      dashboard = true
-      insecure = true
-      
-    [serversTransport]
-      insecureSkipVerify = true
 
     [providers]
       [providers.kubernetesCRD]
-        endpoint = "https://10.43.0.1:443"
-        token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-
       [providers.kubernetesIngress]
-        endpoint = "https://10.43.0.1:443"
-        token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 
-    [kubernetes]
-      endpoint = "https://10.43.0.1:443"
-      token = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-      timeout = 60
-    
+    [api]
+      dashboard = true

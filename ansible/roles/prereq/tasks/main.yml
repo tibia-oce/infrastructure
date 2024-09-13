@@ -248,6 +248,14 @@
   - firewall
   - iptables
 
+- name: Allow Metrics traffic (port 10250)
+  ansible.builtin.command: iptables -I INPUT -p udp --dport 10250 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
 # New rules
 # Allow Cilium gops health check (port 9890)
 - name: Allow incoming gops health check traffic (port 9890)
@@ -295,6 +303,22 @@
 
 - name: Allow metallb egress traffic (port 7946)
   ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 7946 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow dns ingress traffic (port 9153)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 9153 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow dns egress traffic (port 9153)
+  ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 9153 -j ACCEPT
   become: true
   become_method: sudo
   tags:

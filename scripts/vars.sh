@@ -107,5 +107,3 @@ x86_instance_count      = 0
 
 EOL
 echo "terraform/terraform.tfvars has been generated."
-
-echo "$SSH_PRIVATE_KEY"

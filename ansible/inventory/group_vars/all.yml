@@ -19,31 +19,24 @@ metal_lb_api_proxy: 10.0.1.110
 https_port: 443
 http_port: 80
 
-# Interface which will be used for flannel
+# CNI configurations
+cluster_cidr: 10.42.0.0/16
 flannel_iface: enp0s6
-
-# uncomment calico_iface to use tigera operator/calico cni instead of flannel https://docs.tigera.io/calico/latest/about
 # calico_iface: "enp0s6"
 calico_ebpf: false # use eBPF dataplane instead of iptables
 calico_tag: v3.28.0 # calico version tag
-
-# uncomment cilium_iface to use cilium cni instead of flannel or calico
-# ensure v4.19.57, v5.1.16, v5.2.0 or more recent kernel
 # cilium_iface: "enp0s6"
 cilium_mode: native # native when nodes on same subnet or using bgp, else set routed
 cilium_tag: v1.16.0 # cilium version tag
 cilium_hubble: true # enable hubble observability relay and ui
-cluster_cidr: 10.52.0.0/16 # if using calico or cilium, you may specify the cluster pod cidr pool
 cilium_bgp: false # enable cilium bgp control plane for lb services and pod cidrs. disables metallb.
-
-# bgp parameters for cilium cni. only active when cilium_iface is defined and cilium_bgp is true.
 cilium_bgp_my_asn: "64513"
 cilium_bgp_peer_asn: "64512"
 cilium_bgp_peer_address: 10.0.1.1
 cilium_bgp_lb_cidr: 192.168.31.0/24 # cidr for cilium loadbalancer ipam
 
 # KubeVIP
-# kube_vip_lb_ip_range: "192.168.30.80-192.168.30.90" # uncomment to use kube-vip for services instead of MetalLB
+# kube_vip_lb_ip_range: "192.168.30.80-192.168.30.90"
 kube_vip_arp: true
 kube_vip_bgp: false
 kube_vip_bgp_routerid: "127.0.0.1"  # Defines the router ID for the BGP server
@@ -68,17 +61,20 @@ extra_args: >-
 
 # change these to your liking, the only required are: --disable servicelb, --tls-san {{ apiserver_endpoint }}
 # the contents of the if block is also required if using calico or cilium
+# --advertise-address=10.43.0.1
+
 extra_server_args: >-
   {{ extra_args }}
   {{ '--node-taint node-role.kubernetes.io/master=true:NoSchedule' if k3s_master_taint else '' }}
   {% if calico_iface is defined or cilium_iface is defined %}
   --flannel-backend=none
   --disable-network-policy
-  --cluster-cidr={{ cluster_cidr | default('10.52.0.0/16') }}
   {% endif %}
+  --cluster-cidr={{ cluster_cidr | default('10.52.0.0/16') }}
   --tls-san {{ apiserver_endpoint }}
+  --tls-san 10.0.1.5
+  --bind-address=0.0.0.0
   --disable servicelb
-  --disable traefik
 
 extra_agent_args: >-
   {{ extra_args }}

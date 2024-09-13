@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: nginx-ingressroute
+  namespace: default
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - match: Host(`status.mythbound.dev`) && PathPrefix(`/`) || PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: nginx
+          port: 80
+          scheme: http

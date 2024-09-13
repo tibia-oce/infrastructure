@@ -1,27 +1,63 @@
+# traefik/clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: traefik-ingress-controller
 rules:
-- apiGroups: [""]
-  resources: ["services", "endpoints", "secrets", "configmaps", "pods", "nodes"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["networking.k8s.io", "extensions"]
-  resources: ["ingresses", "ingressclasses"]
-  verbs: ["get", "list", "watch", "create", "update", "delete"]
-- apiGroups: ["discovery.k8s.io"]
-  resources: ["endpointslices"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["traefik.containo.us"]
-  resources: [
-    "middlewares", 
-    "middlewaretcps", 
-    "traefikservices", 
-    "ingressroutes", 
-    "ingressrouteudps", 
-    "ingressroutetcps", 
-    "tlsstores", 
-    "tlsoptions", 
-    "serverstransports"
-  ]
-  verbs: ["get", "list", "watch", "create", "update", "delete"]
+  - apiGroups: [""]
+    resources:
+      - services
+      - endpoints
+      - secrets
+      - configmaps
+      - pods
+      - nodes
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["discovery.k8s.io"]
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["networking.k8s.io", "extensions"]
+    resources:
+      - ingresses
+      - ingressclasses
+      - ingresses/status
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - delete
+  - apiGroups: ["traefik.io", "traefik.containo.us"]
+    resources:
+      - middlewares
+      - middlewaretcps
+      - traefikservices
+      - ingressroutes
+      - ingressroutetcps
+      - ingressrouteudps
+      - tlsoptions
+      - tlsstores
+      - serverstransports
+      - serverstransporttcps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - delete
+  - nonResourceURLs:
+      - "/healthz"
+      - "/version"
+      - "/version/*"
+    verbs:
+      - get
