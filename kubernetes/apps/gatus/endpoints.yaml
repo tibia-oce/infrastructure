@@ -1,3 +1,4 @@
+# gatus/endpoints.yaml
 endpoints:
   - name: GitHub
     url: https://api.github.com/healthz

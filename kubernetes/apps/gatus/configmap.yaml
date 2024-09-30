@@ -6,4 +6,4 @@ metadata:
 data:
   config.yaml: |
     metrics: true
-    endpointsFile: /config/endpoints.yaml
+    endpointsFile: endpoints.yaml
