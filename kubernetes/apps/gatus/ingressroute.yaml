@@ -11,7 +11,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`status.mythbound.dev`) && PathPrefix(`/`)
+    - match: Host(`status.mythbound.dev`)
       kind: Rule
       services:
         - name: gatus
