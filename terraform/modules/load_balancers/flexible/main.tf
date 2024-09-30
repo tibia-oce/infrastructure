@@ -47,6 +47,18 @@ module "kubeapi" {
   kube_api_port = var.kube_api_port
 }
 
+module "argo_backend" {
+  source                     = "./backend"
+  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+  worker_node_private_ip_map  = var.worker_node_private_ip_map
+  hostname                    = "argo.mythbound.dev"
+  service_name                = "argo"
+  url_path                    = "/"
+  https_port                  = 443
+  http_port                   = 80
+}
+
+
 module "status_backend" {
   source                     = "./backend"
   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
@@ -118,11 +130,12 @@ module "https_listener" {
   listener_port           = 443
 
   # Hostnames and backend map
-  hostname_names          = ["mythbound.dev", "myaac.mythbound.dev", "status.mythbound.dev"]
+  hostname_names          = ["mythbound.dev", "myaac.mythbound.dev", "status.mythbound.dev", "argo.mythbound.dev"]
   hostname_backend_map    = {
     "mythbound.dev"        = module.root_backend.https_backend_set_name
     "myaac.mythbound.dev"    = module.myaac_backend.https_backend_set_name
     "status.mythbound.dev" = module.status_backend.https_backend_set_name
+    "argo.mythbound.dev" = module.argo_backend.https_backend_set_name
   }
 
   ssl_configuration_enabled    = true

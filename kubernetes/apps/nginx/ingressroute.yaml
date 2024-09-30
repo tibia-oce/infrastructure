@@ -9,7 +9,7 @@ spec:
     - web
     - websecure
   routes:
-    - match: Host(`status.mythbound.dev`) && PathPrefix(`/`) || PathPrefix(`/`)
+    - match: Host(`nginx.mythbound.dev`) && PathPrefix(`/`) || PathPrefix(`/`)
       kind: Rule
       services:
         - name: nginx

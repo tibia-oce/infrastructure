@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gatus
-  namespace: kube-system
+  namespace: apps
 spec:
   replicas: 1
   selector:
@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       name: gatus
-      namespace: kube-system
+      namespace: apps
       labels:
         app: gatus
     spec:
@@ -52,7 +52,13 @@ spec:
           volumeMounts:
             - mountPath: /config
               name: gatus-config
+            - mountPath: /config/endpoints.yaml
+              name: gatus-endpoints
+              subPath: endpoints.yaml
       volumes:
         - configMap:
             name: gatus
           name: gatus-config
+        - configMap:
+            name: gatus-endpoints
+          name: gatus-endpoints

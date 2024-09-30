@@ -1,0 +1,18 @@
+endpoints:
+  - name: GitHub
+    url: https://api.github.com/healthz
+    interval: 5m
+    conditions:
+      - "[STATUS] == 200"
+
+  - name: ArgoCD Liveness
+    url: http://argocd-server.argocd.svc.cluster.local:8080/healthz
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"
+
+  - name: ArgoCD Readiness
+    url: http://argocd-server.argocd.svc.cluster.local:8080/ready
+    interval: 1m
+    conditions:
+      - "[STATUS] == 200"

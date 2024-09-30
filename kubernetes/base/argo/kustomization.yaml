@@ -1,8 +1,18 @@
+# argo/kustomization.yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 namespace: argocd
 resources:
-- https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.2/manifests/install.yaml
 - namespace.yaml
+- https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.2/manifests/install.yaml
 - repository.yaml
+- ingressroute.yaml
+
+patches:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: argocd-server
+  path: patch-argocd-server.json

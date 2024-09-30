@@ -35,6 +35,3 @@ spec:
           port: 443
           scheme: https
           serversTransport: dashboard-transport
-  tls:
-    secretName: cloudflare-tls
-

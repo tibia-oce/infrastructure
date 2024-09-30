@@ -1,3 +1,4 @@
+# gatus/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -5,9 +6,4 @@ metadata:
 data:
   config.yaml: |
     metrics: true
-    endpoints:
-      - name: github
-        url: https://api.github.com/healthz
-        interval: 5m
-        conditions:
-          - "[STATUS] == 200"
+    endpointsFile: /config/endpoints.yaml

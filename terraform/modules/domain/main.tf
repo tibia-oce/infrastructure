@@ -34,6 +34,15 @@ resource "cloudflare_record" "status" {
   proxied = true
 }
 
+resource "cloudflare_record" "argo" {
+  zone_id = var.cf_zone_id
+  name    = "argo.${var.domain}"
+  content = var.lb_public_ip_address
+  type    = "A"
+  ttl     = 1
+  proxied = true
+}
+
 resource "cloudflare_record" "game" {
   zone_id  = var.cf_zone_id
   name     = "game.${var.domain}"

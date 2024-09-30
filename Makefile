@@ -127,27 +127,21 @@ status:
 
 base:
 	@printf "$(GREEN)Deploying base services and configs..$(NC)\n"
-	@kubectl apply -k kubernetes/apps/gatus
-
-# @kubectl create deployment nginx --image=nginx            
-# @kubectl expose deployment nginx --port=80 --type=ClusterIP
-# @kubectl apply -k kubernetes/base/
-
-# @printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
-# @kubectl wait --for=condition=Ready pod -l app=traefik -n kube-system --timeout=30s || \
-# (printf "$(RED)Timeout: Traefik pods not ready in time!$(NC)\n" && exit 1)
-# @printf "\n"
-# @printf "\n$(LINE)\n$(GREEN)Traefik services$(NC)\n$(LINE)\n"
-# @kubectl get svc -n kube-system | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
-# @printf "\n$(LINE)\n$(GREEN)Namespace pods$(NC)\n$(LINE)\n"
-# @kubectl get pods --all-namespaces | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
-# @printf "\n$(LINE)\n"
-
-traefik:
-	@printf "$(GREEN)Deploying Traefik Services...$(NC)\n"
 	@kubectl apply -k kubernetes/base/
-	make traefik-logs
-	
+	@PASSWORD=$$(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d | tr -d '\n'); \
+	INGRESS_PATH=https://argo.mythbound.dev/; \
+	printf "\n$(LINE)\n"; \
+	printf "$(GREEN)URL: $(WHITE)$$INGRESS_PATH$(NC)\n"; \
+	printf "$(GREEN)Username: $(WHITE)admin$(NC)\n"; \
+	printf "$(GREEN)Password: $(WHITE)$$PASSWORD$(NC)\n$(LINE)\n\n"
+
+ingress:
+	@printf "$(GREEN)Listing all ingress CRDs..$(NC)\n"
+	@kubectl get crds | grep ingressroute
+
+	@printf "$(GREEN)Listing all ingress routes..$(NC)\n"
+	@kubectl get ingress --all-namespaces
+
 apps:
 	@printf "$(GREEN)Deploying app manifests and checking pod status...$(NC)\n"
 	@kubectl apply -k kubernetes/apps/
@@ -155,6 +149,27 @@ apps:
 	@kubectl get nodes
 	@printf "\n$(LINE)\n$(GREEN)Pod status...$(NC)\n$(LINE)\n"
 	@kubectl get pods --all-namespaces
+	@printf "\n"
+
+argo-logs:
+	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
+	$(call kubectl_get,secret)
+
+	$(call kubectl_logs,traefik)
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
+	$(call kubectl_get,svc traefik)
+	@printf "\n"
+	@printf "\n$(LINE)\n$(GREEN)Service definition...$(NC)\n$(LINE)\n"
+	kubectl get svc -n kube-system traefik -o yaml
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)IngressRoutes...$(NC)\n$(LINE)\n"
+	kubectl get ingressroute -A
+	@printf "\n"
+
+	@make pod-traefik
 	@printf "\n"
 
 traefik-logs:
@@ -175,21 +190,8 @@ traefik-logs:
 	kubectl get ingressroute -A
 	@printf "\n"
 
-# @printf "\n$(LINE)\n$(GREEN)Service Account...$(NC)\n$(LINE)\n"
-# $(call kubectl_get,serviceaccount traefik-ingress-controller)
-
-# @printf "\n$(LINE)\n$(GREEN)ClusterRoleBinding...$(NC)\n$(LINE)\n"
-# kubectl describe clusterrolebinding traefik-ingress-controller
-# @printf "\n"
-
-
-# @printf "\n$(LINE)\n$(GREEN)Cluster role...$(NC)\n$(LINE)\n"
-# kubectl describe clusterrole traefik-ingress-controller
-# @printf "\n"
-
 	@make pod-traefik
 	@printf "\n"
-
 
 define kubectl_get
 	@printf "> kubectl get $1 -n kube-system\n"
@@ -201,20 +203,6 @@ define kubectl_logs
 	@printf "\n$(LINE)\n$(GREEN)$1 logs...$(NC)\n> kubectl logs -n kube-system deployment/$1\n$(LINE)\n"
 	@kubectl logs -n kube-system deployment/$1 | grep -v 'reflector.go'
 endef
-
-restart-traefik:
-	kubectl delete deployment traefik -n kube-system --ignore-not-found
-	kubectl delete svc traefik -n kube-system --ignore-not-found
-	kubectl delete ingressroute traefik-dashboard-http -n kube-system --ignore-not-found
-	kubectl delete ingressroute traefik-dashboard-https -n kube-system --ignore-not-found
-	kubectl delete secret cloudflare-tls -n kube-system --ignore-not-found
-	kubectl delete crd ingressroutes.traefik.io --ignore-not-found
-	kubectl delete crd middleware.traefik.io --ignore-not-found
-	kubectl delete crd tlsoptions.traefik.io --ignore-not-found
-	kubectl delete crd tlsstores.traefik.io --ignore-not-found
-	kubectl delete crd traefikservices.traefik.io --ignore-not-found
-	make base
-	kubectl logs -n kube-system deployment/traefik | grep -v 'reflector.go'
 
 port-gatus:
 	@GATUS_POD=$$(kubectl get pods -n kube-system -l app=gatus -o jsonpath='{.items[0].metadata.name}'); \

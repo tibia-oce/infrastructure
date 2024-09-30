@@ -44,6 +44,11 @@ output "game_domain" {
   value       = module.domain.game_domain
 }
 
+output "argo_domain" {
+  description = "The argo server domain managed by Cloudflare"
+  value       = module.domain.argo_domain
+}
+
 output "k3s_token" {
   value     = trimspace(data.hcp_vault_secrets_secret.k3s_token.secret_value)
   sensitive = true
