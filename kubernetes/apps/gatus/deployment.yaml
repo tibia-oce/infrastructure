@@ -52,13 +52,9 @@ spec:
           volumeMounts:
             - mountPath: /config
               name: gatus-config
-            - mountPath: /config/endpoints.yaml
-              name: gatus-endpoints
-              subPath: endpoints.yaml
+            - mountPath: /config/endpoints.yaml  # Mount the `endpoints.yaml` from gatus config
+              subPath: config.yaml  # Points to the existing config.yaml file
       volumes:
         - configMap:
-            name: gatus
+            name: gatus  # Use the existing gatus ConfigMap
           name: gatus-config
-        - configMap:
-            name: gatus-endpoints
-          name: gatus-endpoints
