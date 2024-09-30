@@ -127,9 +127,11 @@ status:
 
 base:
 	@printf "$(GREEN)Deploying base services and configs..$(NC)\n"
-	@kubectl create deployment nginx --image=nginx            
-	@kubectl expose deployment nginx --port=80 --type=ClusterIP
-	@kubectl apply -k kubernetes/base/
+	@kubectl apply -k kubernetes/apps/gatus
+
+# @kubectl create deployment nginx --image=nginx            
+# @kubectl expose deployment nginx --port=80 --type=ClusterIP
+# @kubectl apply -k kubernetes/base/
 
 # @printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
 # @kubectl wait --for=condition=Ready pod -l app=traefik -n kube-system --timeout=30s || \
@@ -299,3 +301,5 @@ metrics-server-logs:
 
 
 # kubectl logs -n kube-system deployment/traefik --since=2m
+
+# curl -H "Host: status.mythbound.dev" http://140.238.193.212
