@@ -10,7 +10,7 @@ _... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
 
 <div align="center">
 
-[![Kubernetes](https://img.shields.io/static/v1?label=K3s&message=v1.30.2&color=blue&style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)&nbsp;&nbsp;
+[![Kubernetes](https://img.shields.io/static/v1?label=K3s&message=v1.31.0&color=blue&style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)&nbsp;&nbsp;
 [![Discord](https://img.shields.io/discord/1283279739775352896?style=for-the-badge&label&logo=discord&logoColor=white&color=blue)]([https://discord.gg/1283279739775352896](https://discord.gg/Erhz4GmDMd))&nbsp;&nbsp;
 [![Renovate](https://img.shields.io/github/actions/workflow/status/tibia-oce/oci/renovate.yml?branch=main&label=&logo=renovatebot&style=for-the-badge&color=blue)](https://github.com/tibia-oce/oci/actions/workflows/renovate.yml)
 
@@ -18,9 +18,9 @@ _... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
 
 <div align="center">
 
-[![Cluster](https://img.shields.io/static/v1?label=Cluster&message=Online&color=brightgreen&style=for-the-badge&logo=v&logoColor=white)](#)&nbsp;&nbsp;
-[![Server](https://img.shields.io/static/v1?label=Server&message=Offline&color=red&style=for-the-badge&logo=v&logoColor=white)](#)&nbsp;&nbsp;
-[![Website](https://img.shields.io/static/v1?label=Website&message=Offline&color=red&style=for-the-badge&logo=statuspage&logoColor=white)](#)&nbsp;&nbsp;
+[![Cluster](https://img.shields.io/static/v1?label=Cluster&message=Online&color=brightgreen&style=for-the-badge&logo=v&logoColor=white)](https://github.com/tibia-oce/oci)&nbsp;&nbsp;
+[![Server](https://img.shields.io/static/v1?label=Server&message=Offline&color=red&style=for-the-badge&logo=v&logoColor=white)](https://status.mythbound.dev/)&nbsp;&nbsp;
+[![Website](https://img.shields.io/static/v1?label=Website&message=Offline&color=red&style=for-the-badge&logo=statuspage&logoColor=white)](https://myaac.mythbound.dev/)&nbsp;&nbsp;
 
 </div>
 
@@ -32,26 +32,35 @@ _... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
 
 # 🏠 Oracle K3S Cluster
 
-This mono-repository demonstrates how to deploy a Kubernetes (K3s) cluster for free on Oracle [always free resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).  Infrastructure provisioning, configuration and deployments are managed with Infrastructure as Code (IaC) and GitOps; using toolings from [Ansible](https://www.ansible.com/), [HashiCorp](https://www.hashicorp.com/), [Kubernetes](https://kubernetes.io/), [Helm](https://github.com/helm/helm), [Kustomize](https://kustomize.io/), [ArgoCD](https://github.com/argoproj/argo-cd), [Renovate](https://github.com/renovatebot/renovate), and [GitHub Actions](https://github.com/features/actions).
+This mono-repository demonstrates how to deploy a K3s Kubernetes cluster for free on Oracle [always free resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).  Infrastructure provisioning, configuration and deployments are managed with Infrastructure as Code (IaC) and GitOps; using toolings from [Ansible](https://www.ansible.com/), [HashiCorp](https://www.hashicorp.com/), [Kubernetes](https://kubernetes.io/), [Helm](https://github.com/helm/helm), [Kustomize](https://kustomize.io/), [ArgoCD](https://github.com/argoproj/argo-cd), [Renovate](https://github.com/renovatebot/renovate), and [GitHub Actions](https://github.com/features/actions).
 
 <br>
 
 ## ⛵ Features
 
+### GitOps
+
+[Argo CD](https://argo-cd.readthedocs.io/en/stable/) monitors the repository's Kubernetes manifests and ensures the cluster matches the desired state in Git. When changes are merged, Argo CD automatically applies them to the cluster.
+
+[Renovate](https://github.com/renovatebot/renovate) watches for dependency updates, creating pull requests when updates are found. Once merged, Argo CD detects and applies the changes, deploying the updated dependencies.
+
 ### State Management
 [Terraform Cloud](https://www.hashicorp.com/products/terraform) handles the locking and consistency of state files, which helps prevent issues that might arise from multiple users or processes trying to modify the state simultaneously.
 
-### GitOps
-[Argo](https://argo-cd.readthedocs.io/en/stable/) watches the definitions in the kubernetes folder and makes the changes to the clusters based on the state of the Git repository. [Renovate](https://github.com/renovatebot/renovate) watches the repository looking for dependency updates, when they are found a PR is automatically created. When some PRs are merged Argo applies the changes to the cluster.
+### Secret Management
+
+[HashiCorp Vault](https://www.vaultproject.io/) stores and manages secrets, passwords, and API keys. It controls access, provides dynamic secrets, and supports automatic rotation to enhance security and limit exposure.
 
 ### Core Components
 
-- [cert-manager](https://github.com/cert-manager/cert-manager): Creates SSL certificates for services in the cluster.
+- [cloudflare](https://www.cloudflare.com/en-au/application-services/products/dns/): dns resolution for layer 4 and layer 7 cluster applications.
+- [metal-lb](https://metallb.universe.tf/): layer 2 & 3 network load balancing to integrate with Oracle cloud without a CCM.
+- [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an os-level pass through proxy to support cloud integration.
 - [flannel](https://github.com/flannel-io/flannel): internal Kubernetes container networking interface.
-- [metal-lb](https://metallb.universe.tf/): baremetal network load balancing to integrate with Oracle cloud without the need for a CCM
-- [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an os-level pass through proxy to support cloud integration
-- [traefik](https://doc.traefik.io/traefik/): ingress controller for a reverse proxy and service load balancing
-- ~~[cloudflared](https://github.com/cloudflare/cloudflared): Enables Cloudflare secure access to certain ingresses.~~
+- [traefik](https://doc.traefik.io/traefik/): as a reverse proxy and service load balancing ingress controller.
+- [cert-manager](https://github.com/cert-manager/cert-manager): manages SSL certificates for services in the cluster.
+- [gatus](https://gatus.io/): monitors the health and performance of services, with alerts.
+- [cloudflared](https://github.com/cloudflare/cloudflared): enables zero-trust tunnelling to certain ingress routes.
 
 <br>
 

@@ -4,6 +4,14 @@ module "reserved_ip" {
   lb_display_name = var.lb_display_name
 }
 
+module "domain" {
+  source               = "./modules/domain"
+  lb_public_ip_address = module.reserved_ip.reserved_ip_address
+  cf_zone_id           = data.hcp_vault_secrets_secret.cf_zone_id.secret_value
+  domain               = var.domain
+  depends_on           = [module.reserved_ip]
+}
+
 module "network" {
   source            = "./modules/network"
   vcn_cidr          = var.vcn_cidr
@@ -11,7 +19,7 @@ module "network" {
   compartment_id    = var.compartment_ocid
   my_public_ip_cidr = var.my_public_ip_cidr
   kube_api_port     = var.kube_api_port
-  metal_lb_cidr      = var.metal_lb_cidr
+  metal_lb_cidr     = var.metal_lb_cidr
   security_lists = [
     module.security.admin_security_list_id,
     module.security.internal_security_list_id,
@@ -52,6 +60,13 @@ module "flexible_lb" {
   kube_api_port              = var.kube_api_port
   control_plane_private_ips  = local.k3s_control_plane_private_ips
   worker_node_private_ip_map = local.worker_node_private_ip_map
+
+  # SSL Certificate
+  private_key                = data.hcp_vault_secrets_secret.cf_private_key.secret_value
+  public_certificate         = data.hcp_vault_secrets_secret.cf_origin_certificate.secret_value
+  ca_certificate             = data.hcp_vault_secrets_secret.ca_certificate.secret_value
+
+  # Security lists and groups
   security_lists = [
     module.security.admin_security_list_id,
     module.security.internal_security_list_id,
@@ -64,6 +79,8 @@ module "flexible_lb" {
     module.nsg.ssh_nsg_id,
     module.nsg.admin_nsg_id,
   ]
+
+  depends_on = [module.domain]
 }
 
 module "control_plane" {

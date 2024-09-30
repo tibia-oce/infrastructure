@@ -91,9 +91,13 @@ generate-inventory: terraform-output
 	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
 	
 	@echo "[all:vars]" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "apiserver_endpoint=$$(jq -r '.load_balancer_public_ip.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "apiserver_endpoint=$$(jq -r '.control_plane_public_ips.value[]' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "k3s_token=$$(jq -r '.k3s_token.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "ansible_ssh_private_key_file=${ANSIBLE_PRIVATE_KEY_PATH}" >> $(ANSIBLE_INVENTORY_FILE)
+
+	@echo "myaac_domain=$$(jq -r '.myaac_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "status_domain=$$(jq -r '.status_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "game_domain=$$(jq -r '.game_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 
 # Set up Python virtual environment and install Ansible
 setup-env:
@@ -103,28 +107,128 @@ setup-env:
 	. ansible/$(VENV_DIR)/bin/activate && ansible-galaxy install -r ansible/collections/requirements.yml
 
 # Sequentially run all necessary steps to bootstrap the K3s cluster
+# todo: configure vault injector or similar to pass the keys for ssl termination
 bootstrap-cluster: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Bootstrapping the K3s cluster...$(NC)\n"
 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
 	@mkdir -p ~/.kube
 	cp ./ansible/kubeconfig ~/.kube/config
-	@printf "$(GREEN)Cluster bootstrapped successfully!$(NC)\n"
-	kubectl get pods -n kube-system -o wide
-	make traefik
+	@printf "$(GREEN)Deploying base services and configs..$(NC)\n"
+	@sleep 10
+
+status:
+	@printf "\n$(LINE)\n$(GREEN)Nodes...$(NC)\n$(LINE)\n"
+	@kubectl get nodes
+	@printf "\n$(LINE)\n$(GREEN)Pods...$(NC)\n$(LINE)\n"
+	@kubectl get pods --all-namespaces
+	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
+	kubectl get svc --all-namespaces
+	@printf "\n"
+
+base:
+	@printf "$(GREEN)Deploying base services and configs..$(NC)\n"
+	@kubectl apply -k kubernetes/apps/gatus
+
+# @kubectl create deployment nginx --image=nginx            
+# @kubectl expose deployment nginx --port=80 --type=ClusterIP
+# @kubectl apply -k kubernetes/base/
+
+# @printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
+# @kubectl wait --for=condition=Ready pod -l app=traefik -n kube-system --timeout=30s || \
+# (printf "$(RED)Timeout: Traefik pods not ready in time!$(NC)\n" && exit 1)
+# @printf "\n"
+# @printf "\n$(LINE)\n$(GREEN)Traefik services$(NC)\n$(LINE)\n"
+# @kubectl get svc -n kube-system | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
+# @printf "\n$(LINE)\n$(GREEN)Namespace pods$(NC)\n$(LINE)\n"
+# @kubectl get pods --all-namespaces | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
+# @printf "\n$(LINE)\n"
 
 traefik:
 	@printf "$(GREEN)Deploying Traefik Services...$(NC)\n"
-	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-	@kubectl apply -k kubernetes/traefik/
-	@printf "$(GREEN)Waiting for containers to come online...$(NC)\n"
-	@kubectl wait --for=condition=Ready pod -l app=traefik -n traefik --timeout=15s || \
-	(printf "$(RED)Timeout: Traefik pods not ready in time!$(NC)\n" && exit 1)
+	@kubectl apply -k kubernetes/base/
+	make traefik-logs
+	
+apps:
+	@printf "$(GREEN)Deploying app manifests and checking pod status...$(NC)\n"
+	@kubectl apply -k kubernetes/apps/
+	@printf "\n$(LINE)\n$(GREEN)Node status...$(NC)\n$(LINE)\n"
+	@kubectl get nodes
+	@printf "\n$(LINE)\n$(GREEN)Pod status...$(NC)\n$(LINE)\n"
+	@kubectl get pods --all-namespaces
 	@printf "\n"
-	@printf "\n$(LINE)\n$(GREEN)Traefik services$(NC)\n$(LINE)\n"
-	@kubectl get svc -n traefik | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
-	@printf "\n$(LINE)\n$(GREEN)Traefik Pods$(NC)\n$(LINE)\n"
-	@kubectl get pods --all-namespaces | awk '{if(NR==1) print "\033[1;32m" $$0 "\033[0m"; else print $$0}'
-	@printf "\n$(LINE)\n"
+
+traefik-logs:
+	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
+	$(call kubectl_get,secret)
+
+	$(call kubectl_logs,traefik)
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
+	$(call kubectl_get,svc traefik)
+	@printf "\n"
+	@printf "\n$(LINE)\n$(GREEN)Service definition...$(NC)\n$(LINE)\n"
+	kubectl get svc -n kube-system traefik -o yaml
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)IngressRoutes...$(NC)\n$(LINE)\n"
+	kubectl get ingressroute -A
+	@printf "\n"
+
+# @printf "\n$(LINE)\n$(GREEN)Service Account...$(NC)\n$(LINE)\n"
+# $(call kubectl_get,serviceaccount traefik-ingress-controller)
+
+# @printf "\n$(LINE)\n$(GREEN)ClusterRoleBinding...$(NC)\n$(LINE)\n"
+# kubectl describe clusterrolebinding traefik-ingress-controller
+# @printf "\n"
+
+
+# @printf "\n$(LINE)\n$(GREEN)Cluster role...$(NC)\n$(LINE)\n"
+# kubectl describe clusterrole traefik-ingress-controller
+# @printf "\n"
+
+	@make pod-traefik
+	@printf "\n"
+
+
+define kubectl_get
+	@printf "> kubectl get $1 -n kube-system\n"
+	@kubectl get $1 -n kube-system
+	@printf "\n"
+endef
+
+define kubectl_logs
+	@printf "\n$(LINE)\n$(GREEN)$1 logs...$(NC)\n> kubectl logs -n kube-system deployment/$1\n$(LINE)\n"
+	@kubectl logs -n kube-system deployment/$1 | grep -v 'reflector.go'
+endef
+
+restart-traefik:
+	kubectl delete deployment traefik -n kube-system --ignore-not-found
+	kubectl delete svc traefik -n kube-system --ignore-not-found
+	kubectl delete ingressroute traefik-dashboard-http -n kube-system --ignore-not-found
+	kubectl delete ingressroute traefik-dashboard-https -n kube-system --ignore-not-found
+	kubectl delete secret cloudflare-tls -n kube-system --ignore-not-found
+	kubectl delete crd ingressroutes.traefik.io --ignore-not-found
+	kubectl delete crd middleware.traefik.io --ignore-not-found
+	kubectl delete crd tlsoptions.traefik.io --ignore-not-found
+	kubectl delete crd tlsstores.traefik.io --ignore-not-found
+	kubectl delete crd traefikservices.traefik.io --ignore-not-found
+	make base
+	kubectl logs -n kube-system deployment/traefik | grep -v 'reflector.go'
+
+port-gatus:
+	@GATUS_POD=$$(kubectl get pods -n kube-system -l app=gatus -o jsonpath='{.items[0].metadata.name}'); \
+	echo "Port-forwarding pod: $$GATUS_POD"; \
+	kubectl port-forward -n kube-system $$GATUS_POD 9090:8080 & \
+	sleep 2; \
+	printf "\n$(LINE)\n$(GREEN)http://localhost:9090$(NC)\n$(LINE)\n\n"
+
+port-traefik:
+	@TRAFFIC_POD=$$(kubectl get pods -n kube-system -o jsonpath='{.items[0].metadata.name}'); \
+	echo "Port-forwarding pod: $$TRAFFIC_POD"; \
+	kubectl port-forward -n kube-system $$TRAFFIC_POD 8080:80 & \
+	sleep 2; \
+	printf "\n$(LINE)\n$(GREEN)http://localhost:8080/dashboard/$(NC)\n$(LINE)\n\n"
 
 reset: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Resetting cluster...$(NC)\n"
@@ -136,14 +240,6 @@ config-kube:
 	@printf "$(GREEN)Copying kubeconfig from ansible to ~/.kube/config...$(NC)\n"
 	@cp ./ansible/kubeconfig ~/.kube/config
 	@printf "$(GREEN)Kubeconfig copied successfully!$(NC)\n"
-
-# Command to verify connection by getting Kubernetes nodes
-apply-charts: config-kube
-	@printf "$(GREEN)Deploying ingress controller and checking pod status...$(NC)\n"
-	@kubectl apply -k ./kubernetes/apps/
-	@kubectl get nodes
-	@kubectl cluster-info
-	@kubectl get pods --all-namespaces
 
 # SSH into the first control plane node
 ssh-control-plane: terraform-output
@@ -163,51 +259,47 @@ clean-pods:
 
 pod-cilium:
 	@kubectl exec -it -n kube-system $(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- bash
+	# kubectl exec -n kube-system $$POD_NAME -- sh -c 'cat /etc/ssl/certs/kube-root-ca.crt'
 
 pod-traefik:
-	kubectl exec -it -n traefik $(kubectl get pods -n traefik -l app=traefik -o jsonpath='{.items[0].metadata.name}') -- bash
+	@printf "\n$(LINE)\n$(GREEN)Traefik pod mounts and kubeapi connection test...$(NC)\n$(LINE)\n"
+	@POD_NAME=$$(kubectl get pods -n kube-system -l app.kubernetes.io/name=traefik -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}') && \
+	printf "$(YELLOW)> kubectl exec -n kube-system $$POD_NAME -- sh -c 'cat /etc/ssl/certs/kube-root-ca.crt'$(NC)\n" && \
+	kubectl exec -n kube-system $$POD_NAME -- sh -c 'cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt' && \
+	printf "\n$(YELLOW)> kubectl exec -n kube-system $$POD_NAME -- sh -c 'cat /var/run/secrets/kubernetes.io/serviceaccount/token'$(NC)\n" && \
+	kubectl exec -n kube-system $$POD_NAME -- sh -c 'cat /var/run/secrets/kubernetes.io/serviceaccount/token' && \
+	printf "\n\n$(YELLOW)> $$POD_NAME | wget --header=\"Authorization: Bearer \$${TOKEN}\" --no-check-certificate https://10.43.0.1:443/version -O -\n$(NC)" && \
+	kubectl exec -n kube-system $$POD_NAME -- sh -c "TOKEN=\$$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) && \
+	( command -v wget > /dev/null || apk add --no-cache wget > /dev/null 2>&1 ) && \
+	wget --header=\"Authorization: Bearer \$${TOKEN}\" --no-check-certificate https://10.43.0.1:443/version -O -" && \
+	printf "\n$(YELLOW)> $$POD_NAME | nslookup kubernetes.default.svc.cluster.local\n$(NC)" && \
+	kubectl exec -n kube-system $$POD_NAME -- nslookup kubernetes.default.svc.cluster.local
 
 curl-pod:
-	@printf "$(GREEN)Deleting any existing curl-pod....$(NC)\n"
-	-kubectl delete pod curl-pod --ignore-not-found=true
-	@printf "$(GREEN)Creating new curl-pod...$(NC)\n"
-	kubectl run curl-pod --image=debian --restart=Never --command -- sleep infinity
-	kubectl wait --for=condition=Ready pod/curl-pod --timeout=60s
-	sudo kubectl exec -it curl-pod -- bash -c "apt update && apt install -y curl dnsutils"
-	kubectl exec -it curl-pod -- bash
-	kubectl run -it --rm --image=busybox:1.28 dns-test --restart=Never -- bash
-
-traefik-logs:
-	@kubectl logs -n traefik $$(kubectl get pods -n traefik -l app=traefik -o jsonpath='{.items[0].metadata.name}')
-
-test-dns:
 	@kubectl delete pod alpine --ignore-not-found
 	@kubectl run -it --rm --restart=Never alpine --image=alpine -- /bin/sh -c "\
 		apk add --no-cache curl bind-tools && /bin/sh"
-	# ping 10.43.0.10
 
 coredns-logs:
-	@kubectl logs -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].metadata.name}')
+	@printf "$(YELLOW)List of Kubernetes endpoints...$(NC)\n"
+	@kubectl get endpoints kubernetes -o yaml
+
+	@printf "\n$(YELLOW)Checking CoreDNS logs for network connectivity issues...$(NC)\n"
+	@POD_NAME=$$(kubectl get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].metadata.name}') && \
+	kubectl logs -n kube-system $$POD_NAME
+
+	@printf "\n$(YELLOW)Checking network connectivity to the API server from a busybox pod...$(NC)\n"
+	# @kubectl run -it --rm debug --image=busybox --restart=Never -- sh -c '\
+	# 	ping -c 3 10.43.0.1 && \
+	# 	nc -vz 10.43.0.1 443'
+	@printf "\n"
 
 metrics-server-logs:
 	@kubectl logs -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=metrics-server -o jsonpath='{.items[0].metadata.name}')
 
-cilium-service-list:
-	@kubectl exec -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- cilium service list
-
-cilium-status:
-	@kubectl exec -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=cilium -o jsonpath='{.items[0].metadata.name}') -- cilium status
-
-cilium-lb-routes:
-	kubectl exec -n kube-system $(kubectl get pod -l k8s-app=cilium -n kube-system -o jsonpath='{.items[0].metadata.name}') -- cilium bpf lb list
-
-# kubectl exec -it traefik-86b7d76d94-d45zd -n traefik -- /bin/sh
-# wget --header="Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" --no-check-certificate https://10.43.0.1:443/version -O /tmp/version_output
-# cat /tmp/version_output
-
-# kubectl exec -it coredns-576bfc4dc7-htzvx -n kube-system -- /bin/sh
-
-# kubectl exec -it <coredns-pod> -n kube-system -- curl -k https://10.43.0.1:443/version
+# kubectl port-forward -n kube-system pod/$(kubectl get pods -n kube-system -l app=traefik -o jsonpath="{.items[0].metadata.name}") 9000:8080
 
 
-# kubectl exec -it coredns-576bfc4dc7-htzvx -n kube-system -- curl -k https://10.43.0.1:443/version
+# kubectl logs -n kube-system deployment/traefik --since=2m
+
+# curl -H "Host: status.mythbound.dev" http://140.238.193.212

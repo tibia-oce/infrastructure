@@ -179,6 +179,31 @@
   - firewall
   - iptables
 
+- name: Allow external incoming HTTPS traffic on port 443
+  ansible.builtin.command: iptables -I INPUT -p udp --dport 443 -s 0.0.0.0/0 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+
+- name: Allow external incoming HTTPS traffic on port 443
+  ansible.builtin.command: iptables -I OUTPUT -p udp --dport 443 -s 0.0.0.0/0 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow external incoming HTTPS traffic on port 443
+  ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 443 -s 0.0.0.0/0 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
 # Allow incoming HTTP traffic from all external sources (public internet)
 - name: Allow external incoming HTTP traffic on port 80
   ansible.builtin.command: iptables -I INPUT -p tcp --dport 80 -s 0.0.0.0/0 -j ACCEPT
@@ -217,6 +242,14 @@
 
 - name: Allow Metrics traffic (port 10250)
   ansible.builtin.command: iptables -I INPUT -p tcp --dport 10250 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow Metrics traffic (port 10250)
+  ansible.builtin.command: iptables -I INPUT -p udp --dport 10250 -j ACCEPT
   become: true
   become_method: sudo
   tags:
@@ -270,6 +303,22 @@
 
 - name: Allow metallb egress traffic (port 7946)
   ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 7946 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow dns ingress traffic (port 9153)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 9153 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow dns egress traffic (port 9153)
+  ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 9153 -j ACCEPT
   become: true
   become_method: sudo
   tags:

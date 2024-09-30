@@ -48,6 +48,11 @@ variable "k3s_token" {
   default     = "k3s_token"
 }
 
+variable "domain" {
+  description = "Website domain name."
+  default     = "mythbound.dev"
+}
+
 # ====================================================================
 # OCI (Oracle Cloud Infrastructure) Configuration
 # These variables define the essential identifiers and configuration

@@ -22,6 +22,36 @@ data "hcp_vault_secrets_secret" "k3s_token" {
   secret_name = var.k3s_token
 }
 
+data "hcp_vault_secrets_secret" "cf_token" {
+  app_name    = var.vault_app_name
+  secret_name = "cf_token"
+}
+
+data "hcp_vault_secrets_secret" "cf_account_id" {
+  app_name    = var.vault_app_name
+  secret_name = "cf_account_id"
+}
+
+data "hcp_vault_secrets_secret" "cf_zone_id" {
+  app_name    = var.vault_app_name
+  secret_name = "cf_zone_id"
+}
+
+data "hcp_vault_secrets_secret" "cf_origin_certificate" {
+  app_name    = var.vault_app_name
+  secret_name = "cf_origin_certificate"
+}
+
+data "hcp_vault_secrets_secret" "cf_private_key" {
+  app_name    = var.vault_app_name
+  secret_name = "cf_private_key"
+}
+
+data "hcp_vault_secrets_secret" "ca_certificate" {
+  app_name    = var.vault_app_name
+  secret_name = "cf_ca_certificate"
+}
+
 data "oci_core_vnic_attachments" "k3s_control_plane_vnic_attachment" {
   for_each       = { for idx, id in module.control_plane.control_plane_instance_ids : idx => id }
   compartment_id = var.compartment_ocid
