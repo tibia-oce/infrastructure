@@ -4,15 +4,26 @@ kind: Kustomization
 
 namespace: argocd
 resources:
-- namespace.yaml
-- https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.2/manifests/install.yaml
-- repository.yaml
-- ingressroute.yaml
+  - namespace.yaml
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.10.17/manifests/install.yaml
+  - repository.yaml
+  - ingressroute.yaml
 
-patches:
-- target:
-    group: apps
-    version: v1
-    kind: Deployment
-    name: argocd-server
-  path: patch-argocd-server.json
+# patches:
+#   - target:
+#       group: apps
+#       version: v1
+#       kind: Deployment
+#       name: argocd-server
+#     path: patch/patch-argocd-server.json
+#   - target:
+#       group: apps
+#       version: v1
+#       kind: Deployment
+#       name: argocd-notifications-controller
+#     path: patch/patch-notifications-controller.yaml
+#   - target:
+#       version: v1
+#       kind: ConfigMap
+#       name: argocd-cm
+#     path: patch/patch-disable-notifications.yaml
