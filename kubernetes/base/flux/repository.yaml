@@ -3,7 +3,7 @@ apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
   name: podinfo
-  namespace: default
+  namespace: flux-system
 spec:
   interval: 1m
   url: https://github.com/tibia-oce/oci
