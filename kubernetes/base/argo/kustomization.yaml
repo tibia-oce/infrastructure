@@ -9,6 +9,13 @@ resources:
   - repository.yaml
   - ingressroute.yaml
 
+patches:
+  - target:
+      version: v1
+      kind: ConfigMap
+      name: argocd-cm
+    path: patch/patch-disable-notifications.yaml
+
 # patches:
 #   - target:
 #       group: apps

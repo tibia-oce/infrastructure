@@ -1,0 +1,9 @@
+# flux/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: default
+resources:
+  - https://github.com/fluxcd/flux2/releases/latest/download/install.yaml
+  - apps.yaml
+  - repository.yaml

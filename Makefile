@@ -126,12 +126,12 @@ status:
 base:
 	@printf "$(GREEN)Deploying base services and configs..$(NC)\n"
 	@kubectl apply -k kubernetes/base/
-	@PASSWORD=$$(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d | tr -d '\n'); \
-	INGRESS_PATH=https://argo.mythbound.dev/; \
-	printf "\n$(LINE)\n"; \
-	printf "$(GREEN)URL: $(WHITE)$$INGRESS_PATH$(NC)\n"; \
-	printf "$(GREEN)Username: $(WHITE)admin$(NC)\n"; \
-	printf "$(GREEN)Password: $(WHITE)$$PASSWORD$(NC)\n$(LINE)\n\n"
+# @PASSWORD=$$(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d | tr -d '\n'); \
+# INGRESS_PATH=https://argo.mythbound.dev/; \
+# printf "\n$(LINE)\n"; \
+# printf "$(GREEN)URL: $(WHITE)$$INGRESS_PATH$(NC)\n"; \
+# printf "$(GREEN)Username: $(WHITE)admin$(NC)\n"; \
+# printf "$(GREEN)Password: $(WHITE)$$PASSWORD$(NC)\n$(LINE)\n\n"
 
 ingress:
 	@printf "$(GREEN)Listing all ingress CRDs..$(NC)\n"

@@ -1,0 +1,12 @@
+# flux/repository.yaml
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: podinfo
+  namespace: default
+spec:
+  interval: 1m
+  url: https://github.com/tibia-oce/oci
+  ref:
+    branch: main
+
