@@ -1,18 +1,20 @@
-# gatus/ingressroute.yaml
-apiVersion: traefik.io/v1alpha1
-kind: IngressRoute
+# gatus/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
   name: gatus
   namespace: apps
   annotations:
-    kubernetes.io/ingress.class: traefik
+    kubernetes.io/ingress.class: traefik  # Ensure Traefik manages this ingress
 spec:
-  entryPoints:
-    - web
-    - websecure
-  routes:
-    - match: Host(`status.mythbound.dev`) && PathPrefix(`/`) || PathPrefix(`/`)
-      kind: Rule
-      services:
-        - name: gatus
-          port: 8080
+  rules:
+    - host: status.mythbound.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gatus
+                port:
+                  number: 8080
