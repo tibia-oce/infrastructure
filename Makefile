@@ -113,8 +113,6 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
 	@mkdir -p ~/.kube
 	cp ./ansible/kubeconfig ~/.kube/config
-	@printf "$(GREEN)Deploying base services and configs..$(NC)\n"
-	@sleep 10
 
 status:
 	@printf "\n$(LINE)\n$(GREEN)Nodes...$(NC)\n$(LINE)\n"
@@ -151,27 +149,6 @@ apps:
 	@kubectl get pods --all-namespaces
 	@printf "\n"
 
-argo-logs:
-	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
-	$(call kubectl_get,secret)
-
-	$(call kubectl_logs,traefik)
-	@printf "\n"
-
-	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
-	$(call kubectl_get,svc traefik)
-	@printf "\n"
-	@printf "\n$(LINE)\n$(GREEN)Service definition...$(NC)\n$(LINE)\n"
-	kubectl get svc -n kube-system traefik -o yaml
-	@printf "\n"
-
-	@printf "\n$(LINE)\n$(GREEN)IngressRoutes...$(NC)\n$(LINE)\n"
-	kubectl get ingressroute -A
-	@printf "\n"
-
-	@make pod-traefik
-	@printf "\n"
-
 traefik-logs:
 	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
 	$(call kubectl_get,secret)
@@ -204,10 +181,19 @@ define kubectl_logs
 	@kubectl logs -n kube-system deployment/$1 | grep -v 'reflector.go'
 endef
 
+port-argo:
+	kubectl port-forward svc/argocd-server -n argocd 8080:80  & \
+	sleep 2; \
+	PASSWORD=$$(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d | tr -d '\n'); \
+	printf "\n$(LINE)\n"; \
+	printf "$(GREEN)URL: $(WHITE)http://localhost:8080/$(NC)\n"; \
+	printf "$(GREEN)Username: $(WHITE)admin$(NC)\n"; \
+	printf "$(GREEN)Password: $(WHITE)$$PASSWORD$(NC)\n$(LINE)\n\n"
+
 port-gatus:
-	@GATUS_POD=$$(kubectl get pods -n kube-system -l app=gatus -o jsonpath='{.items[0].metadata.name}'); \
+	@GATUS_POD=$$(kubectl get pods -n apps -l app=gatus -o jsonpath='{.items[0].metadata.name}'); \
 	echo "Port-forwarding pod: $$GATUS_POD"; \
-	kubectl port-forward -n kube-system $$GATUS_POD 9090:8080 & \
+	kubectl port-forward -n apps $$GATUS_POD 9090:8080 & \
 	sleep 2; \
 	printf "\n$(LINE)\n$(GREEN)http://localhost:9090$(NC)\n$(LINE)\n\n"
 
@@ -268,6 +254,10 @@ curl-pod:
 	@kubectl run -it --rm --restart=Never alpine --image=alpine -- /bin/sh -c "\
 		apk add --no-cache curl bind-tools && /bin/sh"
 
+argo-pod:
+	@-kubectl delete pod debug -n argocd
+	kubectl run -it --rm debug --image=curlimages/curl --restart=Never --namespace=argocd -- /bin/sh
+
 coredns-logs:
 	@printf "$(YELLOW)List of Kubernetes endpoints...$(NC)\n"
 	@kubectl get endpoints kubernetes -o yaml
@@ -291,3 +281,61 @@ metrics-server-logs:
 # kubectl logs -n kube-system deployment/traefik --since=2m
 
 # curl -H "Host: status.mythbound.dev" http://140.238.193.212
+
+# kubectl run -it --rm debug --image=busybox --restart=Never --namespace=argocd -- /bin/sh
+
+# kubectl run -it --rm debug --image=curlimages/curl --restart=Never --namespace=argocd -- /bin/sh
+
+
+# export TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) && \
+# curl -H "Authorization: Bearer $TOKEN" -k https://10.43.0.1:443/version
+
+# kubectl delete pod debug -n argocd
+
+argocd-logs:
+	@printf "\n$(LINE)\n$(GREEN)Pods...$(NC)\n$(LINE)\n"
+	@kubectl get pods -n argocd
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
+	@printf "> kubectl get svc argocd-server -n argocd\n"
+	@kubectl get svc argocd-server -n argocd
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)argocd-server logs...$(NC)\n> kubectl logs -n argocd deployment/argocd-server --since=2m\n$(LINE)\n"
+	@kubectl logs -n argocd deployment/argocd-server --since=2m
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)argocd-dex-server logs...$(NC)\n> kubectl logs -n argocd deployment/argocd-dex-server --since=2m\n$(LINE)\n"
+	@kubectl logs -n argocd deployment/argocd-dex-server --since=2m
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
+	@printf "> kubectl get secret -n argocd\n"
+	@kubectl get secret -n argocd
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
+	@printf "> kubectl get secret argocd-secret -n argocd -o yaml \n"
+	@kubectl get secret argocd-secret -n argocd -o yaml 
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Service definition...$(NC)\n$(LINE)\n"
+	@kubectl get svc -n argocd argocd-server -o yaml
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Config map...$(NC)\n$(LINE)\n"
+	@kubectl get configmap argocd-cm -n argocd -o yaml
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Cluster endpoints...$(NC)\n$(LINE)\n"
+	@kubectl get endpoints -A
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Dashboard credentials...$(NC)\n$(LINE)\n"
+	@printf "$(GREEN)URL:$(NC) $(WHITE)https://argo.mythbound.dev/$(NC)\n"
+	@printf "$(GREEN)Username:$(NC) $(WHITE)admin$(NC)\n"
+	@PASSWORD=$$(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d); \
+	printf "$(GREEN)Password:$(NC) $(WHITE)$$PASSWORD$(NC)\n\n"
+
+# kubectl get secret -n argocd argocd-redis -o jsonpath="{.data.auth}" | base64 -d

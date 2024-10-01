@@ -1,17 +1,27 @@
-# HTTP configuration to allow traffic on port 80 and pass through to Traefik
+log_format custom '$remote_addr - $remote_user [$time_local] "$request" '
+                  'Host: $host '
+                  'Headers: $http_host, $http_x_forwarded_for, $http_x_forwarded_proto '
+                  '"$status" "$body_bytes_sent" "$http_referer" "$http_user_agent"';
+
+access_log /var/log/nginx/custom_access.log custom;
+
 server {
     listen 80;
     listen [::]:80;
 
-    server_name mythbound.dev status.mythbound.dev web.mythbound.dev game.mythbound.dev argo.mythbound.dev;
+    server_name argo.mythbound.dev mythbound.dev status.mythbound.dev myaac.mythbound.dev game.mythbound.dev;
 
-    # Pass HTTP traffic to Traefik (without SSL termination)
     location / {
+        # Ensure correct Host header is passed to Traefik
         proxy_pass http://10.0.1.96;  # Traefik LoadBalancer IP
+        
+        # Enforce the Host header based on the request's original value
         proxy_set_header Host $host;
+
+        # Ensure Traefik can use the correct protocol
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto http;
+        proxy_set_header X-Forwarded-Proto $scheme;
 
         # WebSocket support for HTTP traffic
         proxy_set_header Upgrade $http_upgrade;
