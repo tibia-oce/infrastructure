@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gatus
-  namespace: argocd
+  namespace: apps
 spec:
   replicas: 1
   selector:
@@ -12,7 +12,7 @@ spec:
   template:
     metadata:
       name: gatus
-      namespace: argocd
+      namespace: apps
       labels:
         app: gatus
     spec:
