@@ -126,12 +126,6 @@ status:
 base:
 	@printf "$(GREEN)Deploying base services and configs..$(NC)\n"
 	@kubectl apply -k kubernetes/base/
-# @PASSWORD=$$(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d | tr -d '\n'); \
-# INGRESS_PATH=https://argo.mythbound.dev/; \
-# printf "\n$(LINE)\n"; \
-# printf "$(GREEN)URL: $(WHITE)$$INGRESS_PATH$(NC)\n"; \
-# printf "$(GREEN)Username: $(WHITE)admin$(NC)\n"; \
-# printf "$(GREEN)Password: $(WHITE)$$PASSWORD$(NC)\n$(LINE)\n\n"
 
 ingress:
 	@printf "$(GREEN)Listing all ingress CRDs..$(NC)\n"
@@ -182,9 +176,9 @@ define kubectl_logs
 endef
 
 port-argo:
-	kubectl port-forward svc/argocd-server -n argocd 8080:80  & \
+	kubectl port-forward svc/argocd-server -n flux-system 8080:80  & \
 	sleep 2; \
-	PASSWORD=$$(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d | tr -d '\n'); \
+	PASSWORD=$$(kubectl get secret -n flux-system argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d | tr -d '\n'); \
 	printf "\n$(LINE)\n"; \
 	printf "$(GREEN)URL: $(WHITE)http://localhost:8080/$(NC)\n"; \
 	printf "$(GREEN)Username: $(WHITE)admin$(NC)\n"; \
@@ -255,7 +249,7 @@ curl-pod:
 		apk add --no-cache curl bind-tools && /bin/sh"
 
 argo-pod:
-	@-kubectl delete pod debug -n argocd
+	@-kubectl delete pod debug -n flux-system
 	kubectl run -it --rm debug --image=curlimages/curl --restart=Never --namespace=argocd -- /bin/sh
 
 coredns-logs:
@@ -275,67 +269,84 @@ coredns-logs:
 metrics-server-logs:
 	@kubectl logs -n kube-system $$(kubectl get pods -n kube-system -l k8s-app=metrics-server -o jsonpath='{.items[0].metadata.name}')
 
-# kubectl port-forward -n kube-system pod/$(kubectl get pods -n kube-system -l app=traefik -o jsonpath="{.items[0].metadata.name}") 9000:8080
-
-
-# kubectl logs -n kube-system deployment/traefik --since=2m
-
-# curl -H "Host: status.mythbound.dev" http://140.238.193.212
-
-# kubectl run -it --rm debug --image=busybox --restart=Never --namespace=argocd -- /bin/sh
-
-# kubectl run -it --rm debug --image=curlimages/curl --restart=Never --namespace=argocd -- /bin/sh
-
-
-# export TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token) && \
-# curl -H "Authorization: Bearer $TOKEN" -k https://10.43.0.1:443/version
-
-# kubectl delete pod debug -n argocd
-
-argocd-logs:
+gatus-logs:
 	@printf "\n$(LINE)\n$(GREEN)Pods...$(NC)\n$(LINE)\n"
-	@kubectl get pods -n argocd
+	@kubectl get pods -n apps
 	@printf "\n"
 
 	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
-	@printf "> kubectl get svc argocd-server -n argocd\n"
-	@kubectl get svc argocd-server -n argocd
+	@printf "> kubectl get svc -n apps gatus\n"
+	@kubectl get svc -n apps gatus
 	@printf "\n"
 
-	@printf "\n$(LINE)\n$(GREEN)argocd-server logs...$(NC)\n> kubectl logs -n argocd deployment/argocd-server --since=2m\n$(LINE)\n"
-	@kubectl logs -n argocd deployment/argocd-server --since=2m
+	@printf "\n$(LINE)\n$(GREEN)Apps network policies...$(NC)\n$(LINE)\n"
+	@printf "> kubectl get networkpolicies -n apps\n"
+	@kubectl get networkpolicies -n apps
 	@printf "\n"
 
-	@printf "\n$(LINE)\n$(GREEN)argocd-dex-server logs...$(NC)\n> kubectl logs -n argocd deployment/argocd-dex-server --since=2m\n$(LINE)\n"
-	@kubectl logs -n argocd deployment/argocd-dex-server --since=2m
+	@printf "\n$(LINE)\n$(GREEN)Flux system network policies...$(NC)\n$(LINE)\n"
+	@printf "> kubectl get networkpolicies -n flux-system\n"
+	@kubectl get networkpolicies -n flux-system
 	@printf "\n"
 
-	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
-	@printf "> kubectl get secret -n argocd\n"
-	@kubectl get secret -n argocd
+	@printf "\n$(LINE)\n$(GREEN)Gatus deployment logs...$(NC)\n$(LINE)\n"
+	@printf "> kubectl logs -n apps deploy/gatus\n"
+	@kubectl logs -n apps deploy/gatus
 	@printf "\n"
 
-	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
-	@printf "> kubectl get secret argocd-secret -n argocd -o yaml \n"
-	@kubectl get secret argocd-secret -n argocd -o yaml 
+	@printf "\n$(LINE)\n$(GREEN)Traefik ingress controller logs...$(NC)\n$(LINE)\n"
+	@printf "> kubectl logs -n kube-system deployment/traefik --since=2m\n"
+	@kubectl logs -n kube-system deployment/traefik --since=2m
 	@printf "\n"
 
-	@printf "\n$(LINE)\n$(GREEN)Service definition...$(NC)\n$(LINE)\n"
-	@kubectl get svc -n argocd argocd-server -o yaml
+	@printf "\n$(LINE)\n$(GREEN)DNS Resolution...$(NC)\n$(LINE)\n"
+	@printf "> dig +short status.mythbound.dev @1.1.1.1  \n"
+	@dig +short status.mythbound.dev @1.1.1.1  
+
+	@printf "\n$(LINE)\n$(GREEN)Ingress routes...$(NC)\n$(LINE)\n"
+	@printf "> kubectl get ingress -n apps\n"
+	@kubectl get ingress -n apps
 	@printf "\n"
 
-	@printf "\n$(LINE)\n$(GREEN)Config map...$(NC)\n$(LINE)\n"
-	@kubectl get configmap argocd-cm -n argocd -o yaml
+flux-logs:
+	@printf "\n$(LINE)\n$(GREEN)Pods...$(NC)\n$(LINE)\n"
+	@kubectl get pods -n flux-system
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
+	@kubectl get svc -n flux-system
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)source-controller logs...$(NC)\n> kubectl logs -n flux-system deployment/flux-controller --since=2m\n$(LINE)\n"
+	@kubectl logs -n flux-system deployment/source-controller --since=2m
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)kustomize-controller logs...$(NC)\n> kubectl logs -n flux-system deployment/kustomize-controller --since=2m\n$(LINE)\n"
+	@kubectl logs -n flux-system deployment/kustomize-controller --since=2m
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Kustomization manifests...$(NC)\n$(LINE)\n"
+	@kubectl get kustomizations -n flux-system -o yaml
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Helm releases...$(NC)\n$(LINE)\n"
+	@kubectl get helmreleases -A -o yaml
 	@printf "\n"
 
 	@printf "\n$(LINE)\n$(GREEN)Cluster endpoints...$(NC)\n$(LINE)\n"
 	@kubectl get endpoints -A
 	@printf "\n"
 
-	@printf "\n$(LINE)\n$(GREEN)Dashboard credentials...$(NC)\n$(LINE)\n"
-	@printf "$(GREEN)URL:$(NC) $(WHITE)https://argo.mythbound.dev/$(NC)\n"
-	@printf "$(GREEN)Username:$(NC) $(WHITE)admin$(NC)\n"
-	@PASSWORD=$$(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d); \
-	printf "$(GREEN)Password:$(NC) $(WHITE)$$PASSWORD$(NC)\n\n"
+	@printf "\n$(LINE)\n$(GREEN)Test worker node access to Traefik LoadBalancer service...$(NC)\n$(LINE)\n"
+	@make test-flux
+	@printf "\n"
 
-# kubectl get secret -n argocd argocd-redis -o jsonpath="{.data.auth}" | base64 -d
+test-flux:
+	@LINE="-----------------------------------"; \
+	control_plane_ip=$$(jq -r '.worker_public_ips.value[0]' $(TF_OUTPUT_FILE)); \
+	ssh -i ~/.ssh/id_rsa ubuntu@$$control_plane_ip ' \
+		printf "$(YELLOW)> worker node | curl -H \"Host: status.mythbound.dev\" http://10.0.1.96/$(NC)\n"; \
+		curl -H "Host: status.mythbound.dev" -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://10.0.1.96/; \
+		printf "\n$(YELLOW)> worker node | curl http://localhost/health$(NC)\n"; \
+		curl -s -o /dev/null -w "HTTP Status: %{http_code}\n\n" http://localhost/health \
+	'

@@ -32,7 +32,7 @@ _... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
 
 # 🏠 Oracle K3S Cluster
 
-This mono-repository demonstrates how to deploy a K3s Kubernetes cluster for free on Oracle [always free resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).  Infrastructure provisioning, configuration and deployments are managed with Infrastructure as Code (IaC) and GitOps; using toolings from [Ansible](https://www.ansible.com/), [HashiCorp](https://www.hashicorp.com/), [Kubernetes](https://kubernetes.io/), [Helm](https://github.com/helm/helm), [Kustomize](https://kustomize.io/), [ArgoCD](https://github.com/argoproj/argo-cd), [Renovate](https://github.com/renovatebot/renovate), and [GitHub Actions](https://github.com/features/actions).
+This mono-repository demonstrates how to deploy a K3s Kubernetes cluster for free on Oracle [always free resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).  Infrastructure provisioning, configuration and deployments are managed with Infrastructure as Code (IaC) and GitOps; using toolings from [Ansible](https://www.ansible.com/), [HashiCorp](https://www.hashicorp.com/), [Kubernetes](https://kubernetes.io/), [Helm](https://github.com/helm/helm), [Kustomize](https://kustomize.io/), [ArgoCD](https://fluxcd.io/), [Renovate](https://github.com/renovatebot/renovate), and [GitHub Actions](https://github.com/features/actions).
 
 <br>
 
@@ -40,7 +40,7 @@ This mono-repository demonstrates how to deploy a K3s Kubernetes cluster for fre
 
 ### GitOps
 
-[Argo CD](https://argo-cd.readthedocs.io/en/stable/) monitors the repository's Kubernetes manifests and ensures the cluster matches the desired state in Git. When changes are merged, Argo CD automatically applies them to the cluster.
+[Flux CD](https://fluxcd.io/) monitors the repository's Kubernetes manifests and ensures the cluster matches the desired state in Git. When changes are merged, Argo CD automatically applies them to the cluster.
 
 [Renovate](https://github.com/renovatebot/renovate) watches for dependency updates, creating pull requests when updates are found. Once merged, Argo CD detects and applies the changes, deploying the updated dependencies.
 
@@ -85,7 +85,7 @@ This Git repository contains the following directories:
 │   └── 📁 roles                    # Roles for reusable automation tasks
 ├── 📁 kubernetes                   
 │   ├── 📁 apps                     # Application-specific manifests and configurations for Kubernetes
-│   └── 📁 argo                     # ArgoCD configuration files for managing Kubernetes applications
+│   └── 📁 flux                     # ArgoCD configuration files for managing Kubernetes applications
 └── 📁 terraform                    
     └── 📁 modules                  
         ├── 📁 compute              # Terraform modules for managing compute instances

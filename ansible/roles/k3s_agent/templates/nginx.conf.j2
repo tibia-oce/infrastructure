@@ -7,25 +7,30 @@ access_log /var/log/nginx/custom_access.log custom;
 
 server {
     listen 80;
-    listen [::]:80;
-
-    server_name argo.mythbound.dev mythbound.dev status.mythbound.dev myaac.mythbound.dev game.mythbound.dev;
+    server_name _;
 
     location / {
-        # Ensure correct Host header is passed to Traefik
-        proxy_pass http://10.0.1.96;  # Traefik LoadBalancer IP
-        
-        # Enforce the Host header based on the request's original value
+        proxy_pass http://10.0.1.96/;
         proxy_set_header Host $host;
-
-        # Ensure Traefik can use the correct protocol
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header CF-Connecting-IP $http_cf_connecting_ip;
 
-        # WebSocket support for HTTP traffic
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_http_version 1.1;
+        # Timeouts for the proxy connection
+        proxy_connect_timeout 600;
+        proxy_send_timeout 600;
+        proxy_read_timeout 600;
+    }
+
+    # Health check restricted to localhost only
+    location /health {
+        allow 127.0.0.1;      # Allow localhost access
+        allow ::1;             # Allow IPv6 localhost access
+        deny all;              # Deny all other IPs
+
+        access_log off;
+        return 200 'healthy';
+        add_header Content-Type text/plain;
     }
 }

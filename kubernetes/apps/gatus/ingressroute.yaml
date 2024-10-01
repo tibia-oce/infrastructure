@@ -5,8 +5,9 @@ metadata:
   name: gatus
   namespace: apps
   annotations:
-    kubernetes.io/ingress.class: traefik  # Ensure Traefik manages this ingress
+    kubernetes.io/ingress.class: traefik
 spec:
+  ingressClassName: traefik
   rules:
     - host: status.mythbound.dev
       http:

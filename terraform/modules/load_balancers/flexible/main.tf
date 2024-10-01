@@ -47,98 +47,106 @@ module "kubeapi" {
   kube_api_port = var.kube_api_port
 }
 
-module "argo_backend" {
+module "nginx_backend" {
   source                     = "./backend"
   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
   worker_node_private_ip_map  = var.worker_node_private_ip_map
-  hostname                    = "argo.mythbound.dev"
-  service_name                = "argo"
-  url_path                    = "/"
-  https_port                  = 443
-  http_port                   = 80
-}
-
-
-module "status_backend" {
-  source                     = "./backend"
-  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
-  worker_node_private_ip_map  = var.worker_node_private_ip_map
-  hostname                    = "status.mythbound.dev"
-  service_name                = "status"
-  url_path                    = "/"
-  https_port                  = 443
-  http_port                   = 80
-}
-
-module "root_backend" {
-  source                     = "./backend"
-  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
-  worker_node_private_ip_map  = var.worker_node_private_ip_map
-  hostname                    = "mythbound.dev"
-  service_name                = "root"
-  url_path                    = "/"
-  https_port                  = 443
-  http_port                   = 80
-}
-
-# todo: move to tcp (7171, 7172)
-module "game_backend" {
-  source                     = "./backend"
-  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
-  worker_node_private_ip_map  = var.worker_node_private_ip_map
-  hostname                    = "game.mythbound.dev"
-  service_name                = "game"
-  url_path                    = "/"
-  https_port                  = 443
-  http_port                   = 80
-}
-
-module "myaac_backend" {
-  source                     = "./backend"
-  load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
-  worker_node_private_ip_map  = var.worker_node_private_ip_map
-  hostname                    = "myaac.mythbound.dev"
-  service_name                = "myaac"
-  url_path                    = "/"
+  service_name                = "nginx"
+  url_path                    = "/health"
   https_port                  = 443
   http_port                   = 80
 }
 
 module "http_listener" {
   source                  = "./listener"
-
-  # Load balancer and listener information
   load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
+  default_backend_set_name = module.nginx_backend.http_backend_set_name
   listener_name           = "http-listener"
   listener_protocol       = "HTTP"
-  listener_port           = 80  # todo: move to tcp (7171, 7172)
+  listener_port           = 80
 
-  # Hostnames and backend map
-  hostname_names          = ["game.mythbound.dev"] 
-  hostname_backend_map    = {
-    "game.mythbound.dev"   = module.game_backend.http_backend_set_name
-  }
 }
 
 module "https_listener" {
   source                  = "./listener"
-
-  # Load balancer and listener information
   load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
+  default_backend_set_name = module.nginx_backend.http_backend_set_name
   listener_name           = "https-listener"
   listener_protocol       = "HTTP"
   listener_port           = 443
-
-  # Hostnames and backend map
-  hostname_names          = ["mythbound.dev", "myaac.mythbound.dev", "status.mythbound.dev", "argo.mythbound.dev"]
-  hostname_backend_map    = {
-    "mythbound.dev"        = module.root_backend.https_backend_set_name
-    "myaac.mythbound.dev"    = module.myaac_backend.https_backend_set_name
-    "status.mythbound.dev" = module.status_backend.https_backend_set_name
-    "argo.mythbound.dev" = module.argo_backend.https_backend_set_name
-  }
-
-  ssl_configuration_enabled    = true
+  ssl_configuration_enabled    = true  # SSL termination enabled
   certificate_name             = oci_load_balancer_certificate.cloudflare_cert.certificate_name
-  ssl_protocols                = ["TLSv1.2", "TLSv1.3"]
+  ssl_protocols                = ["TLSv1.2", "TLSv1.3"]  # SSL protocols to support
 }
+
+# module "status_backend" {
+#   source                     = "./backend"
+#   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+#   worker_node_private_ip_map  = var.worker_node_private_ip_map
+#   hostname                    = "status.mythbound.dev"
+#   service_name                = "status"
+#   url_path                    = "/"
+#   https_port                  = 443
+#   http_port                   = 80
+# }
+
+# # todo: move to tcp (7171, 7172)
+# module "game_backend" {
+#   source                     = "./backend"
+#   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+#   worker_node_private_ip_map  = var.worker_node_private_ip_map
+#   hostname                    = "game.mythbound.dev"
+#   service_name                = "game"
+#   url_path                    = "/"
+#   https_port                  = 443
+#   http_port                   = 80
+# }
+
+# module "myaac_backend" {
+#   source                     = "./backend"
+#   load_balancer_id            = oci_load_balancer_load_balancer.kubeapi_lb.id
+#   worker_node_private_ip_map  = var.worker_node_private_ip_map
+#   hostname                    = "myaac.mythbound.dev"
+#   service_name                = "myaac"
+#   url_path                    = "/"
+#   https_port                  = 443
+#   http_port                   = 80
+# }
+
+# module "http_listener" {
+#   source                  = "./listener"
+
+#   # Load balancer and listener information
+#   load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
+#   listener_name           = "http-listener"
+#   listener_protocol       = "HTTP"
+#   listener_port           = 80
+
+#   # Hostnames and backend map
+#   hostname_names          = ["status.mythbound.dev"]
+#   hostname_backend_map    = {
+#     "status.mythbound.dev" = module.status_backend.http_backend_set_name
+#   }
+# }
+
+# module "https_listener" {
+#   source                  = "./listener"
+
+#   # Load balancer and listener information
+#   load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
+#   listener_name           = "https-listener"
+#   listener_protocol       = "HTTP"
+#   listener_port           = 443
+
+#   # Hostnames and backend map
+#   hostname_names          = ["status.mythbound.dev"]
+#   hostname_backend_map    = {
+#     "status.mythbound.dev" = module.status_backend.http_backend_set_name
+#   }
+
+#   ssl_configuration_enabled    = true  # SSL termination enabled
+#   certificate_name             = oci_load_balancer_certificate.cloudflare_cert.certificate_name
+#   ssl_protocols                = ["TLSv1.2", "TLSv1.3"]  # SSL protocols to support
+# }
+
+

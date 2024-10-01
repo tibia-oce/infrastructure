@@ -24,6 +24,10 @@ variable "certificate_name" {
   default = ""
 }
 
+variable "default_backend_set_name" {
+  type    = string
+}
+
 variable "ssl_has_session_resumption" {
   type    = bool
   default = false
@@ -69,6 +73,6 @@ variable "ssl_verify_peer_certificate" {
   default = false
 }
 
-variable "hostname_backend_map" {
-  type = map(string)
-}
+# variable "hostname_backend_map" {
+#   type = map(string)
+# }
