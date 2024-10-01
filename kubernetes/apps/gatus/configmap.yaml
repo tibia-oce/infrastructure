@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: gatus
-  namespace: production
+  namespace: argocd
 data:
   config.yaml: |
     metrics: true
