@@ -4,7 +4,7 @@
 
 ### Mythbound Tibia Infrastructure :octocat:
 
-_... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
+_... managed with Flux, Renovate, Ansible and Terraform_ 🤖
 
 </div>
 
@@ -32,7 +32,7 @@ _... managed with ArgoCD, Renovate, Ansible and Terraform_ 🤖
 
 # 🏠 Oracle K3S Cluster
 
-This mono-repository demonstrates how to deploy a K3s Kubernetes cluster for free on Oracle [always free resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).  Infrastructure provisioning, configuration and deployments are managed with Infrastructure as Code (IaC) and GitOps; using toolings from [Ansible](https://www.ansible.com/), [HashiCorp](https://www.hashicorp.com/), [Kubernetes](https://kubernetes.io/), [Helm](https://github.com/helm/helm), [Kustomize](https://kustomize.io/), [ArgoCD](https://fluxcd.io/), [Renovate](https://github.com/renovatebot/renovate), and [GitHub Actions](https://github.com/features/actions).
+This mono-repository demonstrates how to deploy a K3s Kubernetes cluster for free on Oracle [always free resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm).  Infrastructure provisioning, configuration and deployments are managed with Infrastructure as Code (IaC) and GitOps; using toolings from [Ansible](https://www.ansible.com/), [HashiCorp](https://www.hashicorp.com/), [Kubernetes](https://kubernetes.io/), [Helm](https://github.com/helm/helm), [Kustomize](https://kustomize.io/), [Flux](https://fluxcd.io/), [Renovate](https://github.com/renovatebot/renovate), and [GitHub Actions](https://github.com/features/actions).
 
 <br>
 
@@ -40,9 +40,9 @@ This mono-repository demonstrates how to deploy a K3s Kubernetes cluster for fre
 
 ### GitOps
 
-[Flux CD](https://fluxcd.io/) monitors the repository's Kubernetes manifests and ensures the cluster matches the desired state in Git. When changes are merged, Argo CD automatically applies them to the cluster.
+[Flux CD](https://fluxcd.io/) monitors the repository's Kubernetes manifests and ensures the cluster matches the desired state in Git. When changes are merged, Flux automatically applies them to the cluster.
 
-[Renovate](https://github.com/renovatebot/renovate) watches for dependency updates, creating pull requests when updates are found. Once merged, Argo CD detects and applies the changes, deploying the updated dependencies.
+[Renovate](https://github.com/renovatebot/renovate) watches for dependency updates, creating pull requests when updates are found. Once merged, Flux detects and applies the changes, deploying the updated dependencies.
 
 ### State Management
 [Terraform Cloud](https://www.hashicorp.com/products/terraform) handles the locking and consistency of state files, which helps prevent issues that might arise from multiple users or processes trying to modify the state simultaneously.
