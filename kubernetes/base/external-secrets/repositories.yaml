@@ -1,0 +1,49 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: external-secrets
+  namespace: flux-system
+spec:
+  interval: 10m
+  url: https://charts.external-secrets.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: external-secrets
+  namespace: flux-system
+spec:
+  interval: 10m
+  ref:
+    tag: v0.10.4
+  url: https://github.com/external-secrets/external-secrets
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-secrets-secretstore
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: external-secrets-crds
+  interval: 10m
+  path: ./kubernetes/base/external-secerts/stores
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: podinfo
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: external-secrets-secrets
+  namespace: flux-system
+spec:
+  dependsOn:
+    - name: external-secrets-secretstore
+  interval: 10m
+  path: ./kubernetes/base/external-secerts/secrets
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: podinfo
