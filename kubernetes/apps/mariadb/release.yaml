@@ -10,11 +10,31 @@ spec:
   chart:
     spec:
       chart: mariadb
-      version: 11.3.0
+      version: 19.0.7
       sourceRef:
         kind: HelmRepository
         name: bitnami
         namespace: apps
+  values:
+    image:
+      registry: docker.io
+      repository: bitnami/mariadb
+      tag: 11.2.5
+    auth:
+      # Reference to the 'mysql' secret
+      database: mysql
+      username: mysql
+      passwordSecret: mysql  
+      rootPasswordSecret: mysql
+    primary:
+      service:
+        type: ClusterIP
+      persistence:
+        enabled: true
+        size: 8Gi
+    replica:
+      replicaCount: 1
+
   # valuesFrom:
   #   - secretKeyRef:
   #       name: mysql
@@ -36,17 +56,3 @@ spec:
   #       name: mysql
   #       key: mysql_root_password
   #       valuesKey: auth.rootPassword
-  values:
-    auth:
-      database: mysql_database    # Ensure these are either direct values or injected correctly
-      username: mysql_user
-      password: mysql_password
-      rootPassword: mysql_root_password
-    primary:
-      service:
-        type: ClusterIP
-      persistence:
-        enabled: true
-        size: 8Gi
-    replica:
-      replicaCount: 1
