@@ -15,4 +15,15 @@ spec:
     kind: GitRepository
     name: tibia
     namespace: flux-system
-  
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: bitnami
+  namespace: apps
+spec:
+  dependsOn:
+    - name: external-secrets-secrets
+      namespace: apps
+  interval: 10m
+  url: https://charts.bitnami.com/bitnami
