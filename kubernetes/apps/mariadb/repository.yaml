@@ -16,7 +16,7 @@ spec:
     name: tibia
     namespace: flux-system
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta2
+apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: bitnami
@@ -27,3 +27,4 @@ spec:
       namespace: apps
   interval: 10m
   url: https://charts.bitnami.com/bitnami
+
