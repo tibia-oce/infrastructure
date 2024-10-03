@@ -363,7 +363,7 @@ secrets-logs:
 	@printf "\n"
 
 	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
-	@kubectl get secrets -n external-secrets
+	@kubectl get secrets -A
 	@printf "\n"
 
 	@printf "\n$(LINE)\n$(GREEN)Ansible secret (flux-system:oracle-vault-config)...$(NC)\n$(LINE)\n"
