@@ -34,25 +34,34 @@ output "status_domain" {
   value       = module.domain.status_domain
 }
 
-output "myaac_domain" {
-  description = "The web application domain managed by Cloudflare"
-  value       = module.domain.myaac_domain
-}
-
-output "game_domain" {
-  description = "The game server domain managed by Cloudflare"
-  value       = module.domain.game_domain
-}
-
-output "argo_domain" {
-  description = "The argo server domain managed by Cloudflare"
-  value       = module.domain.argo_domain
-}
-
 output "k3s_token" {
   value     = trimspace(data.hcp_vault_secrets_secret.k3s_token.secret_value)
   sensitive = true
 }
+
+output "vault_ocid" {
+  value       = module.vault.vault_id
+}
+
+output "vault_management_endpoint" {
+  value = module.vault.vault_management_endpoint
+}
+
+# output "mysql_password" {
+#   value       = module.mysql_password.secret_name
+# }
+
+# output "mysql_database" {
+#   value       = module.mysql_database.secret_name
+# }
+
+# output "mysql_root_password" {
+#   value       = module.mysql_root_password.secret_name
+# }
+
+# output "mysql_user" {
+#   value       = module.mysql_user.secret_name
+# }
 
 # output "oracle_bgp_address" {
 #   value = module.network.oracle_bgp_address

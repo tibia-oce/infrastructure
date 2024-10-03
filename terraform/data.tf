@@ -52,6 +52,31 @@ data "hcp_vault_secrets_secret" "ca_certificate" {
   secret_name = "cf_ca_certificate"
 }
 
+data "hcp_vault_secrets_secret" "mysql_database" {
+  app_name    = var.vault_app_name
+  secret_name = "mysql_database"
+}
+
+data "hcp_vault_secrets_secret" "mysql_port" {
+  app_name    = var.vault_app_name
+  secret_name = "mysql_port"
+}
+
+data "hcp_vault_secrets_secret" "mysql_password" {
+  app_name    = var.vault_app_name
+  secret_name = "mysql_password"
+}
+
+data "hcp_vault_secrets_secret" "mysql_root_password" {
+  app_name    = var.vault_app_name
+  secret_name = "mysql_root_password"
+}
+
+data "hcp_vault_secrets_secret" "mysql_user" {
+  app_name    = var.vault_app_name
+  secret_name = "mysql_user"
+}
+
 data "oci_core_vnic_attachments" "k3s_control_plane_vnic_attachment" {
   for_each       = { for idx, id in module.control_plane.control_plane_instance_ids : idx => id }
   compartment_id = var.compartment_ocid

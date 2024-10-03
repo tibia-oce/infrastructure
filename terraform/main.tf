@@ -1,3 +1,72 @@
+resource "oci_identity_compartment" "k3s" {
+  compartment_id = var.compartment_ocid
+  name           = "k3s"
+  description    = "Compartment for k3s cluster resources"
+}
+
+module "vault" {
+  source              = "./modules/vault"
+  root_compartment_id = var.compartment_ocid
+  compartment_id      = oci_identity_compartment.k3s.id
+  compartment_name    = oci_identity_compartment.k3s.name
+  tenancy_ocid        = var.tenancy_ocid
+  vault_vault_type    = "DEFAULT"
+  vault_user_email    = "user@example.com" # todo: get from root compartment
+  dynamic_group_name  = "k3s-dynamic-group"
+  vault_user_name     = "k3s-user"
+  vault_display_name  = "k3s-vault"
+}
+
+module "mysql_password" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.mysql_password.secret_name
+  secret_content = data.hcp_vault_secrets_secret.mysql_password.secret_value
+}
+
+module "mysql_port" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.mysql_port.secret_name
+  secret_content = data.hcp_vault_secrets_secret.mysql_port.secret_value
+}
+
+module "mysql_root_password" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.mysql_root_password.secret_name
+  secret_content = data.hcp_vault_secrets_secret.mysql_root_password.secret_value
+}
+
+module "mysql_database" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.mysql_database.secret_name
+  secret_content = data.hcp_vault_secrets_secret.mysql_database.secret_value
+}
+
+module "mysql_user" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.mysql_user.secret_name
+  secret_content = data.hcp_vault_secrets_secret.mysql_user.secret_value
+}
+
 module "reserved_ip" {
   source          = "./modules/reserved_ip"
   compartment_id  = var.compartment_ocid
@@ -62,9 +131,9 @@ module "flexible_lb" {
   worker_node_private_ip_map = local.worker_node_private_ip_map
 
   # SSL Certificate
-  private_key                = data.hcp_vault_secrets_secret.cf_private_key.secret_value
-  public_certificate         = data.hcp_vault_secrets_secret.cf_origin_certificate.secret_value
-  ca_certificate             = data.hcp_vault_secrets_secret.ca_certificate.secret_value
+  private_key        = data.hcp_vault_secrets_secret.cf_private_key.secret_value
+  public_certificate = data.hcp_vault_secrets_secret.cf_origin_certificate.secret_value
+  ca_certificate     = data.hcp_vault_secrets_secret.ca_certificate.secret_value
 
   # Security lists and groups
   security_lists = [
@@ -145,14 +214,3 @@ module "workers_x86" {
     module.nsg.admin_nsg_id,
   ]
 }
-
-# module "network_lb" {
-#   source                    = "./modules/load_balancers/network"
-#   display_name              = "my-network-lb"
-#   availability_domain       = data.oci_identity_availability_domains.ads.availability_domains[0].name
-#   subnet_cidr               = var.subnet_cidr
-#   compartment_ocid          = var.compartment_ocid
-#   subnet_id                 = module.network.subnet_id
-#   my_public_ip_cidr         = var.my_public_ip_cidr
-#   control_plane_private_ips = local.k3s_control_plane_private_ips
-# }
