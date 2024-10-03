@@ -22,9 +22,5 @@ metadata:
   name: bitnami
   namespace: apps
 spec:
-  dependsOn:
-    - name: external-secrets-secrets
-      namespace: apps
   interval: 10m
   url: https://charts.bitnami.com/bitnami
-
