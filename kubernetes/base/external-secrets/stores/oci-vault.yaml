@@ -6,6 +6,6 @@ metadata:
 spec:
   provider:
     oracle:
-      vault: ocid1.vault.oc1.ap-sydney-1.fntp3zjnaafru.abzxsljrzcphia56vbn5kfln36xi7yrz6jh4b2izwznnlokdmhmfbqgjrufq
+      vault: $(vault_ocid)
       region: ap-sydney-1
       principalType: InstancePrincipal
