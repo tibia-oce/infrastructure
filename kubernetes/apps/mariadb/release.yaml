@@ -10,7 +10,7 @@ spec:
   chart:
     spec:
       chart: mariadb
-      version: 19.0.7
+      version: 11.4.3
       sourceRef:
         kind: HelmRepository
         name: bitnami
@@ -21,7 +21,6 @@ spec:
       repository: bitnami/mariadb
       tag: 11.2.5
     auth:
-      # Reference to the 'mysql' secret
       database: mysql
       username: mysql
       passwordSecret: mysql  
