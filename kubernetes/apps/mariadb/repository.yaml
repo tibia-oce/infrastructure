@@ -13,3 +13,5 @@ spec:
   sourceRef:
     kind: GitRepository
     name: tibia
+    namespace: flux-system
+  
