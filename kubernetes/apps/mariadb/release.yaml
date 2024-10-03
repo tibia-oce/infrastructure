@@ -15,28 +15,33 @@ spec:
         kind: HelmRepository
         name: bitnami
         namespace: apps
-  valuesFrom:
-    - secretKeyRef:
-        name: mysql
-        key: mysql_database
-        valuesKey: auth.database
-    - secretKeyRef:
-        name: mysql
-        key: mysql_port
-        valuesKey: primary.service.port
-    - secretKeyRef:
-        name: mysql
-        key: mysql_user
-        valuesKey: auth.username
-    - secretKeyRef:
-        name: mysql
-        key: mysql_password
-        valuesKey: auth.password
-    - secretKeyRef:
-        name: mysql
-        key: mysql_root_password
-        valuesKey: auth.rootPassword
+  # valuesFrom:
+  #   - secretKeyRef:
+  #       name: mysql
+  #       key: mysql_database
+  #       valuesKey: auth.database
+  #   - secretKeyRef:
+  #       name: mysql
+  #       key: mysql_port
+  #       valuesKey: primary.service.port
+  #   - secretKeyRef:
+  #       name: mysql
+  #       key: mysql_user
+  #       valuesKey: auth.username
+  #   - secretKeyRef:
+  #       name: mysql
+  #       key: mysql_password
+  #       valuesKey: auth.password
+  #   - secretKeyRef:
+  #       name: mysql
+  #       key: mysql_root_password
+  #       valuesKey: auth.rootPassword
   values:
+    auth:
+      database: mysql_database    # Ensure these are either direct values or injected correctly
+      username: mysql_user
+      password: mysql_password
+      rootPassword: mysql_root_password
     primary:
       service:
         type: ClusterIP
