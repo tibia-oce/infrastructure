@@ -8,7 +8,7 @@ spec:
   dependsOn:
     - name: external-secrets-secretstore
   interval: 10m
-  path: ./kubernetes/base/external-secrets/secrets
+  path: ./kubernetes/apps/mariadb/secrets
   prune: true
   sourceRef:
     kind: GitRepository
