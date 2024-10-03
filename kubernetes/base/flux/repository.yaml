@@ -1,8 +1,7 @@
-# flux/repository.yaml
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: GitRepository
 metadata:
-  name: podinfo
+  name: tibia
   namespace: flux-system
 spec:
   interval: 1m

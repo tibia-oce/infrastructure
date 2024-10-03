@@ -3,5 +3,5 @@ kind: Kustomization
 
 resources:
   - namespace.yaml
-  - flux
-  - external-secrets
+  - repositories.yaml
+  - deployment.yaml

@@ -91,13 +91,11 @@ generate-inventory: terraform-output
 	@echo "" >> $(ANSIBLE_INVENTORY_FILE)
 	
 	@echo "[all:vars]" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "vault_management_endpoint=$$(jq -r '.vault_management_endpoint.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
+	@echo "vault_ocid=$$(jq -r '.vault_ocid.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "apiserver_endpoint=$$(jq -r '.control_plane_public_ips.value[]' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "k3s_token=$$(jq -r '.k3s_token.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 	@echo "ansible_ssh_private_key_file=${ANSIBLE_PRIVATE_KEY_PATH}" >> $(ANSIBLE_INVENTORY_FILE)
-
-	@echo "myaac_domain=$$(jq -r '.myaac_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "status_domain=$$(jq -r '.status_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
-	@echo "game_domain=$$(jq -r '.game_domain.value' $(TF_OUTPUT_FILE))" >> $(ANSIBLE_INVENTORY_FILE)
 
 # Set up Python virtual environment and install Ansible
 setup-env:
@@ -350,3 +348,44 @@ test-flux:
 		printf "\n$(YELLOW)> worker node | curl http://localhost/health$(NC)\n"; \
 		curl -s -o /dev/null -w "HTTP Status: %{http_code}\n\n" http://localhost/health \
 	'
+
+secrets-logs:
+	@printf "\n$(LINE)\n$(GREEN)Pods...$(NC)\n$(LINE)\n"
+	@kubectl get pods -n external-secrets
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Cluster endpoints for external-secrets...$(NC)\n$(LINE)\n"
+	@kubectl get endpoints -n external-secrets
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Services...$(NC)\n$(LINE)\n"
+	@kubectl get svc -n external-secrets
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
+	@kubectl get secrets -n external-secrets
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Ansible secret (flux-system:oracle-vault-config)...$(NC)\n$(LINE)\n"
+	@kubectl get secret oracle-vault-config -n flux-system -o jsonpath="{.data}" | jq -r .
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)git repositories...$(NC)\n> kubectl get gitrepository -n flux-system\n$(LINE)\n"
+	@kubectl get gitrepository -n flux-system
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)kustomization status...$(NC)\n> kubectl get kustomization -n flux-system\n$(LINE)\n"
+	@kubectl get kustomization -n flux-system
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)external-secrets-controller logs...$(NC)\n> kubectl logs -n external-secrets deployment/external-secrets --since=2m\n$(LINE)\n"
+	@kubectl logs -n external-secrets deployment/external-secrets --since=2m
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)external-secrets-webhook logs...$(NC)\n> kubectl logs -n external-secrets deployment/external-secrets-webhook --since=2m\n$(LINE)\n"
+	@kubectl logs -n external-secrets deployment/external-secrets-webhook --since=2m
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)external-secrets-cert-controller logs...$(NC)\n> kubectl logs -n external-secrets deployment/external-secrets-cert-controller --since=2m\n$(LINE)\n"
+	@kubectl logs -n external-secrets deployment/external-secrets-cert-controller --since=2m
+	@printf "\n"

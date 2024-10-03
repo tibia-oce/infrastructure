@@ -23,3 +23,32 @@
   ansible.builtin.file:
     path: /tmp/k3s
     state: absent
+
+- name: Check if 'flux-system' namespace exists
+  ansible.builtin.command: |
+    kubectl get namespace flux-system --kubeconfig {{ ansible_user_dir }}/.kube/config
+  register: namespace_check_output
+  ignore_errors: true
+
+- name: Create 'flux-system' namespace if it doesn't exist
+  ansible.builtin.command: |
+    kubectl create namespace flux-system --kubeconfig {{ ansible_user_dir }}/.kube/config
+  when: namespace_check_output.rc != 0
+  changed_when: "'created' in namespace_check_output.stdout"
+
+- name: Check if Kubernetes secret for Vault configuration exists in 'flux-system' namespace
+  ansible.builtin.command: |
+    kubectl get secret oracle-vault-config --namespace flux-system --kubeconfig {{ ansible_user_dir }}/.kube/config
+  register: secret_check_output
+  ignore_errors: true
+
+- name: Create Kubernetes secret for Vault configuration in 'flux-system' namespace
+  ansible.builtin.command: |
+    kubectl create secret generic oracle-vault-config \
+      --from-literal=vault_ocid={{ vault_ocid }} \
+      --from-literal=vault_region=ap-sydney-1 \
+      --from-literal=vault_management_endpoint={{ vault_management_endpoint }} \
+      --namespace flux-system --kubeconfig {{ ansible_user_dir }}/.kube/config
+  when: secret_check_output.rc != 0
+  register: create_secret_output
+  changed_when: "'created' in create_secret_output.stdout"

@@ -65,6 +65,13 @@ Ensure HCP Vault has required keys:
     hcp vault-secrets secrets create cf_origin_certificate --data-file=public_cert.pem --app <app>
     hcp vault-secrets secrets create cf_private_key --data-file=private_key.pem --app <app>
     hcp vault-secrets secrets create cf_ca_certificate --data-file=cloudflare_ca_cert.pem --app <app>
+
+    # SQL credentials
+    echo -n 'xxxxx' | hcp vault-secrets secrets create mysql_user --data-file=- --app <app>
+    echo -n 'xxxxx' | hcp vault-secrets secrets create mysql_password --data-file=- --app <app>
+    echo -n 'xxxxx' | hcp vault-secrets secrets create mysql_root_password --data-file=- --app <app>
+    echo -n 'xxxxx' | hcp vault-secrets secrets create mysql_database --data-file=- --app <app>
+    echo -n '3306' | hcp vault-secrets secrets create mysql_port --data-file=- --app <app>
     ```
 
 [!](./assets/images/encryption.png)

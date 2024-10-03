@@ -27,11 +27,25 @@ spec:
   dependsOn:
     - name: external-secrets-crds
   interval: 10m
-  path: ./kubernetes/base/external-secerts/stores
+  path: ./kubernetes/base/external-secrets/stores
   prune: true
   sourceRef:
     kind: GitRepository
-    name: podinfo
+    name: tibia
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      name: external-secrets
+      namespace: flux-system
+    - apiVersion: v1
+      kind: Service
+      name: external-secrets-webhook
+      namespace: external-secrets
+  postBuild:
+    substituteFrom:
+      - kind: Secret
+        name: oracle-vault-config
+        optional: false
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -42,8 +56,8 @@ spec:
   dependsOn:
     - name: external-secrets-secretstore
   interval: 10m
-  path: ./kubernetes/base/external-secerts/secrets
+  path: ./kubernetes/base/external-secrets/secrets
   prune: true
   sourceRef:
     kind: GitRepository
-    name: podinfo
+    name: tibia
