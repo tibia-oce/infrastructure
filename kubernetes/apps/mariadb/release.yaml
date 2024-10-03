@@ -1,4 +1,3 @@
-# mariadb/release.yaml
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
@@ -32,25 +31,3 @@ spec:
         size: 8Gi
     replica:
       replicaCount: 1
-
-  # valuesFrom:
-  #   - secretKeyRef:
-  #       name: mysql
-  #       key: mysql_database
-  #       valuesKey: auth.database
-  #   - secretKeyRef:
-  #       name: mysql
-  #       key: mysql_port
-  #       valuesKey: primary.service.port
-  #   - secretKeyRef:
-  #       name: mysql
-  #       key: mysql_user
-  #       valuesKey: auth.username
-  #   - secretKeyRef:
-  #       name: mysql
-  #       key: mysql_password
-  #       valuesKey: auth.password
-  #   - secretKeyRef:
-  #       name: mysql
-  #       key: mysql_root_password
-  #       valuesKey: auth.rootPassword
