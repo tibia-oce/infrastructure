@@ -1,10 +1,11 @@
+# external-secrets/repositories.yaml
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: external-secrets
   namespace: flux-system
 spec:
-  interval: 10m
+  interval: 5m
   url: https://charts.external-secrets.io
 ---
 apiVersion: source.toolkit.fluxcd.io/v1
@@ -13,37 +14,7 @@ metadata:
   name: external-secrets
   namespace: flux-system
 spec:
-  interval: 10m
+  interval: 5m
   ref:
     tag: v0.10.4
   url: https://github.com/external-secrets/external-secrets
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: external-secrets-secretstore
-  namespace: flux-system
-spec:
-  dependsOn:
-    - name: external-secrets-crds
-  interval: 10m
-  path: ./kubernetes/base/external-secrets/stores
-  prune: true
-  sourceRef:
-    kind: GitRepository
-    name: tibia
-  healthChecks:
-    - apiVersion: helm.toolkit.fluxcd.io/v2
-      kind: HelmRelease
-      name: external-secrets
-      namespace: flux-system
-    - apiVersion: v1
-      kind: Service
-      name: external-secrets-webhook
-      namespace: external-secrets
-  postBuild:
-    substituteFrom:
-      - kind: Secret
-        name: oracle-vault-config
-        optional: false
-
