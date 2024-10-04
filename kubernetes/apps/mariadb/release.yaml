@@ -16,11 +16,15 @@ spec:
         namespace: apps
   values:
     image:
+      # References: https://artifacthub.io/packages/helm/bitnami/mariadb
       registry: docker.io
       repository: bitnami/mariadb
       tag: 11.2.5
     auth:
       existingSecret: mariadb
+      username: mariadb-user
+      passwordKey: mariadb-password
+      rootPasswordKey: mariadb-root-password
     primary:
       service:
         type: ClusterIP
