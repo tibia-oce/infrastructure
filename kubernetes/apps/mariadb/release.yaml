@@ -6,6 +6,7 @@ metadata:
 spec:
   dependsOn:
     - name: external-secrets-secrets
+      namespace: apps
   interval: 5m
   releaseName: mariadb
   chart:
