@@ -23,6 +23,12 @@ spec:
     auth:
       existingSecret: mariadb
     primary:
+      configuration: |
+        [mysqld]
+        have_ssl=NO
+        ssl_ca=
+        ssl_cert=
+        ssl_key=
       service:
         type: ClusterIP
       persistence:
