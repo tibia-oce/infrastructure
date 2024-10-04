@@ -111,6 +111,8 @@ bootstrap-cluster: terraform-output generate-inventory setup-env
 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./site.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
 	@mkdir -p ~/.kube
 	cp ./ansible/kubeconfig ~/.kube/config
+	sleep 15
+	@make base
 
 status:
 	@printf "\n$(LINE)\n$(GREEN)Nodes...$(NC)\n$(LINE)\n"
@@ -131,15 +133,6 @@ ingress:
 
 	@printf "$(GREEN)Listing all ingress routes..$(NC)\n"
 	@kubectl get ingress --all-namespaces
-
-apps:
-	@printf "$(GREEN)Deploying app manifests and checking pod status...$(NC)\n"
-	@kubectl apply -k kubernetes/apps/
-	@printf "\n$(LINE)\n$(GREEN)Node status...$(NC)\n$(LINE)\n"
-	@kubectl get nodes
-	@printf "\n$(LINE)\n$(GREEN)Pod status...$(NC)\n$(LINE)\n"
-	@kubectl get pods --all-namespaces
-	@printf "\n"
 
 traefik-logs:
 	@printf "\n$(LINE)\n$(GREEN)Secrets...$(NC)\n$(LINE)\n"
@@ -200,6 +193,8 @@ reset: terraform-output generate-inventory setup-env
 	@printf "$(GREEN)Resetting cluster...$(NC)\n"
 	cd ansible && . $(VENV_DIR)/bin/activate && ansible-playbook ./reset.yml -i ./inventory/hosts.ini --private-key ~/.ssh/id_rsa -e 'ansible_remote_tmp=/tmp/.ansible/tmp'
 	cd ansible && rm -f kubeconfig
+	sleep 15
+	@make bootstrap-cluster
 
 # Retrieve the Kubeconfig from the control plane node and set up kubectl
 config-kube:
@@ -388,4 +383,37 @@ secrets-logs:
 
 	@printf "\n$(LINE)\n$(GREEN)external-secrets-cert-controller logs...$(NC)\n> kubectl logs -n external-secrets deployment/external-secrets-cert-controller --since=2m\n$(LINE)\n"
 	@kubectl logs -n external-secrets deployment/external-secrets-cert-controller --since=2m
+	@printf "\n"
+
+apps-logs:
+	@printf "\n$(LINE)\n$(GREEN)Pods in apps namespace...$(NC)\n$(LINE)\n"
+	@kubectl get pods -n apps
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Cluster endpoints for apps namespace...$(NC)\n$(LINE)\n"
+	@kubectl get endpoints -n apps
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Services in apps namespace...$(NC)\n$(LINE)\n"
+	@kubectl get svc -n apps
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)Secrets in apps namespace...$(NC)\n$(LINE)\n"
+	@kubectl get secrets -n apps
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)HelmReleases in apps namespace...$(NC)\n$(LINE)\n"
+	@kubectl get helmrelease -n apps
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)git repositories for apps namespace...$(NC)\n> kubectl get gitrepository -n apps\n$(LINE)\n"
+	@kubectl get gitrepository -n apps
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)kustomization status for apps namespace...$(NC)\n> kubectl get kustomization -n apps\n$(LINE)\n"
+	@kubectl get kustomization -n apps
+	@printf "\n"
+
+	@printf "\n$(LINE)\n$(GREEN)MariaDB HelmRelease logs...$(NC)\n> kubectl logs -n apps deployment/mariadb --since=2m\n$(LINE)\n"
+	@kubectl logs -n apps deployment/mariadb --since=2m
 	@printf "\n"
