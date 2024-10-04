@@ -22,9 +22,8 @@ spec:
       tag: 11.2.5
     auth:
       existingSecret: mariadb
-      username: mariadb-user
+      usernameKey: mariadb-user
       passwordKey: mariadb-password
-      rootPasswordKey: mariadb-root-password
     primary:
       service:
         type: ClusterIP
