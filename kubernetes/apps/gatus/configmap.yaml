@@ -1,4 +1,3 @@
-# gatus/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -13,3 +12,8 @@ data:
         interval: 5m
         conditions:
           - "[STATUS] == 200"
+      - name: MariaDB
+        url: tcp://mariadb.apps.svc.cluster.local:3306
+        interval: 5m
+        conditions:
+          - "[CONNECTED] == true"
