@@ -17,3 +17,8 @@ data:
         interval: 5m
         conditions:
           - "[CONNECTED] == true"
+      - name: MyAAC
+        url: http://website.apps.svc.cluster.local:80
+        interval: 5m
+        conditions:
+          - "[STATUS] == 200"
