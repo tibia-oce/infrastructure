@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: website
+  namespace: apps
+  labels:
+    app: website
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: website
+  template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+        - name: website
+          image: ghcr.io/tibia-oce/website:0.8.19
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+          env:
+
+            # Static variables
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_HOST
+              value: "mariadb.apps.svc.cluster.local"
+            - name: MYSQL_SOCK
+              value: "/opt/bitnami/mariadb/tmp/mysql.sock"
+
+            # External secrets
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: myaac
+                  key: myaac-mariadb-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: myaac
+                  key: myaac-mariadb-password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: myaac
+                  key: myaac-mariadb-root-password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: myaac
+                  key: myaac-mariadb-database

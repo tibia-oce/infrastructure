@@ -5,6 +5,6 @@ kind: Kustomization
 namespace: apps
 resources:
   - repository.yaml
-  # - deployment.yaml
-  # - service.yaml
-  # - ingressroute.yaml
+  - deployment.yaml
+  - service.yaml
+  - ingressroute.yaml
