@@ -47,6 +47,17 @@ output "vault_management_endpoint" {
   value = module.vault.vault_management_endpoint
 }
 
+# # Discord:
+# output "server_name" {
+#     value = module.discord_server.server_name
+# }
+# output "server_id" {
+#     value = module.discord_server.server_id
+# }
+# output "invite_info" {
+#     value = module.discord_server.invite_info
+# }
+
 # output "mysql_password" {
 #   value       = module.mysql_password.secret_name
 # }

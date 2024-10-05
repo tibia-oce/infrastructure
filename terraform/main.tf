@@ -214,3 +214,17 @@ module "workers_x86" {
     module.nsg.admin_nsg_id,
   ]
 }
+
+# # todo: integrate with existing discord server
+# module "discord_server" {
+#   source              = "./discord"
+#   discord_token       = var.discord_token
+#   server_name         = var.server_name
+#   server_region       = var.server_region
+#   server_icon_file    = var.server_icon_file
+#   category_name       = var.category_name
+#   create_text_channels = var.create_text_channels
+#   text_channels       = var.text_channels
+#   create_voice_channels = var.create_voice_channels
+#   voice_channels      = var.voice_channels
+# }

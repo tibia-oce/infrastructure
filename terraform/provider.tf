@@ -9,6 +9,10 @@ terraform {
 
 terraform {
   required_providers {
+    discord = {
+      source = "Chaotic-Logic/discord"
+      version = "0.0.1"
+    }
     oci = {
       source  = "oracle/oci"
       version = ">= 4.64.0"
@@ -22,6 +26,10 @@ terraform {
       version = "~> 4"
     }
   }
+}
+
+provider "discord" {
+    token = var.discord_token
 }
 
 provider "cloudflare" {
