@@ -7,11 +7,11 @@ data:
   config.yaml: |
     metrics: true
     endpoints:
-      - name: GitHub
-        url: https://api.github.com/healthz
+      - name: ExternalSecrets
+        url: tcp://external-secrets-webhook.external-secrets.svc.cluster.local:443
         interval: 5m
         conditions:
-          - "[STATUS] == 200"
+          - "[CONNECTED] == true"
       - name: MariaDB
         url: tcp://mariadb.apps.svc.cluster.local:3306
         interval: 5m
