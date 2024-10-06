@@ -12,6 +12,11 @@ data:
         interval: 5m
         conditions:
           - "[CONNECTED] == true"
+      - name: Authelia
+        url: http://authelia.apps.svc.cluster.local:80
+        interval: 5m
+        conditions:
+          - "[CONNECTED] == true"
       - name: MariaDB
         url: tcp://mariadb.apps.svc.cluster.local:3306
         interval: 5m
