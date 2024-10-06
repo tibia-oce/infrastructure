@@ -22,9 +22,12 @@ spec:
       tag: 11.2.5
     auth:
       existingSecret: mariadb
-    env:
-      MARIADB_DATABASE: forgottenserver
+    initdbScripts:
+      my_init_script.sh: |
+        #!/bin/sh
+        mysql -P 3306 -u${MARIADB_USER} -p${MARIADB_ROOT_PASSWORD} -e "create database forgottenserver";
     primary:
+      extraEnvVarsSecret: mariadb 
       service:
         type: ClusterIP
       persistence:
