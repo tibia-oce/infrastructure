@@ -22,3 +22,8 @@ data:
         interval: 5m
         conditions:
           - "[STATUS] == 200"
+      - name: phpMyAdmin
+        url: http://phpmyadmin.apps.svc.cluster.local:80
+        interval: 5m
+        conditions:
+          - "[CONNECTED] == true"

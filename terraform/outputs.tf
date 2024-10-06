@@ -29,11 +29,6 @@ output "load_balancer_public_ip" {
   description = "The public IP address of the load balancer."
 }
 
-output "status_domain" {
-  description = "The status application domain managed by Cloudflare"
-  value       = module.domain.status_domain
-}
-
 output "k3s_token" {
   value     = trimspace(data.hcp_vault_secrets_secret.k3s_token.secret_value)
   sensitive = true

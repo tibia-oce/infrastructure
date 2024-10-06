@@ -13,7 +13,7 @@ output "status_domain" {
   value       = cloudflare_record.status.hostname
 }
 
-output "argo_domain" {
+output "phpmyadmin_domain" {
   description = "The argo server domain managed by Cloudflare"
-  value       = cloudflare_record.argo.hostname
+  value       = cloudflare_record.phpmyadmin.hostname
 }

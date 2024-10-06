@@ -34,9 +34,9 @@ resource "cloudflare_record" "status" {
   proxied = true
 }
 
-resource "cloudflare_record" "argo" {
+resource "cloudflare_record" "phpmyadmin" {
   zone_id = var.cf_zone_id
-  name    = "argo.${var.domain}"
+  name    = "phpmyadmin.${var.domain}"
   content = var.lb_public_ip_address
   type    = "A"
   ttl     = 1

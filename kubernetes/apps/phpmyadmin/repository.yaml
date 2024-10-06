@@ -1,0 +1,17 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: phpmyadmin-deploy
+  namespace: apps
+spec:
+  dependsOn:
+    - name: mariadb-post-deploy
+  interval: 5m
+  path: ./kubernetes/apps/phpmyadmin/deploy
+  prune: true
+  wait: true
+  sourceRef:
+    kind: GitRepository
+    name: tibia
+    namespace: flux-system
