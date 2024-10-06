@@ -22,7 +22,7 @@ spec:
     redis:
       enabled: true
     secret:
-      existingSecret: authelia
+      existingSecret: authelia-secret
     storage:
       mysql:
         enabled: true
