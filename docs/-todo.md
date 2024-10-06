@@ -56,12 +56,12 @@ Ensure HCP Vault has required keys:
     hcp vault-secrets secrets create ssh_private_key --data-file=$HOME/.ssh/id_rsa --app <app>
     hcp vault-secrets secrets create oci_private_key --data-file=$HOME/.oci/oci_api_key.pem --app <app>
 
-    # Cloudflare variables:
+    # Cloudflare variables
     echo -n 'xxxxx' | hcp vault-secrets secrets create cf_zone_id --data-file=- --app <app>
     echo -n 'xxxxx' | hcp vault-secrets secrets create cf_account_id --data-file=- --app <app>
     echo -n 'xxxxx' | hcp vault-secrets secrets create cf_token --data-file=- --app <app>
 
-    # Create a cloduflare certifate & download cf ca cert
+    # Create a cloudflare certifate & download cf ca cert
     hcp vault-secrets secrets create cf_origin_certificate --data-file=public_cert.pem --app <app>
     hcp vault-secrets secrets create cf_private_key --data-file=private_key.pem --app <app>
     hcp vault-secrets secrets create cf_ca_certificate --data-file=cloudflare_ca_cert.pem --app <app>
@@ -72,6 +72,11 @@ Ensure HCP Vault has required keys:
     echo -n 'xxxxx' | hcp vault-secrets secrets create mysql_root_password --data-file=- --app <app>
     echo -n 'xxxxx' | hcp vault-secrets secrets create mysql_database --data-file=- --app <app>
     echo -n '3306' | hcp vault-secrets secrets create mysql_port --data-file=- --app <app>
+
+    # Tokens and other credentials
+    pwgen -s 50 1 | hcp vault-secrets secrets create authelia_token --data-file=- --app <app>
+    pwgen -s 50 1 | hcp vault-secrets secrets create authelia_encryption_key --data-file=- --app <app>
+    pwgen -s 50 1 | hcp vault-secrets secrets create k3s_token --data-file=- --app <app>
     ```
 
 [!](./assets/images/encryption.png)
