@@ -1,3 +1,4 @@
+# authelia/repository.yaml
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
@@ -6,8 +7,8 @@ metadata:
   namespace: apps
 spec:
   dependsOn:
-    - name: external-secrets-secretstore
-      namespace: flux-system
+    - name: mariadb-post-deploy
+      namespace: apps
   interval: 5m
   path: ./kubernetes/apps/authelia/secrets
   prune: true
@@ -23,7 +24,6 @@ metadata:
   namespace: apps
 spec:
   dependsOn:
-    - name: mariadb-post-deploy
     - name: authelia-secrets
   interval: 5m
   path: ./kubernetes/apps/authelia/deploy
