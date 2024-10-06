@@ -414,10 +414,6 @@ apps-logs:
 	@kubectl get kustomization -n apps
 	@printf "\n"
 
-	@printf "\n$(LINE)\n$(GREEN)MariaDB HelmRelease logs...$(NC)\n> kubectl logs -n apps deployment/mariadb --since=2m\n$(LINE)\n"
-	@kubectl logs -n apps deployment/mariadb --since=2m
-	@printf "\n"
-
 connect-mariadb:
 	@echo "Retrieving MariaDB root password..."
 	@PASSWORD=$$(kubectl get secret mariadb -n apps -o jsonpath="{.data.mariadb-root-password}" | base64 --decode) && \
