@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: phpmyadmin
-          image: phpmyadmin/phpmyadmin:latest
+          image: phpmyadmin:5.2.1
           ports:
             - containerPort: 80
           resources:
