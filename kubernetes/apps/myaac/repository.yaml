@@ -2,7 +2,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: myaac-external-secrets
+  name: myaac-secrets
   namespace: apps
 spec:
   dependsOn:
@@ -11,6 +11,23 @@ spec:
   interval: 5m
   path: ./kubernetes/apps/myaac/secrets
   prune: true
+  sourceRef:
+    kind: GitRepository
+    name: tibia
+    namespace: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: myaac-deploy
+  namespace: apps
+spec:
+  dependsOn:
+    - name: mariadb-post-deploy
+  interval: 5m
+  path: ./kubernetes/apps/myaac/deploy
+  prune: true
+  wait: true
   sourceRef:
     kind: GitRepository
     name: tibia
