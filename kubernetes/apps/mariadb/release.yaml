@@ -22,6 +22,8 @@ spec:
       tag: 11.2.5
     auth:
       existingSecret: mariadb
+    env:
+      MARIADB_DATABASE: forgottenserver
     primary:
       service:
         type: ClusterIP
