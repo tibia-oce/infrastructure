@@ -22,10 +22,6 @@ spec:
       tag: 11.2.5
     auth:
       existingSecret: mariadb
-    initdbScripts:
-      my_init_script.sh: |
-        #!/bin/sh
-        MYSQL_PWD=${MARIADB_ROOT_PASSWORD} mysql -P 3306 -u${MARIADB_USER} -e "create database forgottenserver";
     primary:
       extraEnvVarsSecret: mariadb 
       service:
@@ -33,5 +29,10 @@ spec:
       persistence:
         enabled: true
         size: 8Gi
+    my_init_script.sh: |
+      #!/bin/bash
+      echo "MARIADB_USER: ${MARIADB_USER}"
+      echo "MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}"
+      /opt/bitnami/mariadb/bin/mysql -P 3306 -u${MARIADB_USER} -p"${MARIADB_ROOT_PASSWORD}" -e "create database forgottenserver";
     replica:
       replicaCount: 1
