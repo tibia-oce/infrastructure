@@ -24,6 +24,7 @@ metadata:
 spec:
   dependsOn:
     - name: mariadb-post-deploy
+    - name: authelia-secrets
   interval: 5m
   path: ./kubernetes/apps/authelia/deploy
   prune: true
