@@ -17,17 +17,14 @@ spec:
               value: "3306"
             - name: MARIADB_HOST
               value: "mariadb.apps.svc.cluster.local"
+            - name: MARIADB_USERNAME
+              value: "root"
             # External secrets
             - name: MARIADB_DATABASE
               valueFrom:
                 secretKeyRef:
                   name: mariadb
                   key: myaac-mariadb-database
-            - name: MARIADB_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: mariadb
-                  key: mariadb-user
             - name: MARIADB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
