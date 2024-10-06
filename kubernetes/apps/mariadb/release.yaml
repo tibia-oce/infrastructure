@@ -25,7 +25,7 @@ spec:
     initdbScripts:
       my_init_script.sh: |
         #!/bin/sh
-        mysql -P 3306 -u${MARIADB_USER} -p${MARIADB_ROOT_PASSWORD} -e "create database forgottenserver";
+        MYSQL_PWD=${MARIADB_ROOT_PASSWORD} mysql -P 3306 -u${MARIADB_USER} -e "create database forgottenserver";
     primary:
       extraEnvVarsSecret: mariadb 
       service:
