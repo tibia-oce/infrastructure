@@ -23,6 +23,7 @@ spec:
         password: "${AUTHENTIK_BOOTSTRAP_PASSWORD}"
         token: "${AUTHENTIK_BOOTSTRAP_TOKEN}"
       postgresql:
+        host: authentik-postgresql  # Update the host to point to the service name
         password: "${POSTGRESQL_PASSWORD}"
       redis:
         password: "${REDIS_PASSWORD}"
