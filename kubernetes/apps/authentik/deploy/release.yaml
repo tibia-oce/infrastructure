@@ -28,13 +28,13 @@ spec:
         password: "${REDIS_PASSWORD}"
 
     redis:
-      enabled: true  # Enable Redis if you're using the Bitnami Redis chart
+      enabled: true
       master:
         persistence:
           size: 1Gi
 
     postgresql:
-      enabled: true  # Enable PostgreSQL if you're using the Bitnami PostgreSQL chart
+      enabled: true
       postgresqlPassword: "${POSTGRESQL_PASSWORD}"
       persistence:
         size: 1Gi
@@ -42,12 +42,13 @@ spec:
     server:
       ingress:
         enabled: true
-        ingressClassName: "traefik"  # Assuming you're using Traefik
+        ingressClassName: "traefik"
         hosts:
-          - host: authentik.example.com  # Replace with your domain
-            paths:
-              - path: "/"
-                pathType: Prefix
+          - "authentik.mythbound.dev"
+        tls: []
+        paths:
+          - path: /
+            pathType: Prefix
 
       resources:
         requests:
