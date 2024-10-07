@@ -28,36 +28,40 @@ spec:
         password: "${REDIS_PASSWORD}"
 
     redis:
+      enabled: true  # Enable Redis if you're using the Bitnami Redis chart
       master:
         persistence:
           size: 1Gi
 
     postgresql:
+      enabled: true  # Enable PostgreSQL if you're using the Bitnami PostgreSQL chart
       postgresqlPassword: "${POSTGRESQL_PASSWORD}"
+      persistence:
+        size: 1Gi
 
-    env:
-      - name: AUTHENTIK_SECRET_KEY
-        valueFrom:
-          secretKeyRef:
-            name: authentik
-            key: AUTHENTIK_SECRET_KEY
-      - name: AUTHENTIK_BOOTSTRAP_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: authentik
-            key: AUTHENTIK_BOOTSTRAP_PASSWORD
-      - name: AUTHENTIK_BOOTSTRAP_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: authentik
-            key: AUTHENTIK_BOOTSTRAP_TOKEN
-      - name: POSTGRESQL_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: authentik
-            key: POSTGRESQL_PASSWORD
-      - name: REDIS_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: authentik
-            key: REDIS_PASSWORD
+    server:
+      ingress:
+        enabled: true
+        ingressClassName: "traefik"  # Assuming you're using Traefik
+        hosts:
+          - host: authentik.example.com  # Replace with your domain
+            paths:
+              - path: "/"
+                pathType: Prefix
+
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "250m"
+        limits:
+          memory: "1Gi"
+          cpu: "500m"
+
+      # readinessProbe:
+      #   httpGet:
+      #     path: "/-/health/ready/"
+      #     port: "http"
+      # livenessProbe:
+      #   httpGet:
+      #     path: "/-/health/live/"
+      #     port: "http"
