@@ -40,15 +40,15 @@ spec:
         size: 1Gi
 
     server:
-      ingress:
-        enabled: true
-        ingressClassName: "traefik"
-        hosts:
-          - "authentik.mythbound.dev"
-        tls: []
-        paths:
-          - path: /
-            pathType: Prefix
+      # ingress:
+      #   enabled: true
+      #   ingressClassName: "traefik"
+      #   hosts:
+      #     - "authentik.mythbound.dev"
+      #   tls: []
+      #   paths:
+      #     - path: /
+      #       pathType: Prefix
 
       resources:
         requests:
