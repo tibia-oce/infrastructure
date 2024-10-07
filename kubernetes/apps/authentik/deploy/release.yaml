@@ -149,11 +149,11 @@ spec:
     envValueFrom:
       AUTHENTIK_BOOTSTRAP_PASSWORD:
         secretKeyRef:
-          key: authentik_bootstrap_password
+          key: AUTHENTIK_BOOTSTRAP_PASSWORD
           name: authentik
       AUTHENTIK_BOOTSTRAP_TOKEN:
         secretKeyRef:
-          key: authentik_bootstrap_token
+          key: AUTHENTIK_BOOTSTRAP_TOKEN
           name: authentik
 
     service:
