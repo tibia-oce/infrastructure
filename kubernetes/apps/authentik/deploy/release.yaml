@@ -80,7 +80,7 @@ spec:
         host: "authentik-postgresql"
         name: "authentik"
         user: "authentik"
-        password: ""
+        password: "authentik"
         port: 5432
       redis:
         host: "authentik-redis-master"
