@@ -1,13 +1,4 @@
 ---
-apiVersion: source.toolkit.fluxcd.io/v1beta1
-kind: HelmRepository
-metadata:
-  name: authentik
-  namespace: flux-system
-spec:
-  interval: 15m
-  url: https://charts.goauthentik.io/
----
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -24,20 +15,29 @@ spec:
     kind: GitRepository
     name: tibia
     namespace: flux-system
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: authentik-deploy
-  namespace: apps
-spec:
-  dependsOn:
-    - name: authentik-secrets
-  interval: 5m
-  path: ./kubernetes/apps/authentik/deploy
-  prune: true
-  wait: true
-  sourceRef:
-    kind: GitRepository
-    name: tibia
-    namespace: flux-system
+# ---
+# apiVersion: kustomize.toolkit.fluxcd.io/v1
+# kind: Kustomization
+# metadata:
+#   name: authentik-deploy
+#   namespace: apps
+# spec:
+#   dependsOn:
+#     - name: authentik-secrets
+#   interval: 5m
+#   path: ./kubernetes/apps/authentik/deploy
+#   prune: true
+#   wait: true
+#   sourceRef:
+#     kind: GitRepository
+#     name: tibia
+#     namespace: flux-system
+# ---
+# apiVersion: source.toolkit.fluxcd.io/v1beta1
+# kind: HelmRepository
+# metadata:
+#   name: authentik
+#   namespace: flux-system
+# spec:
+#   interval: 15m
+#   url: https://charts.goauthentik.io/
