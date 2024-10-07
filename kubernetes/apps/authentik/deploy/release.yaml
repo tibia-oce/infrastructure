@@ -15,37 +15,12 @@ spec:
   interval: 15m
   timeout: 10m
   releaseName: authentik
+
   values:
-    # -- Server replicas
     replicas: 1
-    # -- Custom priority class for different treatment by the scheduler
-    priorityClassName:
-    # -- server securityContext
-    securityContext: {}
-    # -- server containerSecurityContext
-    containerSecurityContext: {}
-    # -- server deployment strategy
-    strategy: {}
-      # type: RollingUpdate
-      # rollingUpdate:
-      #  maxSurge: 25%
-      #  maxUnavailable: 25%
 
     worker:
-      # -- worker replicas
       replicas: 1
-      # -- Custom priority class for different treatment by the scheduler
-      priorityClassName:
-      # -- worker securityContext
-      securityContext: {}
-      # -- worker containerSecurityContext
-      containerSecurityContext: {}
-      # -- worker strategy
-      strategy: {}
-        # type: RollingUpdate
-        # rollingUpdate:
-        #  maxSurge: 25%
-        #  maxUnavailable: 25%
 
     image:
       repository: ghcr.io/goauthentik/server
@@ -55,7 +30,7 @@ spec:
 
     ingress:
       enabled: true
-      ingressClassName: ""
+      ingressClassName: "traefik"
       annotations: {}
       labels: {}
       hosts:
@@ -65,16 +40,8 @@ spec:
               pathType: Prefix
       tls: []
 
-    # -- Annotations to add to the server and worker deployments
-    annotations: {}
-
-    # -- Annotations to add to the server and worker pods
-    podAnnotations: {}
-
     authentik:
-      # -- Log level for server and worker
       log_level: info
-      # -- Secret key used for cookie singing and unique user IDs,
       secret_key: "authentik"
       postgresql:
         host: "authentik-postgresql"
@@ -121,72 +88,16 @@ spec:
     volumes: []
 
     volumeMounts: []
-
-    # -- affinity applied to the deployments
-    affinity: {}
-
-    #  -- tolerations applied to the deployments
-    tolerations: []
-
-    # -- nodeSelector applied to the deployments
-    nodeSelector: {}
-
-    resources:
-      server: {}
-      worker: {}
-
-    livenessProbe:
-      # -- enables or disables the livenessProbe
-      enabled: true
-      httpGet:
-        # -- liveness probe url path
-        path: /-/health/live/
-        port: http
-      initialDelaySeconds: 20
-      periodSeconds: 10
-
-    startupProbe:
-      # -- enables or disables the livenessProbe
-      enabled: true
-      httpGet:
-        # -- liveness probe url path
-        path: /-/health/live/
-        port: http
-      failureThreshold: 60
-      periodSeconds: 10
-
-    readinessProbe:
-      enabled: true
-      httpGet:
-        path: /-/health/ready/
-        port: http
-      periodSeconds: 10
-
     serviceAccount:
-      # -- Service account is needed for managed outposts
       create: true
-      annotations: {}
-      serviceAccountSecret:
-        # -- As we use the authentik-remote-cluster chart as subchart, and that chart
-        # creates a service account secret by default which we don't need here, disable its creation
-        enabled: false
-      fullnameOverride: authentik
-      nameOverride: authentik
 
     prometheus:
       serviceMonitor:
         create: false
         interval: 30s
         scrapeTimeout: 3s
-        # -- labels additional on ServiceMonitor
-        labels: {}
-      rules:
-        create: false
-        # -- labels additional on PrometheusRule
-        labels: {}
     
     postgresql:
-      # -- enable the bundled bitnami postgresql chart
       enabled: true
       postgresqlMaxConnections: 500
       postgresqlUsername: "authentik"
@@ -199,11 +110,34 @@ spec:
       #     - ReadWriteOnce
       image:
         tag: 15.4.0-debian-11-r0
+
     redis:
-      # -- enable the bundled bitnami redis chart
       enabled: true
       architecture: standalone
       auth:
         enabled: false
       image:
         tag: 6.2.10-debian-11-r13
+
+    livenessProbe:
+      enabled: true
+      httpGet:
+        path: /-/health/live/
+        port: http
+      initialDelaySeconds: 20
+      periodSeconds: 10
+
+    startupProbe:
+      enabled: true
+      httpGet:
+        path: /-/health/live/
+        port: http
+      failureThreshold: 60
+      periodSeconds: 10
+
+    readinessProbe:
+      enabled: true
+      httpGet:
+        path: /-/health/ready/
+        port: http
+      periodSeconds: 10
