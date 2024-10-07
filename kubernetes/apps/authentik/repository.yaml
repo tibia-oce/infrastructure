@@ -1,16 +1,15 @@
-# authelia/repository.yaml
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: authelia-secrets
+  name: authentik-secrets
   namespace: apps
 spec:
   dependsOn:
-    - name: mariadb-post-deploy
-      namespace: apps
+    - name: external-secrets-secretstore
+      namespace: flux-system
   interval: 5m
-  path: ./kubernetes/apps/authelia/secrets
+  path: ./kubernetes/apps/authentik/secrets
   prune: true
   sourceRef:
     kind: GitRepository
@@ -20,13 +19,13 @@ spec:
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: authelia-deploy
+  name: authentik-deploy
   namespace: apps
 spec:
   dependsOn:
-    - name: authelia-secrets
+    - name: authentik-secrets
   interval: 5m
-  path: ./kubernetes/apps/authelia/deploy
+  path: ./kubernetes/apps/authentik/deploy
   prune: true
   wait: true
   sourceRef:
@@ -37,8 +36,8 @@ spec:
 apiVersion: source.toolkit.fluxcd.io/v1beta1
 kind: HelmRepository
 metadata:
-  name: authelia
-  namespace: apps
+  name: authentik
+  namespace: flux-system
 spec:
-  interval: 1m
-  url: https://charts.authelia.com/
+  interval: 15m
+  url: https://charts.goauthentik.io/

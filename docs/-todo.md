@@ -74,9 +74,11 @@ Ensure HCP Vault has required keys:
     echo -n '3306' | hcp vault-secrets secrets create mysql_port --data-file=- --app <app>
 
     # Tokens and other credentials
-    pwgen -s 50 1 | hcp vault-secrets secrets create authelia_token --data-file=- --app <app>
-    pwgen -s 50 1 | hcp vault-secrets secrets create authelia_encryption_key --data-file=- --app <app>
-    pwgen -s 50 1 | hcp vault-secrets secrets create k3s_token --data-file=- --app <app>
+    pwgen -s 50 1 | hcp vault-secrets secrets create authentik_secret_key --data-file=- --app <app>
+    pwgen -s 50 1 | hcp vault-secrets secrets create authentik_bootstrap_password --data-file=- --app <app>
+    pwgen -s 50 1 | hcp vault-secrets secrets create authentik_postgresql_password --data-file=- --app <app>
+    pwgen -s 50 1 | hcp vault-secrets secrets create authentik_redis_password --data-file=- --app <app>
+    pwgen -s 50 1 | hcp vault-secrets secrets create authentik_bootstrap_token --data-file=- --app <app>
     ```
 
 [!](./assets/images/encryption.png)

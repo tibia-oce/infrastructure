@@ -1,0 +1,63 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: authentik
+  namespace: authentik
+spec:
+  chart:
+    spec:
+      chart: authentik
+      version: 2023.10.x # auto-update to semver bugfixes only
+      sourceRef:
+        kind: HelmRepository
+        name: authentik
+        namespace: flux-system
+  interval: 15m
+  timeout: 5m
+  releaseName: authentik
+  values:
+    authentik:
+      log_level: info
+      secret_key: "${AUTHENTIK_SECRET_KEY}"
+      bootstrap:
+        password: "${AUTHENTIK_BOOTSTRAP_PASSWORD}"
+        token: "${AUTHENTIK_BOOTSTRAP_TOKEN}"
+      postgresql:
+        password: "${POSTGRESQL_PASSWORD}"
+      redis:
+        password: "${REDIS_PASSWORD}"
+
+    redis:
+      master:
+        persistence:
+          size: 1Gi
+
+    postgresql:
+      postgresqlPassword: "${POSTGRESQL_PASSWORD}"
+
+    env:
+      - name: AUTHENTIK_SECRET_KEY
+        valueFrom:
+          secretKeyRef:
+            name: authentik
+            key: AUTHENTIK_SECRET_KEY
+      - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: authentik
+            key: AUTHENTIK_BOOTSTRAP_PASSWORD
+      - name: AUTHENTIK_BOOTSTRAP_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: authentik
+            key: AUTHENTIK_BOOTSTRAP_TOKEN
+      - name: POSTGRESQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: authentik
+            key: POSTGRESQL_PASSWORD
+      - name: REDIS_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: authentik
+            key: REDIS_PASSWORD
