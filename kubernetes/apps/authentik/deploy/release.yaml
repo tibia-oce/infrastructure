@@ -92,6 +92,7 @@ spec:
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__USER: authentik 
+      AUTHENTIK_POSTGRESQL__PASSWORD: authentik
       AUTHENTIK_POSTGRESQL__PORT: 5432
 
     envFrom: []
