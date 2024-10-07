@@ -23,24 +23,31 @@ spec:
         password: "${AUTHENTIK_BOOTSTRAP_PASSWORD}"
         token: "${AUTHENTIK_BOOTSTRAP_TOKEN}"
       postgresql:
-        host: authentik-postgresql  # Update the host to point to the service name
+        host: authentik-postgresql
         password: "${POSTGRESQL_PASSWORD}"
       redis:
         password: "${REDIS_PASSWORD}"
 
+    server:
+      resources:
+        requests:
+          memory: "512Mi"
+          cpu: "250m"
+        limits:
+          memory: "1Gi"
+          cpu: "500m"
+          
     redis:
       enabled: true
       master:
         persistence:
           size: 1Gi
-
+        
     postgresql:
       enabled: true
-      postgresqlPassword: "${POSTGRESQL_PASSWORD}"
-      persistence:
-        size: 1Gi
+      auth:
+        password: "${POSTGRESQL_PASSWORD}"
 
-    server:
       # ingress:
       #   enabled: true
       #   ingressClassName: "traefik"
@@ -51,13 +58,6 @@ spec:
       #     - path: /
       #       pathType: Prefix
 
-      resources:
-        requests:
-          memory: "512Mi"
-          cpu: "250m"
-        limits:
-          memory: "1Gi"
-          cpu: "500m"
 
       # readinessProbe:
       #   httpGet:
