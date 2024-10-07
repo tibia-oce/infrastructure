@@ -17,6 +17,16 @@ data:
         interval: 5m
         conditions:
           - "[CONNECTED] == true"
+      - name: PostgreSQL
+        url: tcp://authentik-postgresql.apps.svc.cluster.local:5432
+        interval: 5m
+        conditions:
+          - "[CONNECTED] == true"
+      - name: Redis
+        url: tcp://authentik-redis-master.apps.svc.cluster.local:6379
+        interval: 5m
+        conditions:
+          - "[CONNECTED] == true"
       - name: MariaDB
         url: tcp://mariadb.apps.svc.cluster.local:3306
         interval: 5m
