@@ -228,3 +228,55 @@ module "workers_x86" {
 #   create_voice_channels = var.create_voice_channels
 #   voice_channels      = var.voice_channels
 # }
+
+module "authentik_bootstrap_token" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.authentik_bootstrap_token.secret_name
+  secret_content = data.hcp_vault_secrets_secret.authentik_bootstrap_token.secret_value
+}
+
+module "authentik_redis_password" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.authentik_redis_password.secret_name
+  secret_content = data.hcp_vault_secrets_secret.authentik_redis_password.secret_value
+}
+
+module "authentik_secret_key" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.authentik_secret_key.secret_name
+  secret_content = data.hcp_vault_secrets_secret.authentik_secret_key.secret_value
+}
+
+
+module "authentik_bootstrap_password" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.authentik_bootstrap_password.secret_name
+  secret_content = data.hcp_vault_secrets_secret.authentik_bootstrap_password.secret_value
+}
+
+
+module "authentik_postgresql_password" {
+  source         = "./modules/secret"
+  vault_id       = module.vault.vault_id
+  kms_key_id     = module.vault.kms_id
+  compartment_id = oci_identity_compartment.k3s.id
+
+  secret_name    = data.hcp_vault_secrets_secret.authentik_postgresql_password.secret_name
+  secret_content = data.hcp_vault_secrets_secret.authentik_postgresql_password.secret_value
+}

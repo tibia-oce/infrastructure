@@ -77,6 +77,31 @@ data "hcp_vault_secrets_secret" "mysql_user" {
   secret_name = "mysql_user"
 }
 
+data "hcp_vault_secrets_secret" "authentik_secret_key" {
+  app_name    = var.vault_app_name
+  secret_name = "authentik_secret_key"
+}
+
+data "hcp_vault_secrets_secret" "authentik_bootstrap_password" {
+  app_name    = var.vault_app_name
+  secret_name = "authentik_bootstrap_password"
+}
+
+data "hcp_vault_secrets_secret" "authentik_postgresql_password" {
+  app_name    = var.vault_app_name
+  secret_name = "authentik_postgresql_password"
+}
+
+data "hcp_vault_secrets_secret" "authentik_redis_password" {
+  app_name    = var.vault_app_name
+  secret_name = "authentik_redis_password"
+}
+
+data "hcp_vault_secrets_secret" "authentik_bootstrap_token" {
+  app_name    = var.vault_app_name
+  secret_name = "authentik_bootstrap_token"
+}
+
 data "oci_core_vnic_attachments" "k3s_control_plane_vnic_attachment" {
   for_each       = { for idx, id in module.control_plane.control_plane_instance_ids : idx => id }
   compartment_id = var.compartment_ocid
