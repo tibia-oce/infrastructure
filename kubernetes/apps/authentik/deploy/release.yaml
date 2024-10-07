@@ -7,13 +7,13 @@ spec:
   chart:
     spec:
       chart: authentik
-      version: 2023.10.x # auto-update to semver bugfixes only
+      version: 2024.8.2
       sourceRef:
         kind: HelmRepository
         name: authentik
         namespace: flux-system
   interval: 15m
-  timeout: 5m
+  timeout: 10m
   releaseName: authentik
   values:
     authentik:
