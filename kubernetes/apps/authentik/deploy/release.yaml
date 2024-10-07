@@ -1,35 +1,3 @@
-
-# authentik:
-#   log_level: info
-#   secret_key: "${AUTHENTIK_SECRET_KEY}"
-#   bootstrap:
-#     password: "${AUTHENTIK_BOOTSTRAP_PASSWORD}"
-#     token: "${AUTHENTIK_BOOTSTRAP_TOKEN}"
-#   postgresql:
-#     host: authentik-postgresql
-#     password: "${POSTGRESQL_PASSWORD}"
-#   redis:
-#     password: "${REDIS_PASSWORD}"
-
-# ingress:
-#   enabled: true
-#   ingressClassName: "traefik"
-#   hosts:
-#     - "authentik.mythbound.dev"
-#   tls: []
-#   paths:
-#     - path: /
-#       pathType: Prefix
-
-# readinessProbe:
-#   httpGet:
-#     path: "/-/health/ready/"
-#     port: "http"
-# livenessProbe:
-#   httpGet:
-#     path: "/-/health/live/"
-#     port: "http"
-
 apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
@@ -82,16 +50,8 @@ spec:
     image:
       repository: ghcr.io/goauthentik/server
       tag: 2023.10.7
-      # -- optional container image digest
-      digest: ""
       pullPolicy: IfNotPresent
       pullSecrets: []
-
-    # -- Specify any initContainers here as dictionary items. Each initContainer should have its own key. The dictionary item key will determine the order. Helm templates can be used
-    initContainers: {}
-
-    # -- Specify any additional containers here as dictionary items. Each additional container should have its own key. Helm templates can be used.
-    additionalContainers: {}
 
     # ingress:
     #   enabled: false
@@ -115,32 +75,24 @@ spec:
       # -- Log level for server and worker
       log_level: info
       # -- Secret key used for cookie singing and unique user IDs,
-      # don't change this after the first install
       secret_key: "authentik"
-      # -- Path for the geoip database. If the file doesn't exist, GeoIP features are disabled.
-
       postgresql:
-        # -- set the postgresql hostname to talk to
-        # if unset and .Values.postgresql.enabled == true, will generate the default
-        # @default -- `authentik-postgresql`
         host: "authentik-postgresql"
-        # -- postgresql Database name
-        # @default -- `authentik`
         name: "authentik"
-        # -- postgresql Username
-        # @default -- `authentik`
         user: "authentik"
         password: ""
         port: 5432
       redis:
-        # -- set the redis hostname to talk to
-        # @default -- `authentik-redis-master`
         host: "authentik-redis-master"
         password: "authentik"
 
     # -- see configuration options at https://goauthentik.io/docs/installation/configuration/
-    env: {}
-    # AUTHENTIK_VAR_NAME: VALUE
+    env: 
+      AUTHENTIK_REDIS__HOST: authentik-redis-master
+      AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
+      AUTHENTIK_POSTGRESQL__NAME: authentik
+      AUTHENTIK_POSTGRESQL__USER: authentik 
+      AUTHENTIK_POSTGRESQL__PORT: 5432
 
     envFrom: []
     #  - configMapRef:
@@ -189,7 +141,7 @@ spec:
         # -- liveness probe url path
         path: /-/health/live/
         port: http
-      initialDelaySeconds: 5
+      initialDelaySeconds: 20
       periodSeconds: 10
 
     startupProbe:
@@ -200,7 +152,7 @@ spec:
         path: /-/health/live/
         port: http
       failureThreshold: 60
-      periodSeconds: 5
+      periodSeconds: 10
 
     readinessProbe:
       enabled: true
