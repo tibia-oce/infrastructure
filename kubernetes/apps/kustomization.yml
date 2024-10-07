@@ -8,3 +8,4 @@ resources:
 - authentik
 - myaac
 - phpmyadmin
+- prometheus

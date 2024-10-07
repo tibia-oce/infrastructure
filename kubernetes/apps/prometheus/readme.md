@@ -1,3 +1,0 @@
-# Prometheus
-
-[prometheus](https://prometheus.io/) ...
