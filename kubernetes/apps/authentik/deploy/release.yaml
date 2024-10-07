@@ -53,17 +53,17 @@ spec:
       pullPolicy: IfNotPresent
       pullSecrets: []
 
-    # ingress:
-    #   enabled: false
-    #   ingressClassName: ""
-    #   annotations: {}
-    #   labels: {}
-    #   hosts:
-    #     - host: authentik.domain.tld
-    #       paths:
-    #         - path: "/"
-    #           pathType: Prefix
-    #   tls: []
+    ingress:
+      enabled: true
+      ingressClassName: ""
+      annotations: {}
+      labels: {}
+      hosts:
+        - host: authentik.mythbound.dev
+          paths:
+            - path: "/"
+              pathType: Prefix
+      tls: []
 
     # -- Annotations to add to the server and worker deployments
     annotations: {}
