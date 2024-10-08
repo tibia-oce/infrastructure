@@ -42,3 +42,8 @@ data:
         interval: 5m
         conditions:
           - "[CONNECTED] == true"
+      - name: Prometheus
+        url: http://prometheus.apps.svc.cluster.local:9090
+        interval: 5m
+        conditions:
+          - "[CONNECTED] == true"

@@ -61,6 +61,15 @@ resource "cloudflare_record" "game" {
   proxied  = false
 }
 
+resource "cloudflare_record" "prometheus" {
+  zone_id  = var.cf_zone_id
+  name     = "prometheus.${var.domain}"
+  content  = var.lb_public_ip_address
+  type     = "A"
+  ttl      = 3600
+  proxied  = false
+}
+
 # TODO: Instead of landing page, just re-direct to Github for now
 resource "cloudflare_page_rule" "redirect_root_to_github" {
   zone_id  = var.cf_zone_id
