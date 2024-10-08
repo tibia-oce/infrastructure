@@ -21,8 +21,6 @@ metadata:
   name: prometheus-deploy
   namespace: apps
 spec:
-  dependsOn:
-    - name: prometheus-storage
   interval: 5m
   path: ./kubernetes/apps/prometheus/deploy
   prune: true
