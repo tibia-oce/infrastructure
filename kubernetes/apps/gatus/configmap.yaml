@@ -32,19 +32,19 @@ data:
       conditions:
         - "[CONNECTED] == true"
     - name: MariaDB
-      group: Databases
+      group: Tibia
       url: tcp://mariadb.apps.svc.cluster.local:3306
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
     - name: MyAAC
-      group: Websites
+      group: Tibia
       url: http://website.apps.svc.cluster.local:80
       interval: 5m
       conditions:
         - "[STATUS] == 200"
     - name: phpMyAdmin
-      group: Websites
+      group: Tibia
       url: http://phpmyadmin.apps.svc.cluster.local:80
       interval: 5m
       conditions:
