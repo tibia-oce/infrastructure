@@ -31,8 +31,8 @@ spec:
     ingress:
       enabled: true
       ingressClassName: "traefik"
-      annotations: {}
-      labels: {}
+      annotations:
+        kubernetes.io/ingress.class: traefik
       hosts:
         - host: authentik.mythbound.dev
           paths:
@@ -52,6 +52,8 @@ spec:
       redis:
         host: "authentik-redis-master"
         password: "authentik"
+      bootstrap_token: authentik
+      bootstrap_password: authentik
 
     env: 
       # https://goauthentik.io/docs/installation/configuration/
@@ -62,21 +64,20 @@ spec:
       AUTHENTIK_POSTGRESQL__USER: authentik 
       AUTHENTIK_POSTGRESQL__PASSWORD: authentik
       AUTHENTIK_POSTGRESQL__PORT: 5432
-      AUTHENTIK_BOOTSTRAP_EMAIL: localhost
 
     envFrom: []
     #  - configMapRef:
     #      name: special-config
 
-    envValueFrom:
-      AUTHENTIK_BOOTSTRAP_PASSWORD:
-        secretKeyRef:
-          key: AUTHENTIK_BOOTSTRAP_PASSWORD
-          name: authentik
-      AUTHENTIK_BOOTSTRAP_TOKEN:
-        secretKeyRef:
-          key: AUTHENTIK_BOOTSTRAP_TOKEN
-          name: authentik
+    # envValueFrom:
+    #   AUTHENTIK_BOOTSTRAP_PASSWORD:
+    #     secretKeyRef:
+    #       key: AUTHENTIK_BOOTSTRAP_PASSWORD
+    #       name: authentik
+    #   AUTHENTIK_BOOTSTRAP_TOKEN:
+    #     secretKeyRef:
+    #       key: AUTHENTIK_BOOTSTRAP_TOKEN
+    #       name: authentik
 
     service:
       enabled: true
