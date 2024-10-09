@@ -7,48 +7,57 @@ data:
   config.yaml: |
     metrics: true
     endpoints:
-      - name: ExternalSecrets
-        url: tcp://external-secrets-webhook.external-secrets.svc.cluster.local:443
-        interval: 5m
-        conditions:
-          - "[CONNECTED] == true"
-      - name: Authentik
-        url: http://authentik.apps.svc.cluster.local:80
-        interval: 5m
-        conditions:
-          - "[CONNECTED] == true"
-      - name: PostgreSQL
-        url: tcp://authentik-postgresql.apps.svc.cluster.local:5432
-        interval: 5m
-        conditions:
-          - "[CONNECTED] == true"
-      - name: Redis
-        url: tcp://authentik-redis-master.apps.svc.cluster.local:6379
-        interval: 5m
-        conditions:
-          - "[CONNECTED] == true"
-      - name: MariaDB
-        url: tcp://mariadb.apps.svc.cluster.local:3306
-        interval: 5m
-        conditions:
-          - "[CONNECTED] == true"
-      - name: MyAAC
-        url: http://website.apps.svc.cluster.local:80
-        interval: 5m
-        conditions:
-          - "[STATUS] == 200"
-      - name: phpMyAdmin
-        url: http://phpmyadmin.apps.svc.cluster.local:80
-        interval: 5m
-        conditions:
-          - "[CONNECTED] == true"
-      - name: Prometheus
-        url: tcp://prometheus.apps.svc.cluster.local:9090
-        interval: 5m
-        conditions:
-          - "[CONNECTED] == true"
-      - name: Grafana
-        url: tcp://grafana.apps.svc.cluster.local:3000
-        interval: 5m
-        conditions:
-          - "[CONNECTED] == true"
+    - name: ExternalSecrets
+      group: Secrets
+      url: tcp://external-secrets-webhook.external-secrets.svc.cluster.local:443
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+    - name: Authentik
+      group: Authentication
+      url: http://authentik.apps.svc.cluster.local:80
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+    - name: PostgreSQL
+      group: Authentication
+      url: tcp://authentik-postgresql.apps.svc.cluster.local:5432
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+    - name: Redis
+      group: Authentication
+      url: tcp://authentik-redis-master.apps.svc.cluster.local:6379
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+    - name: MariaDB
+      group: Databases
+      url: tcp://mariadb.apps.svc.cluster.local:3306
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+    - name: MyAAC
+      group: Websites
+      url: http://website.apps.svc.cluster.local:80
+      interval: 5m
+      conditions:
+        - "[STATUS] == 200"
+    - name: phpMyAdmin
+      group: Websites
+      url: http://phpmyadmin.apps.svc.cluster.local:80
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+    - name: Prometheus
+      group: Monitoring
+      url: tcp://prometheus.apps.svc.cluster.local:9090
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+    - name: Grafana
+      group: Monitoring
+      url: tcp://grafana.apps.svc.cluster.local:3000
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
