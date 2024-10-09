@@ -1,0 +1,31 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: grafana-storage
+  namespace: apps
+spec:
+  interval: 5m
+  path: ./kubernetes/apps/grafana/storage
+  prune: true
+  wait: true
+  sourceRef:
+    kind: GitRepository
+    name: tibia
+    namespace: flux-system
+
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: grafana-deploy
+  namespace: apps
+spec:
+  interval: 5m
+  path: ./kubernetes/apps/grafana/deploy
+  prune: true
+  wait: true
+  sourceRef:
+    kind: GitRepository
+    name: tibia
+    namespace: flux-system

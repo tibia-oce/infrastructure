@@ -9,3 +9,4 @@ resources:
 - myaac
 - phpmyadmin
 - prometheus
+- grafana

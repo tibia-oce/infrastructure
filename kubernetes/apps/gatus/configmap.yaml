@@ -47,3 +47,8 @@ data:
         interval: 5m
         conditions:
           - "[CONNECTED] == true"
+      - name: Grafana
+        url: tcp://grafana.apps.svc.cluster.local:3000
+        interval: 5m
+        conditions:
+          - "[CONNECTED] == true"
