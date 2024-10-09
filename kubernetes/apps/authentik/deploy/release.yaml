@@ -53,16 +53,16 @@ spec:
         host: "authentik-redis-master"
         password: "authentik"
 
-    # -- see configuration options at https://goauthentik.io/docs/installation/configuration/
     env: 
+      # https://goauthentik.io/docs/installation/configuration/
+      # https://docs.goauthentik.io/docs/installation/configuration
       AUTHENTIK_REDIS__HOST: authentik-redis-master
       AUTHENTIK_POSTGRESQL__HOST: authentik-postgresql
       AUTHENTIK_POSTGRESQL__NAME: authentik
       AUTHENTIK_POSTGRESQL__USER: authentik 
       AUTHENTIK_POSTGRESQL__PASSWORD: authentik
       AUTHENTIK_POSTGRESQL__PORT: 5432
-      AUTHENTIK_EMAIL__USERNAME: localhost
-      AUTHENTIK_EMAIL__PASSWORD: localhost
+      AUTHENTIK_BOOTSTRAP_EMAIL: localhost
 
     envFrom: []
     #  - configMapRef:
