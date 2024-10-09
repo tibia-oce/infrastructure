@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tibia
+  namespace: apps
+spec:
+  # Since the Tibia server runs over TCP, we need to use a LoadBalancer
+  # instead of a ClusterIP service (typically used for HTTP[S] traffic).
+  type: LoadBalancer
+  ports:
+    - name: tibia-game
+      protocol: TCP
+      port: 7171
+      targetPort: 7171
+    - name: tibia-login
+      protocol: TCP
+      port: 7172
+      targetPort: 7172
+  selector:
+    app: tibia

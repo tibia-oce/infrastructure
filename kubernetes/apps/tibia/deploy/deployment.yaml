@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tibia
+  namespace: apps
+  labels:
+    app: tibia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tibia
+  template:
+    metadata:
+      labels:
+        app: tibia
+    spec:
+      containers:
+        - name: tibia
+          image: ghcr.io/tibia-oce/server:latest
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+          env:
+
+            # Static variables
+            - name: MYSQL_PORT
+              value: "3306"
+            - name: MYSQL_HOST
+              value: "mariadb.apps.svc.cluster.local"
+            - name: MYSQL_SOCK
+              value: "/opt/bitnami/mariadb/tmp/mysql.sock"
+
+            # External secrets
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tibia
+                  key: tibia-mariadb-user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tibia
+                  key: tibia-mariadb-password
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tibia
+                  key: tibia-mariadb-root-password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: tibia
+                  key: tibia-mariadb-database
