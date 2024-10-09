@@ -1,0 +1,12 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: authentik-forward-auth
+  namespace: apps
+spec:
+  forwardAuth:
+    address: "https://authentik.mythbound.dev/outpost.goauthentik.io/auth/traefik/"
+    trustForwardHeader: true
+    authResponseHeaders:
+      - X-Authentik-Username
+      - X-Authentik-Email
