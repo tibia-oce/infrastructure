@@ -61,6 +61,8 @@ spec:
       AUTHENTIK_POSTGRESQL__USER: authentik 
       AUTHENTIK_POSTGRESQL__PASSWORD: authentik
       AUTHENTIK_POSTGRESQL__PORT: 5432
+      AUTHENTIK_EMAIL__USERNAME: localhost
+      AUTHENTIK_EMAIL__PASSWORD: localhost
 
     envFrom: []
     #  - configMapRef:
