@@ -28,18 +28,6 @@ spec:
       pullPolicy: IfNotPresent
       pullSecrets: []
 
-    ingress:
-      enabled: true
-      ingressClassName: "traefik"
-      annotations:
-        kubernetes.io/ingress.class: traefik
-      hosts:
-        - host: authentik.mythbound.dev
-          paths:
-            - path: "/"
-              pathType: Prefix
-      tls: []
-
     authentik:
       log_level: info
       secret_key: "authentik"
@@ -52,8 +40,6 @@ spec:
       redis:
         host: "authentik-redis-master"
         password: "authentik"
-      bootstrap_token: authentik
-      bootstrap_password: authentik
 
     env: 
       # https://goauthentik.io/docs/installation/configuration/
@@ -65,28 +51,15 @@ spec:
       AUTHENTIK_POSTGRESQL__PASSWORD: authentik
       AUTHENTIK_POSTGRESQL__PORT: 5432
 
-    envFrom: []
-    #  - configMapRef:
-    #      name: special-config
-
-    # envValueFrom:
-    #   AUTHENTIK_BOOTSTRAP_PASSWORD:
-    #     secretKeyRef:
-    #       key: AUTHENTIK_BOOTSTRAP_PASSWORD
-    #       name: authentik
-    #   AUTHENTIK_BOOTSTRAP_TOKEN:
-    #     secretKeyRef:
-    #       key: AUTHENTIK_BOOTSTRAP_TOKEN
-    #       name: authentik
-
-    service:
-      enabled: true
-      type: ClusterIP
-      port: 80
-      name: http
-      protocol: TCP
-      labels: {}
-      annotations: {}
+    envValueFrom:
+      AUTHENTIK_BOOTSTRAP_PASSWORD:
+        secretKeyRef:
+          key: AUTHENTIK_BOOTSTRAP_PASSWORD
+          name: authentik
+      AUTHENTIK_BOOTSTRAP_TOKEN:
+        secretKeyRef:
+          key: AUTHENTIK_BOOTSTRAP_TOKEN
+          name: authentik
 
     volumes: []
 
@@ -122,25 +95,23 @@ spec:
       image:
         tag: 6.2.10-debian-11-r13
 
-    livenessProbe:
+    service:
       enabled: true
-      httpGet:
-        path: /-/health/live/
-        port: http
-      initialDelaySeconds: 20
-      periodSeconds: 10
+      type: ClusterIP
+      port: 80
+      name: http
+      protocol: TCP
+      labels: {}
+      annotations: {}
 
-    startupProbe:
+    ingress:
       enabled: true
-      httpGet:
-        path: /-/health/live/
-        port: http
-      failureThreshold: 60
-      periodSeconds: 10
-
-    readinessProbe:
-      enabled: true
-      httpGet:
-        path: /-/health/ready/
-        port: http
-      periodSeconds: 10
+      ingressClassName: "traefik"
+      annotations:
+        kubernetes.io/ingress.class: traefik
+      hosts:
+        - host: authentik.mythbound.dev
+          paths:
+            - path: "/"
+              pathType: Prefix
+      tls: []
