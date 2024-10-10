@@ -1,30 +1,10 @@
-stream {
-    log_format tcp_custom '$remote_addr [$time_local] "$protocol" "$status" "$bytes_sent" "$bytes_received"';
-    access_log /var/log/nginx/tcp_access.log tcp_custom;
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
 
-    upstream tibia_server {
-        server 10.0.1.110:7171;  # Tibia service inside the cluster
-    }
-
-    upstream tibia_server_secure {
-        server 10.0.1.110:7172;  # Tibia secure service inside the cluster
-    }
-
-    # Forward port 7171 for non-secure connections
-    server {
-        listen 7171;
-        proxy_pass tibia_server;
-        proxy_timeout 10m;
-        proxy_connect_timeout 1m;
-    }
-
-    # Forward port 7172 for secure connections
-    server {
-        listen 7172;
-        proxy_pass tibia_server_secure;
-        proxy_timeout 10m;
-        proxy_connect_timeout 1m;
-    }
+events {
+    worker_connections 768;
 }
 
 http {
@@ -53,7 +33,6 @@ http {
             proxy_read_timeout 600;
         }
 
-        # Health check restricted to localhost only
         location /health {
             allow 127.0.0.1;
             allow ::1;
@@ -63,5 +42,32 @@ http {
             return 200 'healthy';
             add_header Content-Type text/plain;
         }
+    }
+}
+
+stream {
+    log_format tcp_custom '$remote_addr [$time_local] "$protocol" "$status" "$bytes_sent" "$bytes_received"';
+    access_log /var/log/nginx/tcp_access.log tcp_custom;
+
+    upstream tibia_server {
+        server 10.0.1.110:7171;  # Tibia service inside the cluster
+    }
+
+    upstream tibia_server_secure {
+        server 10.0.1.110:7172;  # Tibia secure service inside the cluster
+    }
+
+    server {
+        listen 7171;
+        proxy_pass tibia_server;
+        proxy_timeout 10m;
+        proxy_connect_timeout 1m;
+    }
+
+    server {
+        listen 7172;
+        proxy_pass tibia_server_secure;
+        proxy_timeout 10m;
+        proxy_connect_timeout 1m;
     }
 }

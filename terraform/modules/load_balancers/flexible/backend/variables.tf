@@ -22,6 +22,17 @@ variable "http_port" {
   default = 80
 }
 
+variable "tcp_game_port" {
+  type        = number
+  default = 7172
+}
+
+variable "tcp_login_port" {
+  type        = number
+  default = 7171
+}
+
 variable "url_path" {
   type        = string
 }
+

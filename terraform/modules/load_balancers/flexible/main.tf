@@ -55,6 +55,26 @@ module "nginx_backend" {
   url_path                    = "/health"
   https_port                  = 443
   http_port                   = 80
+  tcp_game_port               = 7172
+  tcp_login_port              = 7171
+}
+
+module "tcp_login_listener" {
+  source                  = "./listener"
+  load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
+  default_backend_set_name = module.nginx_backend.tcp_login_backend_set_name
+  listener_name           = "tcp-login-listener"
+  listener_protocol       = "TCP"
+  listener_port           = 7171
+}
+
+module "tcp_game_listener" {
+  source                  = "./listener"
+  load_balancer_id        = oci_load_balancer_load_balancer.kubeapi_lb.id
+  default_backend_set_name = module.nginx_backend.tcp_game_backend_set_name
+  listener_name           = "tcp-game-listener"
+  listener_protocol       = "TCP"
+  listener_port           = 7172
 }
 
 module "http_listener" {
@@ -148,5 +168,3 @@ module "https_listener" {
 #   certificate_name             = oci_load_balancer_certificate.cloudflare_cert.certificate_name
 #   ssl_protocols                = ["TLSv1.2", "TLSv1.3"]  # SSL protocols to support
 # }
-
-

@@ -324,3 +324,37 @@
   tags:
   - firewall
   - iptables
+
+
+- name: Allow tibia ingress traffic (port 7171)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 7171 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow tibia egress traffic (port 7171)
+  ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 7171 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+
+- name: Allow tibia ingress traffic (port 7172)
+  ansible.builtin.command: iptables -I INPUT -p tcp --dport 7172 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables
+
+- name: Allow tibia egress traffic (port 7172)
+  ansible.builtin.command: iptables -I OUTPUT -p tcp --dport 7172 -j ACCEPT
+  become: true
+  become_method: sudo
+  tags:
+  - firewall
+  - iptables

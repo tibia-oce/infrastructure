@@ -31,6 +31,32 @@ resource "oci_load_balancer_backend_set" "http_backend_set" {
   }
 }
 
+resource "oci_load_balancer_backend_set" "tcp_login_backend_set" {
+  load_balancer_id = var.load_balancer_id
+  name             = "tcp-login-backend"
+  policy           = "ROUND_ROBIN"
+
+  health_checker {
+    protocol           = "TCP"
+    port               = 7171
+    retries            = 3
+    timeout_in_millis  = 3000
+  }
+}
+
+resource "oci_load_balancer_backend_set" "tcp_game_backend_set" {
+  load_balancer_id = var.load_balancer_id
+  name             = "tcp-game-backend"
+  policy           = "ROUND_ROBIN"
+
+  health_checker {
+    protocol           = "TCP"
+    port               = 7172
+    retries            = 3
+    timeout_in_millis  = 3000
+  }
+}
+
 resource "oci_load_balancer_backend" "http_backend" {
   for_each         = var.worker_node_private_ip_map
   backendset_name  = oci_load_balancer_backend_set.http_backend_set.name
@@ -45,4 +71,20 @@ resource "oci_load_balancer_backend" "https_backend" {
   ip_address       = each.value
   load_balancer_id = var.load_balancer_id
   port             = var.https_port
+}
+
+resource "oci_load_balancer_backend" "tcp_login_backend" {
+  for_each         = var.worker_node_private_ip_map
+  backendset_name  = oci_load_balancer_backend_set.tcp_login_backend_set.name
+  ip_address       = each.value
+  load_balancer_id = var.load_balancer_id
+  port             = 7171
+}
+
+resource "oci_load_balancer_backend" "tcp_game_backend" {
+  for_each         = var.worker_node_private_ip_map
+  backendset_name  = oci_load_balancer_backend_set.tcp_game_backend_set.name
+  ip_address       = each.value
+  load_balancer_id = var.load_balancer_id
+  port             = 7172
 }

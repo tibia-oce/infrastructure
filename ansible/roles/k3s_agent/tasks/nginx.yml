@@ -2,15 +2,15 @@
 - name: Install and configure NGINX on worker nodes
   become: true
   block:
-    - name: Install NGINX
+    - name: Install NGINX with dynamic module support (nginx-extras)
       apt:
-        name: nginx
+        name: nginx-extras
         state: present
 
     - name: Create the NGINX proxy configuration using template
       ansible.builtin.template:
         src: nginx.conf.j2
-        dest: /etc/nginx/sites-available/default
+        dest: /etc/nginx/nginx.conf
         owner: root
         group: root
         mode: "0644"
