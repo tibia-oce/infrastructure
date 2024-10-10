@@ -1,36 +1,67 @@
-log_format custom '$remote_addr - $remote_user [$time_local] "$request" '
-                  'Host: $host '
-                  'Headers: $http_host, $http_x_forwarded_for, $http_x_forwarded_proto '
-                  '"$status" "$body_bytes_sent" "$http_referer" "$http_user_agent"';
+stream {
+    log_format tcp_custom '$remote_addr [$time_local] "$protocol" "$status" "$bytes_sent" "$bytes_received"';
+    access_log /var/log/nginx/tcp_access.log tcp_custom;
 
-access_log /var/log/nginx/custom_access.log custom;
-
-server {
-    listen 80;
-    server_name _;
-
-    location / {
-        proxy_pass http://10.0.1.96/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header CF-Connecting-IP $http_cf_connecting_ip;
-
-        # Timeouts for the proxy connection
-        proxy_connect_timeout 600;
-        proxy_send_timeout 600;
-        proxy_read_timeout 600;
+    upstream tibia_server {
+        server 10.0.1.110:7171;  # Tibia service inside the cluster
     }
 
-    # Health check restricted to localhost only
-    location /health {
-        allow 127.0.0.1;      # Allow localhost access
-        allow ::1;             # Allow IPv6 localhost access
-        deny all;              # Deny all other IPs
+    upstream tibia_server_secure {
+        server 10.0.1.110:7172;  # Tibia secure service inside the cluster
+    }
 
-        access_log off;
-        return 200 'healthy';
-        add_header Content-Type text/plain;
+    # Forward port 7171 for non-secure connections
+    server {
+        listen 7171;
+        proxy_pass tibia_server;
+        proxy_timeout 10m;
+        proxy_connect_timeout 1m;
+    }
+
+    # Forward port 7172 for secure connections
+    server {
+        listen 7172;
+        proxy_pass tibia_server_secure;
+        proxy_timeout 10m;
+        proxy_connect_timeout 1m;
+    }
+}
+
+http {
+    log_format custom '$remote_addr - $remote_user [$time_local] "$request" '
+                      'Host: $host '
+                      'Headers: $http_host, $http_x_forwarded_for, $http_x_forwarded_proto '
+                      '"$status" "$body_bytes_sent" "$http_referer" "$http_user_agent"';
+
+    access_log /var/log/nginx/custom_access.log custom;
+
+    server {
+        listen 80;
+        server_name _;
+
+        location / {
+            proxy_pass http://10.0.1.96/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header CF-Connecting-IP $http_cf_connecting_ip;
+
+            # Timeouts for the proxy connection
+            proxy_connect_timeout 600;
+            proxy_send_timeout 600;
+            proxy_read_timeout 600;
+        }
+
+        # Health check restricted to localhost only
+        location /health {
+            allow 127.0.0.1;
+            allow ::1;
+            deny all;
+
+            access_log off;
+            return 200 'healthy';
+            add_header Content-Type text/plain;
+        }
     }
 }

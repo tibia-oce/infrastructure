@@ -3,10 +3,13 @@ kind: Service
 metadata:
   name: tibia
   namespace: apps
+  annotations:
+    metallb.universe.tf/allow-shared-ip: "tibia-static-ip"
 spec:
   # Since the Tibia server runs over TCP, we need to use a LoadBalancer
   # instead of a ClusterIP service (typically used for HTTP[S] traffic).
   type: LoadBalancer
+  loadBalancerIP: 10.0.1.110
   ports:
     - name: tibia-game
       protocol: TCP
