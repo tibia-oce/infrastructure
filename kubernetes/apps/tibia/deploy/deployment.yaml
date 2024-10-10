@@ -30,12 +30,12 @@ spec:
           env:
 
             # Static variables
-            - name: STATUS_PROTOCOL_PORT
-              value: "7171"
             - name: LOGIN_PROTOCOL_PORT
               value: "7171"
             - name: GAME_PROTOCOL_PORT
               value: "7172"
+            - name: STATUS_PROTOCOL_PORT
+              value: "7172"  # 7172?
 
             - name: MYSQL_PORT
               value: "3306"
@@ -48,7 +48,7 @@ spec:
             - name: MYSQL_USER
               value: "root"
             - name: SERVER_IP
-              value: "10.0.1.110"
+              value: "192.9.185.149"
 
             # External secrets
             - name: MYSQL_PASSWORD
