@@ -35,7 +35,7 @@ spec:
             - name: GAME_PROTOCOL_PORT
               value: "7172"
             - name: STATUS_PROTOCOL_PORT
-              value: "7172"  # 7172?
+              value: "7171"  # 7172?
 
             - name: MYSQL_PORT
               value: "3306"
