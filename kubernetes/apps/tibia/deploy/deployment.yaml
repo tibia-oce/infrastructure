@@ -48,7 +48,7 @@ spec:
             - name: MYSQL_USER
               value: "root"
             - name: SERVER_IP
-              value: "159.13.41.229" # "game.mythbound.dev" "192.9.185.149"
+              value: "192.9.162.152" # "game.mythbound.dev" "192.9.185.149"
 
             # External secrets
             - name: MYSQL_PASSWORD
