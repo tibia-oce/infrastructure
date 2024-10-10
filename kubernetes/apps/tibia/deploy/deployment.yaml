@@ -45,18 +45,15 @@ spec:
               value: "/opt/bitnami/mariadb/tmp/mysql.sock"
             - name: MYSQL_DATABASE
               value: "forgottenserver"
+            - name: MYSQL_USER
+              value: "root"
 
             # External secrets
-            - name: MYSQL_USER
-              valueFrom:
-                secretKeyRef:
-                  name: tibia
-                  key: tibia-mariadb-user
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: tibia
-                  key: tibia-mariadb-password
+                  key: tibia-mariadb-root-password
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
