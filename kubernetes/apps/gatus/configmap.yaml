@@ -35,9 +35,9 @@ data:
       conditions:
         - "[CONNECTED] == true"
 
-    - name: MariaDB
+    - name: Tibia Server
       group: Tibia
-      url: tcp://mariadb.apps.svc.cluster.local:3306
+      url: tcp://tibia.apps.svc.cluster.local:7171
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
@@ -49,16 +49,9 @@ data:
       conditions:
         - "[STATUS] == 200"
 
-    - name: Tibia Server (Game)
+    - name: MariaDB
       group: Tibia
-      url: tcp://tibia.apps.svc.cluster.local:7171
-      interval: 5m
-      conditions:
-        - "[CONNECTED] == true"
-
-    - name: Tibia Server (Login)
-      group: Tibia
-      url: tcp://tibia.apps.svc.cluster.local:7172
+      url: tcp://mariadb.apps.svc.cluster.local:3306
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
