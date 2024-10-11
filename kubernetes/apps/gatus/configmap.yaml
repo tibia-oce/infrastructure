@@ -49,6 +49,20 @@ data:
       conditions:
         - "[STATUS] == 200"
 
+    - name: Tibia Server (Game)
+      group: Tibia
+      url: tcp://tibia.apps.svc.cluster.local:7171
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+
+    - name: Tibia Server (Login)
+      group: Tibia
+      url: tcp://tibia.apps.svc.cluster.local:7172
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true"
+
     - name: phpMyAdmin
       group: Tibia
       url: http://phpmyadmin.apps.svc.cluster.local:80
