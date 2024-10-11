@@ -13,51 +13,73 @@ data:
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
+    
     - name: Authentik
       group: Authentication
       url: http://authentik.apps.svc.cluster.local:80
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
+
     - name: PostgreSQL
       group: Authentication
       url: tcp://authentik-postgresql.apps.svc.cluster.local:5432
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
+
     - name: Redis
       group: Authentication
       url: tcp://authentik-redis-master.apps.svc.cluster.local:6379
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
+
     - name: MariaDB
       group: Tibia
       url: tcp://mariadb.apps.svc.cluster.local:3306
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
+
     - name: MyAAC
       group: Tibia
       url: http://website.apps.svc.cluster.local:80
       interval: 5m
       conditions:
         - "[STATUS] == 200"
+
     - name: phpMyAdmin
       group: Tibia
       url: http://phpmyadmin.apps.svc.cluster.local:80
       interval: 5m
       conditions:
         - "[CONNECTED] == true"
+
     - name: Prometheus
       group: Monitoring
-      url: tcp://prometheus.apps.svc.cluster.local:9090
+      url: http://kube-prometheus-stack-prometheus.apps.svc.cluster.local:9090
       interval: 5m
       conditions:
-        - "[CONNECTED] == true"
+        - "[CONNECTED] == true" # HTTP status check for Prometheus UI
+
     - name: Grafana
       group: Monitoring
-      url: tcp://grafana.apps.svc.cluster.local:3000
+      url: http://kube-prometheus-stack-grafana.apps.svc.cluster.local:3000
       interval: 5m
       conditions:
-        - "[CONNECTED] == true"
+        - "[CONNECTED] == true" # HTTP status check for Grafana UI
+
+    - name: Alertmanager
+      group: Monitoring
+      url: http://alertmanager-operated.apps.svc.cluster.local:9093
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true" # HTTP status check for Alertmanager UI
+
+    - name: Kube Metrics
+      group: Monitoring
+      url: http://kube-prometheus-stack-kube-state-metrics.apps.svc.cluster.local:8080/metrics
+      interval: 5m
+      conditions:
+        - "[CONNECTED] == true" # HTTP status check for kube-state-metrics
