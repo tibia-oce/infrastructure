@@ -28,6 +28,40 @@ spec:
   values:
     crds:
       enabled: true
+    grafana:
+      ingress:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: traefik
+        ingressClassName: traefik
+        rules:
+          - host: grafana.mythbound.dev
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: kube-prometheus-stack-grafana
+                      port:
+                        number: 3000
+    prometheus:
+      ingress:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: traefik
+        ingressClassName: traefik
+        rules:
+          - host: prometheus.mythbound.dev
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: kube-prometheus-stack-prometheus
+                      port:
+                        number: 9090
     # cleanPrometheusOperatorObjectNames: true
     # kubelet:
     #   enabled: true
