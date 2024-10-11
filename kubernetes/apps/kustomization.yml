@@ -8,7 +8,7 @@ resources:
 - authentik
 - myaac
 - phpmyadmin
-# - observability
+- observability
 - tibia
 # - prometheus
 # - grafana
