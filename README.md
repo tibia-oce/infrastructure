@@ -18,9 +18,9 @@ _... managed with Flux, Renovate, Ansible and Terraform_ 🤖
 
 <div align="center">
 
-[![Cluster](https://img.shields.io/static/v1?label=Cluster&message=Online&color=brightgreen&style=for-the-badge&logo=v&logoColor=white)](https://github.com/tibia-oce/oci)&nbsp;&nbsp;
-[![Server](https://img.shields.io/static/v1?label=Server&message=Offline&color=red&style=for-the-badge&logo=v&logoColor=white)](https://status.mythbound.dev/)&nbsp;&nbsp;
-[![Website](https://img.shields.io/static/v1?label=Website&message=Offline&color=red&style=for-the-badge&logo=statuspage&logoColor=white)](https://myaac.mythbound.dev/)&nbsp;&nbsp;
+[![Cluster](https://img.shields.io/static/v1?label=Cluster&message=Online&color=brightgreen&style=for-the-badge&logo=v&logoColor=white)](https://status.mythbound.dev/)&nbsp;&nbsp;
+[![Server](https://img.shields.io/static/v1?label=Server&message=Online&color=brightgreen&style=for-the-badge&logo=v&logoColor=white)](https://status.mythbound.dev/endpoints/tibia_tibia-server)&nbsp;&nbsp;
+[![Website](https://img.shields.io/static/v1?label=Website&message=Online&color=brightgreen&style=for-the-badge&logo=statuspage&logoColor=white)](https://myaac.mythbound.dev/)&nbsp;&nbsp;
 
 </div>
 
