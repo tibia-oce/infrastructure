@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m
-  url: https://github.com/tibia-oce/oci
+  url: https://github.com/tibia-oce/infrastructure
   ref:
     branch: main
 

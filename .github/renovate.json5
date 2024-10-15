@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>tibia-oce/oci//.github/renovate/docker.json5",
+    "github>tibia-oce/infrastructure//.github/renovate/docker.json5",
   ]
 }
