@@ -34,7 +34,7 @@ jsonpatch==1.33
     # via -r requirements.in
 jsonpointer==3.0.0
     # via jsonpatch
-kubernetes==30.1.0
+kubernetes==31.0.0
     # via -r requirements.in
 markupsafe==2.1.5
     # via jinja2
