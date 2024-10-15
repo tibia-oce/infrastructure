@@ -7,7 +7,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/tibia-oce/oci.git'
+    repoURL: 'https://github.com/tibia-oce/infrastructure.git'
     path: 'kubernetes/apps/'
     targetRevision: HEAD
   destination:
