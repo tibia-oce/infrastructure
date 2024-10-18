@@ -7,5 +7,5 @@ spec:
   interval: 1m
   url: https://github.com/tibia-oce/infrastructure
   ref:
-    branch: main
+    branch: master
 
