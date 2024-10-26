@@ -10,9 +10,9 @@ _... managed with Flux, Renovate, Ansible and Terraform_ 🤖
 
 <div align="center">
 
-[![Kubernetes](https://img.shields.io/static/v1?label=K3s&message=v1.31.0&color=blue&style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)&nbsp;&nbsp;
+[![Kubernetes](https://img.shields.io/static/v1?label=K3s&message=v1.30.2&color=blue&style=for-the-badge&logo=kubernetes&logoColor=white)](https://k3s.io/)&nbsp;&nbsp;
 [![Discord](https://img.shields.io/discord/1283279739775352896?style=for-the-badge&label&logo=discord&logoColor=white&color=blue)]([https://discord.gg/1283279739775352896](https://discord.gg/Erhz4GmDMd))&nbsp;&nbsp;
-[![Renovate](https://img.shields.io/github/actions/workflow/status/tibia-oce/infrastructure/renovate.yml?branch=main&label=&logo=renovatebot&style=for-the-badge&color=blue)](https://github.com/tibia-oce/infrastructure/actions/workflows/renovate.yml)
+[![Renovate](https://img.shields.io/github/actions/workflow/status/tibia-oce/infrastructure/renovate.yaml?branch=master&label=&logo=renovatebot&style=for-the-badge&color=blue)](https://github.com/tibia-oce/infrastructure/actions/workflows/renovate.yaml)
 
 </div>
 
