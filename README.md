@@ -58,10 +58,9 @@ This mono-repository demonstrates how to deploy a K3s Kubernetes cluster for fre
 - [nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/): an os-level pass through proxy to support cloud integration.
 - [flannel](https://github.com/flannel-io/flannel): internal Kubernetes container networking interface.
 - [traefik](https://doc.traefik.io/traefik/): as a reverse proxy and service load balancing ingress controller.
-- [authelia](https://www.authelia.com/): IAM server for multi-factor auth and single sign-ons.
+- [authentik](https://goauthentik.io/): IAM server for multi-factor auth and single sign-ons.
 - [cert-manager](https://github.com/cert-manager/cert-manager): manages SSL certificates for services in the cluster.
 - [gatus](https://gatus.io/): monitors the health and performance of services, with alerts.
-- [cloudflared](https://github.com/cloudflare/cloudflared): enables zero-trust tunnelling to certain ingress routes.
 
 <br>
 
@@ -98,23 +97,6 @@ This Git repository contains the following directories:
 ```
 
 <br>
-
-## 🔧 Requirements
-
-> [!NOTE]
->
-> This repository is for demonstration only and not recommended for production. It uses [OCI always-free](https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm), re-claimable compute instances, which after the 30-day trial, OCI may stop, hibernate, or terminate.
-
-To use this repo you will need:
-
-* an Oracle Cloud account.
-* a HCP Vault account.
-* a HCP Terraform account.
-* a HCP Service Principal.
-
-Read more [here](/docs/0-setup.md).
-
-<br> 
 
 ## 🤙 Related projects & many thanks 
 
