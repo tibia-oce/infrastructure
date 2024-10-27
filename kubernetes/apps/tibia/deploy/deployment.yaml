@@ -18,6 +18,7 @@ spec:
       containers:
       - name: tibia
         image: ghcr.io/tibia-oce/server:v1.1.0
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         resources:
