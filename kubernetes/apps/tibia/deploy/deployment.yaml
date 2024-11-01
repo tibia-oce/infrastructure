@@ -26,8 +26,8 @@ spec:
             memory: "1536Mi"
             cpu: "500m"
           requests:
-            memory: "768Mi"
-            cpu: "250m"
+            memory: "256Mi"
+            cpu: "125m"
 
         env:
 
