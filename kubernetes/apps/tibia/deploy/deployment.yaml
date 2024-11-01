@@ -37,7 +37,11 @@ spec:
         - name: GAME_PROTOCOL_PORT
           value: "7172"
         - name: STATUS_PROTOCOL_PORT
-          value: "7171" # 7172?
+          value: "7171"
+        - name: ASSETS_REPOSTIORY
+          value: "https://github.com/tibia-oce/assets"
+        - name: REPOSITORY_BRANCH
+          value: "master"
 
         - name: MYSQL_PORT
           value: "3306"
