@@ -10,7 +10,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: migration
-          image: ghcr.io/tibia-oce/migrate:1.0.0
+          image: ghcr.io/tibia-oce/migrate:v1.0.0
           env:
             # Static variables
             - name: MARIADB_PORT
