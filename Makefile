@@ -419,6 +419,9 @@ connect-mariadb:
 	@PASSWORD=$$(kubectl get secret mariadb -n apps -o jsonpath="{.data.mariadb-root-password}" | base64 --decode) && \
 	kubectl exec -it -n apps mariadb-0 -- /opt/bitnami/mariadb/bin/mariadb -u root -p$$PASSWORD
 
-# Trigger a manual reconciliation to prompt Flux to apply latest config
+# Trigger a manual reconciliation of the server pod
 reconcile-server:
-	flux reconcile kustomization tibia-deploy -n apps --with-source
+	flux suspend kustomization tibia-deploy -n apps
+	kubectl scale deployment tibia -n apps --replicas=0
+	flux resume kustomization tibia-deploy -n apps
+	kubectl get pods -n apps -l app=tibia -w
