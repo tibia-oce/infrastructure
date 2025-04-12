@@ -5,8 +5,6 @@ metadata:
   name: phpmyadmin-deploy
   namespace: apps
 spec:
-  dependsOn:
-    - name: mariadb-post-deploy
   interval: 5m
   path: ./kubernetes/apps/aincrad/phpmyadmin/deploy
   prune: true

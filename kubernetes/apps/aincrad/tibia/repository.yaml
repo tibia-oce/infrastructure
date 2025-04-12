@@ -22,8 +22,6 @@ metadata:
   name: tibia-deploy
   namespace: apps
 spec:
-  dependsOn:
-    - name: mariadb-post-deploy
   interval: 5m
   path: ./kubernetes/apps/aincrad/tibia/deploy
   prune: true
