@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tibia
+  namespace: apps
+  labels:
+    app: tibia
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tibia
+  template:
+    metadata:
+      labels:
+        app: tibia
+    spec:
+      containers:
+      - name: tibia
+        image: ghcr.io/tibia-oce/aincrad:v1.0.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "2048Mi"
+            cpu: "500m"
+          requests:
+            memory: "1024Mi"
+            cpu: "250m"
+
+        env:
+
+        # Static variables
+        - name: SERVER_PORT
+          value: "7172"
+        - name: gameProtocolPort
+          value: "7172"
+        - name: statusProtocolPort
+          value: "7171"
+
+        - name: MYSQL_PORT
+          value: "3306"
+        - name: MYSQL_HOST
+          value: "mariadb.apps.svc.cluster.local"
+        - name: MYSQL_SOCK
+          value: "/opt/bitnami/mariadb/tmp/mysql.sock"
+        - name: MYSQL_DATABASE
+          value: "forgottenserver"
+        - name: MYSQL_USER
+          value: "root"
+        - name: SERVER_IP
+          value: "game.mythbound.dev"
+
+        # External secrets
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: tibia
+              key: tibia-mariadb-root-password
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: tibia
+              key: tibia-mariadb-root-password

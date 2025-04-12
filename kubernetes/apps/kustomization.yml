@@ -4,12 +4,8 @@ kind: Kustomization
 resources:
 - namespace.yaml
 - gatus
-- mariadb
 - authentik
-- myaac
-- phpmyadmin
 - observability
-- tibia
-# - prometheus
-# - grafana
-# - monitoring
+- aincrad
+
+# - mythbound

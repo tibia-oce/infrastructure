@@ -1,0 +1,43 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: mariadb-secrets
+  namespace: apps
+spec:
+  dependsOn:
+  - name: external-secrets-secretstore
+    namespace: flux-system
+  interval: 5m
+  path: ./kubernetes/apps/aincrad/mariadb/secrets
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: tibia
+    namespace: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: mariadb-deploy
+  namespace: apps
+spec:
+  dependsOn:
+  - name: mariadb-secrets
+  interval: 5m
+  path: ./kubernetes/apps/aincrad/mariadb/release
+  prune: true
+  wait: true
+  sourceRef:
+    kind: GitRepository
+    name: tibia
+    namespace: flux-system
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: bitnami
+  namespace: apps
+spec:
+  interval: 5m
+  url: https://charts.bitnami.com/bitnami

@@ -1,0 +1,34 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tibia-secrets
+  namespace: apps
+spec:
+  dependsOn:
+    - name: external-secrets-secretstore
+      namespace: flux-system
+  interval: 5m
+  path: ./kubernetes/apps/aincrad/tibia/secrets
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: tibia
+    namespace: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tibia-deploy
+  namespace: apps
+spec:
+  dependsOn:
+    - name: mariadb-post-deploy
+  interval: 5m
+  path: ./kubernetes/apps/aincrad/tibia/deploy
+  prune: true
+  wait: true
+  sourceRef:
+    kind: GitRepository
+    name: tibia
+    namespace: flux-system
